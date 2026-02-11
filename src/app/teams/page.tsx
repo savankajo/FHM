@@ -80,50 +80,7 @@ export default async function TeamsPage() {
                 )}
             </section>
 
-            <style jsx>{`
-        .teams-page {
-          padding-bottom: 2rem;
-        }
-        .page-title {
-          font-size: 1.5rem;
-          margin-bottom: 1.5rem;
-          color: var(--primary);
-        }
-        .section-title {
-          font-size: 1.1rem;
-          margin-bottom: 0.75rem;
-          border-bottom: 2px solid var(--border);
-          padding-bottom: 0.25rem;
-        }
-        .card-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-        .team-card {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          transition: transform 0.1s;
-          cursor: pointer;
-        }
-        .team-card:active {
-          transform: scale(0.98);
-        }
-        .team-icon {
-          font-size: 1.5rem;
-          background: var(--muted);
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-        }
-        .pointer {
-          cursor: pointer;
-        }
-      `}</style>
+
         </div>
     );
 }

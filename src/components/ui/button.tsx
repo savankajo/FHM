@@ -6,19 +6,22 @@ import styles from './button.module.css'; // We'll keep avoiding CSS modules if 
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'outline' | 'ghost';
+    size?: 'sm' | 'md' | 'lg';
     fullWidth?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = 'primary', fullWidth, ...props }, ref) => {
+    ({ className, variant = 'primary', size = 'md', fullWidth, ...props }, ref) => {
         return (
             <button
                 ref={ref}
                 className={cn(
                     'btn',
-                    variant === 'outline' && 'btn-outline', // Need to define this in globals.css
-                    variant === 'ghost' && 'btn-ghost',     // Need to define this in globals.css
-                    fullWidth && 'w-full',                  // Need to define this in globals.css
+                    variant === 'outline' && 'btn-outline',
+                    variant === 'ghost' && 'btn-ghost',
+                    size === 'sm' && 'btn-sm',
+                    size === 'lg' && 'btn-lg',
+                    fullWidth && 'w-full',
                     className
                 )}
                 {...props}

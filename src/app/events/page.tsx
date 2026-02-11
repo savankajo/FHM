@@ -86,21 +86,7 @@ export default async function EventsPage() {
                 )}
             </div>
 
-            <style jsx>{`
-        .events-page { padding-bottom: 2rem; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .page-title { font-size: 1.5rem; color: var(--primary); margin: 0; }
-        .card-list { display: flex; flex-direction: column; gap: 1rem; }
-        .event-card { display: flex; gap: 1rem; align-items: center; transition: transform 0.1s; border-left: 4px solid var(--secondary); }
-        .event-card:active { transform: scale(0.98); }
-        .date-box {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          background: var(--muted); padding: 0.5rem; border-radius: 8px; width: 50px; text-align: center;
-        }
-        .date-box .month { font-size: 0.7rem; font-weight: bold; color: var(--muted-foreground); }
-        .date-box .day { font-size: 1.25rem; font-weight: bold; line-height: 1; }
-        .content h3 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
-      `}</style>
+
         </div>
     );
 }

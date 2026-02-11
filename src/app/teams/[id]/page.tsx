@@ -100,34 +100,7 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
                 </Link>
             </div>
 
-            <style jsx>{`
-        .team-details { padding-bottom: 2rem; }
-        .header { margin-bottom: 2rem; }
-        .back-link { color: var(--muted-foreground); font-size: 0.875rem; display: block; margin-bottom: 0.5rem; }
-        .header h1 { font-size: 1.75rem; color: var(--primary); margin: 0; }
-        .desc { color: var(--muted-foreground); margin-top: 0.5rem; }
-        
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .section-header h2 { font-size: 1.25rem; margin: 0; }
-        
-        .service-list { display: flex; flex-direction: column; gap: 1rem; }
-        .service-card { display: flex; gap: 1rem; align-items: center; }
-        
-        .date-badge {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          background: #ffeccf; color: var(--primary);
-          padding: 0.5rem; border-radius: 8px; font-weight: bold; width: 50px;
-        }
-        .date-badge .month { font-size: 0.7rem; }
-        .date-badge .day { font-size: 1.2rem; line-height: 1; }
-        
-        .service-info { flex: 1; }
-        .service-info h3 { margin: 0; font-size: 1rem; }
-        .time { font-size: 0.875rem; color: var(--muted-foreground); margin: 0; }
-        .spots { font-size: 0.75rem; color: green; margin: 2px 0 0 0; }
-        
-        .chat-link-container { margin-top: 2rem; }
-      `}</style>
+
         </div>
     );
 }

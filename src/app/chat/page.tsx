@@ -26,7 +26,7 @@ export default async function ChatIndexPage() {
     });
 
     return (
-        <div>
+        <div className="chat-page">
             <h1 className="page-title">Team Chats</h1>
             <p className="subtitle">Select a team to start chatting.</p>
 
@@ -52,18 +52,7 @@ export default async function ChatIndexPage() {
                 </div>
             )}
 
-            <style jsx>{`
-        .page-title { font-size: 1.5rem; color: var(--primary); margin: 0; }
-        .subtitle { color: var(--muted-foreground); margin-bottom: 2rem; }
-        
-        .card-list { display: flex; flex-direction: column; gap: 1rem; }
-        .chat-card { display: flex; align-items: center; gap: 1rem; transition: transform 0.1s; cursor: pointer; }
-        .chat-card:active { transform: scale(0.98); }
-        
-        .chat-icon { font-size: 1.5rem; background: var(--muted); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        .chat-info { flex: 1; }
-        .empty-state { text-align: center; padding: 2rem; background: var(--muted); border-radius: var(--radius); }
-      `}</style>
+
         </div>
     );
 }

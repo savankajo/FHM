@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, createSession } from '@/lib/auth';
-import { z } from 'zod'; // Assuming we might want validation, but I'll do manual check if zod isn't in dependencies yet.
+
 
 // Manual validation for now to avoid dependency hell if user hasn't installed zod
 export async function POST(request: Request) {

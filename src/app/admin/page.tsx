@@ -35,18 +35,7 @@ export default async function AdminDashboard() {
                 ))}
             </div>
 
-            <style jsx>{`
-        .header { margin-bottom: 2rem; }
-        .back-link { display: block; margin-bottom: 1rem; color: var(--muted-foreground); }
-        h1 { color: var(--primary); margin: 0; }
-        
-        .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-        .admin-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; aspect-ratio: 1; transition: transform 0.1s; cursor: pointer; text-align: center; }
-        .admin-card:hover { border-color: var(--primary); }
-        .admin-card:active { transform: scale(0.98); }
-        .icon { font-size: 2.5rem; }
-        .label { font-weight: bold; }
-      `}</style>
+
         </div>
     );
 }

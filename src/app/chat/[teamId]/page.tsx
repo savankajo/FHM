@@ -26,37 +26,22 @@ export default async function ChatPage({ params }: { params: { teamId: string } 
 
     if (!isMember && session.role !== 'ADMIN') return <p>Access Denied</p>;
 
+    // Fetch current user for name
+    const currentUser = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { name: true }
+    });
+
     return (
-        <div className="chat-page">
+        <div className="chat-room-page">
             <div className="chat-header">
                 <Link href="/chat" className="back-btn">←</Link>
                 <h1>{team.name}</h1>
             </div>
 
-            <ChatRoom teamId={team.id} userId={session.userId} userName={session.name} />
+            <ChatRoom teamId={team.id} userId={session.userId} userName={currentUser?.name || 'User'} />
 
-            <style jsx>{`
-        .chat-page { 
-          display: flex; 
-          flex-direction: column; 
-          height: calc(100vh - 80px); /* Adjust for bottom nav + padding */
-          margin: -1rem; /* Break out of container padding */
-          background: var(--background);
-        }
-        .chat-header {
-          padding: 1rem;
-          background: var(--background);
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          font-weight: bold;
-          font-size: 1.1rem;
-          color: var(--foreground);
-        }
-        .back-btn { font-size: 1.5rem; line-height: 1; }
-        h1 { margin: 0; font-size: 1.1rem; }
-      `}</style>
+
         </div>
     );
 }
