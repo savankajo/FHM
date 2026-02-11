@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  LEADER
+  MEMBER
+}
+
+enum VoteStatus {
+  YES
+  NO
+  MAYBE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  teams           Team[]        @relation("TeamMembers")
+  ledTeams        Team[]        @relation("TeamLeaders")
+  volunteeringFor Service[]
+  eventVotes      EventVote[]
+  chatMessages    ChatMessage[]
+  createdEvents   Event[]       @relation("EventCreator")
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  User[]        @relation("TeamMembers")
+  leaders  User[]        @relation("TeamLeaders")
+  services Service[]
+  events   Event[]       @relation("TeamEvents")
+  messages ChatMessage[]
+}
+
+model Service {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  date          DateTime
+  maxVolunteers Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  teamId     String
+  team       Team   @relation(fields: [teamId], references: [id])
+  volunteers User[]
+}
+
+model Sermon {
+  id        String   @id @default(uuid())
+  title     String
+  speaker   String
+  date      DateTime
+  videoUrl  String
+  isLive    Boolean  @default(false)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PodcastEpisode {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  publishedAt DateTime
+  audioUrl    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  teamScope      String? // "ALL" or specific Team ID (handled in app logic if multiple needed, strictly simplfied here to 1 team or null for all)
+  votingDeadline DateTime?
+  locations      Json     // Array of {name, address, mapUrl, startTime, endTime}
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  createdByUserId String
+  createdBy       User        @relation("EventCreator", fields: [createdByUserId], references: [id])
+  teams           Team[]      @relation("TeamEvents") // If scoped to specific teams
+  votes           EventVote[]
+}
+
+model EventVote {
+  id                    String     @id @default(uuid())
+  status                VoteStatus
+  selectedLocationIndex Int?
+  createdAt             DateTime   @default(now())
+
+  // Relations
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  text      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
