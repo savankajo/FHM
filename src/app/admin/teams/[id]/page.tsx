@@ -1,9 +1,5 @@
-import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import AddServiceForm from './add-service-form';
-
-export const dynamic = 'force-dynamic';
+// ... imports
+import MemberManager from './member-manager';
 
 export default async function AdminTeamDetailsPage({ params }: { params: { id: string } }) {
     const team = await prisma.team.findUnique({
@@ -12,6 +8,9 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
             services: {
                 orderBy: { date: 'asc' },
                 include: { _count: { select: { volunteers: true } } }
+            },
+            members: {
+                select: { id: true, name: true, email: true }
             }
         }
     });
@@ -28,25 +27,33 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                    <h2 className="font-bold mb-4">Scheduled Services</h2>
-                    {team.services.length === 0 ? (
-                        <p className="text-gray-500">No services scheduled.</p>
-                    ) : (
-                        <div className="flex flex-col gap-3">
-                            {team.services.map(service => (
-                                <div key={service.id} className="card p-3 bg-white shadow-sm">
-                                    <div className="font-bold">{service.title}</div>
-                                    <div className="text-sm">
-                                        {new Date(service.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                <div className="space-y-8">
+                    {/* Members Section */}
+                    <section>
+                        <h2 className="font-bold mb-4">Team Members</h2>
+                        <MemberManager teamId={team.id} members={team.members} />
+                    </section>
+
+                    <section>
+                        <h2 className="font-bold mb-4">Scheduled Services</h2>
+                        {team.services.length === 0 ? (
+                            <p className="text-gray-500">No services scheduled.</p>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                {team.services.map(service => (
+                                    <div key={service.id} className="card p-3 bg-white shadow-sm">
+                                        <div className="font-bold">{service.title}</div>
+                                        <div className="text-sm">
+                                            {new Date(service.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            {service._count.volunteers} / {service.maxVolunteers || '∞'} Volunteers
+                                        </div>
                                     </div>
-                                    <div className="text-sm text-gray-500 mt-1">
-                                        {service._count.volunteers} / {service.maxVolunteers || '∞'} Volunteers
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </section>
                 </div>
 
                 <div>

@@ -73,7 +73,8 @@ export default async function TeamsPage() {
                                     <h3 className="font-bold">{team.name}</h3>
                                     <p className="text-sm text-muted-foreground">{team.description || 'No description'}</p>
                                 </div>
-                                <JoinButton teamId={team.id} />
+                                {/* <JoinButton teamId={team.id} /> REMOVED: Admin only access */}
+                                <span className="text-xs text-muted-foreground">Contact Admin to Join</span>
                             </div>
                         ))}
                     </div>
