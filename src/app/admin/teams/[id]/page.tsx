@@ -1,5 +1,9 @@
-// ... imports
+import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
+import AddServiceForm from './add-service-form';
 import MemberManager from './member-manager';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminTeamDetailsPage({ params }: { params: { id: string } }) {
     const team = await prisma.team.findUnique({
