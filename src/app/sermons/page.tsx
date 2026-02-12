@@ -38,8 +38,8 @@ export default async function SermonsPage() {
                                     <span className="mx-2">•</span>
                                     <span>{formatDate(sermon.date)}</span>
                                 </div>
-                                {sermon.description && (
-                                    <p className="text-gray-700 text-sm line-clamp-3 mb-4">{sermon.description}</p>
+                                {sermon.notes && (
+                                    <p className="text-gray-700 text-sm line-clamp-3 mb-4">{sermon.notes}</p>
                                 )}
                             </div>
                         </div>
