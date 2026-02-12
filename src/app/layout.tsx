@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
+import { Outfit } from 'next/font/google'
 import { Providers } from '@/components/providers'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import '@/styles/globals.css'
+
+const outfit = Outfit({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: 'FHM Church',
@@ -17,7 +20,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body>
+            <body className={outfit.className}>
                 <Providers>
                     <main className="container">
                         {children}

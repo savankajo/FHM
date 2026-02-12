@@ -19,6 +19,11 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
         }
     });
 
+    const allUsers = await prisma.user.findMany({
+        select: { id: true, name: true, email: true },
+        orderBy: { name: 'asc' }
+    });
+
     if (!team) return <div>Team not found</div>;
 
     return (
@@ -35,7 +40,7 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
                     {/* Members Section */}
                     <section>
                         <h2 className="font-bold mb-4">Team Members</h2>
-                        <MemberManager teamId={team.id} members={team.members} />
+                        <MemberManager teamId={team.id} members={team.members} allUsers={allUsers} />
                     </section>
 
                     <section>

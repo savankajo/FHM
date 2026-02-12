@@ -1,0 +1,47 @@
+import { prisma } from '@/lib/prisma';
+import { formatDate } from '@/lib/utils';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
+
+export default async function SermonDetailPage({ params }: { params: { id: string } }) {
+    const sermon = await prisma.sermon.findUnique({
+        where: { id: params.id },
+    });
+
+    if (!sermon) notFound();
+
+    return (
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <Link href="/sermons" className="text-sm text-gray-500 hover:text-primary mb-4 block">← Back to Sermons</Link>
+
+            <h1 className="text-3xl font-bold mb-2">{sermon.title}</h1>
+            <div className="text-gray-500 mb-6 flex gap-2 text-sm">
+                <span>{sermon.speaker}</span>
+                <span>•</span>
+                <span>{formatDate(sermon.date)}</span>
+            </div>
+
+            <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-8">
+                {sermon.videoUrl ? (
+                    <iframe
+                        src={sermon.videoUrl.replace('watch?v=', 'embed/')}
+                        className="w-full h-full"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white">No Video Available</div>
+                )}
+            </div>
+
+            <div className="prose max-w-none">
+                <h3 className="text-xl font-semibold mb-2">Notes</h3>
+                <div className="whitespace-pre-wrap text-gray-700 bg-gray-50 p-6 rounded-lg border">
+                    {sermon.notes || 'No notes available for this sermon.'}
+                </div>
+            </div>
+        </div>
+    );
+}
