@@ -35,7 +35,21 @@ export default async function HomePage() {
     <div className="home-page">
       <header className="home-header">
         <h1>FHM Church</h1>
-        <p>Welcome, {session?.userId ? 'Member' : 'Guest'}</p>
+
+        {session ? (
+          <div className="flex items-center gap-4">
+            <p className="m-0 text-sm">Welcome, Member</p>
+            <form action={async () => {
+              'use server';
+              const { logout } = await import('@/app/actions/auth');
+              await logout();
+            }}>
+              <Button variant="outline" className="h-8 text-xs">Sign Out</Button>
+            </form>
+          </div>
+        ) : (
+          <p>Welcome, Guest</p>
+        )}
 
         {!session && (
           <div className="guest-actions">

@@ -5,7 +5,7 @@ import styles from './button.module.css'; // We'll keep avoiding CSS modules if 
 // I defined .btn in global.css. Let's use that.
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'outline' | 'ghost' | 'destructive';
     size?: 'sm' | 'md' | 'lg';
     fullWidth?: boolean;
 }
@@ -19,6 +19,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     'btn',
                     variant === 'outline' && 'btn-outline',
                     variant === 'ghost' && 'btn-ghost',
+                    variant === 'destructive' && 'bg-red-600 text-white hover:bg-red-700 hover:opacity-90',
                     size === 'sm' && 'btn-sm',
                     size === 'lg' && 'btn-lg',
                     fullWidth && 'w-full',
