@@ -28,10 +28,10 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
                     {/* Since title is already at the top, we can just show the link clearly */}
 
                     {podcast.audioUrl && (
-                        <div className="flex flex-col md:flex-row items-center gap-4">
-                            <span className="font-medium text-lg">{podcast.title}</span>
+                        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
+                            <span className="font-medium text-lg text-gray-800">{podcast.title}</span>
                             <a href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer">
-                                <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white">
+                                <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white min-w-[140px]">
                                     {getYouTubeEmbedUrl(podcast.audioUrl) ? 'Watch on YouTube ↗' : 'Listen / Download ⬇'}
                                 </Button>
                             </a>

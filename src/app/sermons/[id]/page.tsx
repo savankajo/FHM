@@ -40,9 +40,9 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
             </div>
 
             {sermon.videoUrl && (
-                <div className="mb-8 flex justify-center">
+                <div className="mb-8 flex justify-end">
                     <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" className="gap-2">
+                        <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white">
                             Watch on YouTube ↗
                         </Button>
                     </a>
