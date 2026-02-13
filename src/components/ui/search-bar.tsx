@@ -25,12 +25,10 @@ export function SearchBar({ placeholder }: { placeholder: string }) {
                 placeholder={placeholder}
                 onChange={(e) => handleSearch(e.target.value)}
                 defaultValue={searchParams.get('query')?.toString()}
-                className="w-full pl-10 h-12 text-lg"
+                className="w-full px-4 h-12 text-lg"
                 dir="auto"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                🔍
-            </span>
+
         </div>
     );
 }

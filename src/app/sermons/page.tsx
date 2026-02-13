@@ -39,17 +39,11 @@ export default async function SermonsPage({
                         <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="block group">
                             <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
                                 <div className="flex-1 min-w-0 pr-4">
-                                    {/* User requested "write only the title and make it onl line" - Flex row with Button */}
-                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-                                        <h2 className="font-semibold text-lg text-gray-900 truncate">{sermon.title}</h2>
-                                        <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline-block">• {formatDate(sermon.date)}</span>
-                                    </div>
-                                    <div className="md:hidden text-xs text-gray-500 mt-1">
-                                        {formatDate(sermon.date)}
-                                    </div>
+                                    {/* Simple one-line title */}
+                                    <h2 className="font-semibold text-lg text-gray-900 truncate">{sermon.title}</h2>
                                 </div>
                                 <div className="flex-shrink-0">
-                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-medium">
+                                    <Button className="bg-orange-600 hover:bg-orange-700 text-white font-medium shadow-sm">
                                         View Details →
                                     </Button>
                                 </div>

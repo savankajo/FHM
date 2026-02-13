@@ -39,16 +39,10 @@ export default async function PodcastsPage({
                         <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block group">
                             <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
                                 <div className="flex-1 min-w-0 pr-4">
-                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-                                        <h2 className="font-semibold text-lg text-gray-900 truncate">{pod.title}</h2>
-                                        <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline-block">• {formatDate(pod.publishedAt)}</span>
-                                    </div>
-                                    <div className="md:hidden text-xs text-gray-500 mt-1">
-                                        {formatDate(pod.publishedAt)}
-                                    </div>
+                                    <h2 className="font-semibold text-lg text-gray-900 truncate">{pod.title}</h2>
                                 </div>
                                 <div className="flex-shrink-0">
-                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-medium">
+                                    <Button className="bg-orange-600 hover:bg-orange-700 text-white font-medium shadow-sm">
                                         View Details →
                                     </Button>
                                 </div>
