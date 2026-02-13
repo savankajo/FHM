@@ -10,7 +10,7 @@ export async function updateProfile(formData: FormData) {
     if (!session) return { error: 'Unauthorized' };
 
     const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
+    const email = (formData.get('email') as string)?.toLowerCase();
     const phone = formData.get('phone') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;

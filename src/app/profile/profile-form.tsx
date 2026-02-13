@@ -38,7 +38,7 @@ export default function ProfileForm({ user }: { user: User }) {
                     className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 />
             </div>
-            </div>
+
             <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
@@ -85,12 +85,12 @@ export default function ProfileForm({ user }: { user: User }) {
             </Button>
 
             {
-        status && (
-            <div className={`p-3 rounded text-sm ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                {status.message}
-            </div>
-        )
-    }
+                status && (
+                    <div className={`p-3 rounded text-sm ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                        {status.message}
+                    </div>
+                )
+            }
         </form >
     );
 }

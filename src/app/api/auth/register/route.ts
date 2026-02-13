@@ -7,7 +7,8 @@ import { hashPassword, createSession } from '@/lib/auth';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { email, password, name, phone } = body;
+        let { email, password, name, phone } = body;
+        if (email) email = email.toLowerCase();
 
         if (!email || !password || !name) {
             return NextResponse.json(
