@@ -44,12 +44,6 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
                     )}
                 </div>
 
-                {podcast.audioUrl && getYouTubeEmbedUrl(podcast.audioUrl) ? (
-                    <p className="text-sm text-center text-gray-500">Watch this episode</p>
-                ) : (
-                    <p className="text-sm text-center text-gray-500">Listen to this episode</p>
-                )}
-
                 {podcast.audioUrl && (
                     <div className="mt-4 flex justify-center">
                         <a href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer">

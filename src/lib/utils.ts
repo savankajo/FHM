@@ -16,16 +16,29 @@ export function formatDate(date: Date | string): string {
 export function getYouTubeEmbedUrl(url: string): string | null {
     if (!url) return null;
 
+    let embedUrl: string | null = null;
+
     // Handle standard watch?v= format
     const watchMatch = url.match(/[?&]v=([^&]+)/);
-    if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
-
+    if (watchMatch) {
+        embedUrl = `https://www.youtube.com/embed/${watchMatch[1]}`;
+    }
     // Handle short youtu.be/ format
-    const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
-    if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    else if (url.match(/youtu\.be\/([^?&]+)/)) {
+        const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+        embedUrl = `https://www.youtube.com/embed/${shortMatch![1]}`;
+    }
+    // Handle embed/ format
+    else if (url.includes('/embed/')) {
+        embedUrl = url;
+    }
 
-    // Handle embed/ format (already correct)
-    if (url.includes('/embed/')) return url;
+    if (embedUrl) {
+        // Ensure protocol
+        if (embedUrl.startsWith('//')) return `https:${embedUrl}`;
+        if (!embedUrl.startsWith('http')) return `https://${embedUrl}`;
+        return embedUrl;
+    }
 
     return null;
 }
