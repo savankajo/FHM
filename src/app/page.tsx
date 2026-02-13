@@ -149,34 +149,39 @@ export default async function HomePage() {
 }
 
 async function LiveLinkSection() {
-  const liveLink = await prisma.liveLink.findFirst({
-    where: {
-      expiresAt: { gt: new Date() } // Only show if not expired
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  try {
+    const liveLink = await prisma.liveLink.findFirst({
+      where: {
+        expiresAt: { gt: new Date() } // Only show if not expired
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-  if (!liveLink) return null;
+    if (!liveLink) return null;
 
-  return (
-    <section className="section bg-red-50 border border-red-100 rounded-xl p-6 mt-8">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-          </span>
-          <div>
-            <h3 className="font-bold text-red-800 text-lg">We are Live!</h3>
-            <p className="text-red-600 text-sm">Join us for our live service happening now.</p>
+    return (
+      <section className="section bg-red-50 border border-red-100 rounded-xl p-6 mt-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+            <div>
+              <h3 className="font-bold text-red-800 text-lg">We are Live!</h3>
+              <p className="text-red-600 text-sm">Join us for our live service happening now.</p>
+            </div>
           </div>
+          <a href={liveLink.url} target="_blank" rel="noopener noreferrer">
+            <Button className="bg-red-600 hover:bg-red-700 text-white gap-2 shadow-md">
+              Watch Live Stream ↗
+            </Button>
+          </a>
         </div>
-        <a href={liveLink.url} target="_blank" rel="noopener noreferrer">
-          <Button className="bg-red-600 hover:bg-red-700 text-white gap-2 shadow-md">
-            Watch Live Stream ↗
-          </Button>
-        </a>
-      </div>
-    </section>
-  );
+      </section>
+    );
+  } catch (error) {
+    console.error("Failed to fetch Live Link:", error);
+    return null;
+  }
 }
