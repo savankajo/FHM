@@ -7,6 +7,7 @@ import { updateProfile } from '@/app/actions/profile';
 type User = {
     name: string | null;
     email: string;
+    phone: string | null;
 };
 
 export default function ProfileForm({ user }: { user: User }) {
@@ -37,13 +38,25 @@ export default function ProfileForm({ user }: { user: User }) {
                     className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 />
             </div>
+            </div>
             <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
                     name="email"
                     type="email"
                     defaultValue={user.email}
-                    required
+                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-100 cursor-not-allowed"
+                    readOnly
+                    title="Email cannot be changed"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1">Phone Number</label>
+                <input
+                    name="phone"
+                    type="tel"
+                    defaultValue={user.phone || ''}
+                    placeholder="+1 (555) 000-0000"
                     className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                 />
             </div>
@@ -71,11 +84,13 @@ export default function ProfileForm({ user }: { user: User }) {
                 {loading ? 'Saving...' : 'Save Changes'}
             </Button>
 
-            {status && (
-                <div className={`p-3 rounded text-sm ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                    {status.message}
-                </div>
-            )}
-        </form>
+            {
+        status && (
+            <div className={`p-3 rounded text-sm ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                {status.message}
+            </div>
+        )
+    }
+        </form >
     );
 }

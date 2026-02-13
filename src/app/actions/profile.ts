@@ -11,12 +11,13 @@ export async function updateProfile(formData: FormData) {
 
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
     if (!email) return { error: 'Email is required' };
 
-    const data: any = { name, email };
+    const data: any = { name, email, phone };
 
     if (password) {
         if (password.length < 6) return { error: 'Password must be at least 6 characters' };

@@ -38,7 +38,7 @@ export default async function HomePage() {
 
         {session ? (
           <div className="flex items-center gap-4">
-            <p className="m-0 text-sm">Welcome, Member</p>
+            <Link href="/profile" className="text-sm hover:underline">Welcome, {session.name || 'Member'}</Link>
             <form action={async () => {
               'use server';
               const { logout } = await import('@/app/actions/auth');
