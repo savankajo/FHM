@@ -18,14 +18,7 @@ export async function AppHeader() {
     return (
         <header className="home-header flex items-center justify-between py-4 bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-100">
             <Link href="/" className="flex items-center gap-2 no-underline">
-                <Image
-                    src="/logo.png"
-                    alt="FHM Church Logo"
-                    width={50}
-                    height={50}
-                    className="object-contain" // keeps aspect ratio
-                />
-                <h1 className="text-xl font-bold text-primary m-0 hidden sm:block">FHM Church</h1>
+                <h1 className="text-xl font-bold text-primary m-0">FHM Church</h1>
             </Link>
 
             {session ? (
