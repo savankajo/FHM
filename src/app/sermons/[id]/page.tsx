@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getYouTubeEmbedUrl } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -23,18 +24,30 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
                 <span>{formatDate(sermon.date)}</span>
             </div>
 
-            <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-8">
-                {sermon.videoUrl ? (
+            <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-4">
+                {sermon.videoUrl && getYouTubeEmbedUrl(sermon.videoUrl) ? (
                     <iframe
-                        src={sermon.videoUrl.replace('watch?v=', 'embed/')}
+                        src={getYouTubeEmbedUrl(sermon.videoUrl)!}
                         className="w-full h-full"
                         allowFullScreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white">No Video Available</div>
+                    <div className="w-full h-full flex items-center justify-center text-white bg-gray-900">
+                        <p>Video unavailable or invalid URL</p>
+                    </div>
                 )}
             </div>
+
+            {sermon.videoUrl && (
+                <div className="mb-8 flex justify-center">
+                    <a href={sermon.videoUrl} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="gap-2">
+                            Watch on YouTube ↗
+                        </Button>
+                    </a>
+                </div>
+            )}
 
             <div className="prose max-w-none">
                 <h3 className="text-xl font-semibold mb-2">Notes</h3>

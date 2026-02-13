@@ -12,3 +12,20 @@ export function formatDate(date: Date | string): string {
         year: 'numeric'
     });
 }
+
+export function getYouTubeEmbedUrl(url: string): string | null {
+    if (!url) return null;
+
+    // Handle standard watch?v= format
+    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+
+    // Handle short youtu.be/ format
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+    if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+
+    // Handle embed/ format (already correct)
+    if (url.includes('/embed/')) return url;
+
+    return null;
+}

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -31,6 +32,16 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
                     )}
                 </div>
                 <p className="text-sm text-center text-gray-500">Listen to this episode</p>
+
+                {podcast.audioUrl && (
+                    <div className="mt-4 flex justify-center">
+                        <a href={podcast.audioUrl} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" size="sm">
+                                Download / Listen Direct ⬇
+                            </Button>
+                        </a>
+                    </div>
+                )}
             </div>
 
             <div className="prose max-w-none">
