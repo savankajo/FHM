@@ -15,6 +15,7 @@ export default async function AdminDashboard() {
         { label: 'Manage Podcasts', href: '/admin/podcasts', icon: '🎧' },
         { label: 'Manage Teams & Services', href: '/admin/teams', icon: '🛡️' },
         { label: 'Manage Events', href: '/admin/events', icon: '📅' },
+        { label: 'Manage Live Link', href: '/admin/live', icon: '🔴' },
     ];
 
     return (

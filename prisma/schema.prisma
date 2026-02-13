@@ -137,3 +137,11 @@ model ChatMessage {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model LiveLink {
+  id        String   @id @default(uuid())
+  url       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

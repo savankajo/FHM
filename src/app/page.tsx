@@ -140,6 +140,9 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Live Link Section */}
+      <LiveLinkSection />
+
 
     </div>
   );
