@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { formatDate, getYouTubeEmbedUrl } from '@/lib/utils';
+import { formatDate, getYouTubeEmbedUrl, ensureAbsoluteUrl } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -41,7 +41,7 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
 
             {sermon.videoUrl && (
                 <div className="mb-8 flex justify-center">
-                    <a href={sermon.videoUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
                         <Button variant="outline" className="gap-2">
                             Watch on YouTube ↗
                         </Button>

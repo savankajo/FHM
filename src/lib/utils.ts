@@ -29,3 +29,9 @@ export function getYouTubeEmbedUrl(url: string): string | null {
 
     return null;
 }
+
+export function ensureAbsoluteUrl(url: string | null): string | undefined {
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}

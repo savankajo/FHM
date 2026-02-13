@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getYouTubeEmbedUrl, ensureAbsoluteUrl } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -24,20 +24,37 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
 
             <div className="bg-white p-6 rounded-lg shadow-md border mb-8">
                 <div className="mb-4">
-                    {podcast.audioUrl && (
+                    {/* Check if audioUrl is actually a YouTube video */}
+                    {podcast.audioUrl && getYouTubeEmbedUrl(podcast.audioUrl) ? (
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-4">
+                            <iframe
+                                src={getYouTubeEmbedUrl(podcast.audioUrl)!}
+                                className="w-full h-full"
+                                allowFullScreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            />
+                        </div>
+                    ) : podcast.audioUrl ? (
                         <audio controls className="w-full">
                             <source src={podcast.audioUrl} />
                             Your browser does not support the audio element.
                         </audio>
+                    ) : (
+                        <p className="text-center text-gray-500 italic">No media available</p>
                     )}
                 </div>
-                <p className="text-sm text-center text-gray-500">Listen to this episode</p>
+
+                {podcast.audioUrl && getYouTubeEmbedUrl(podcast.audioUrl) ? (
+                    <p className="text-sm text-center text-gray-500">Watch this episode</p>
+                ) : (
+                    <p className="text-sm text-center text-gray-500">Listen to this episode</p>
+                )}
 
                 {podcast.audioUrl && (
                     <div className="mt-4 flex justify-center">
-                        <a href={podcast.audioUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer">
                             <Button variant="outline" size="sm">
-                                Download / Listen Direct ⬇
+                                {getYouTubeEmbedUrl(podcast.audioUrl) ? 'Watch on YouTube ↗' : 'Download / Listen Direct ⬇'}
                             </Button>
                         </a>
                     </div>
