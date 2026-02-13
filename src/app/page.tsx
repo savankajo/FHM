@@ -23,6 +23,13 @@ export const dynamic = 'force-dynamic'; // Ensure we don't cache static builds t
 
 export default async function HomePage() {
   const session = await getSession();
+  let user = null;
+  if (session) {
+    user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { name: true }
+    });
+  }
   const sermons = await getSermons();
   const podcasts = await getPodcasts();
 
@@ -38,7 +45,7 @@ export default async function HomePage() {
 
         {session ? (
           <div className="flex items-center gap-4">
-            <Link href="/profile" className="text-sm hover:underline">Welcome, {session.name || 'Member'}</Link>
+            <Link href="/profile" className="text-sm hover:underline">Welcome, {user?.name || 'Member'}</Link>
             <form action={async () => {
               'use server';
               const { logout } = await import('@/app/actions/auth');
