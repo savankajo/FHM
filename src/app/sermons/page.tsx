@@ -37,19 +37,20 @@ export default async function SermonsPage({
                 <div className="space-y-4">
                     {sermons.map((sermon) => (
                         <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="block group">
-                            <div className="border rounded-lg p-6 bg-white shadow-sm group-hover:shadow-md transition-all flex flex-col md:flex-row gap-6 items-start hover:border-primary/50">
-                                <div className="flex-1">
-                                    <h2 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">{sermon.title}</h2>
-                                    <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
-                                        <span>{sermon.speaker}</span>
-                                        <span>•</span>
-                                        <span>{formatDate(sermon.date)}</span>
+                            <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                                <div className="flex-1 min-w-0 pr-4">
+                                    {/* User requested "write only the title and make it onl line" - Flex row with Button */}
+                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                                        <h2 className="font-semibold text-lg text-gray-900 truncate">{sermon.title}</h2>
+                                        <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline-block">• {formatDate(sermon.date)}</span>
                                     </div>
-                                    {/* Description/Notes are available on detail page */}
+                                    <div className="md:hidden text-xs text-gray-500 mt-1">
+                                        {formatDate(sermon.date)}
+                                    </div>
                                 </div>
-                                <div className="mt-2 md:mt-0">
-                                    <Button variant="outline" size="sm" className="pointer-events-none group-hover:bg-primary group-hover:text-white">
-                                        View Details
+                                <div className="flex-shrink-0">
+                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-medium">
+                                        View Details →
                                     </Button>
                                 </div>
                             </div>

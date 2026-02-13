@@ -24,23 +24,17 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
                 <span>{formatDate(sermon.date)}</span>
             </div>
 
-            {/* Video player removed as per request */}
-            <div className="bg-white p-6 rounded-lg shadow-md border mb-8">
-                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
-                    {sermon.videoUrl ? (
-                        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
-                            <span className="font-medium text-lg text-gray-800">{sermon.title}</span>
-                            <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
-                                <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white min-w-[140px]">
-                                    Watch on YouTube ↗
-                                </Button>
-                            </a>
-                        </div>
-                    ) : (
-                        <p className="text-center text-gray-500 italic">No video link available</p>
-                    )}
+            {/* Clean row layout for action button */}
+            {sermon.videoUrl && (
+                <div className="mt-8 border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <span className="font-semibold text-lg text-gray-900">{sermon.title}</span>
+                    <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
+                        <Button className="gap-2 bg-orange-600 hover:bg-orange-700 text-white min-w-[160px] font-medium text-base">
+                            Watch on YouTube ↗
+                        </Button>
+                    </a>
                 </div>
-            </div>
+            )}
 
 
         </div>

@@ -37,17 +37,20 @@ export default async function PodcastsPage({
                 <div className="space-y-4">
                     {podcasts.map((pod) => (
                         <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block group">
-                            <div className="border rounded-lg p-6 bg-white shadow-sm group-hover:shadow-md transition-all flex flex-col md:flex-row gap-6 items-start hover:border-primary/50">
-                                <div className="flex-1">
-                                    <h2 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">{pod.title}</h2>
-                                    <p className="text-sm text-gray-500 mb-2">{formatDate(pod.publishedAt)}</p>
-                                    {/* Description truncated for list, full details on click */}
-                                    {pod.description && (
-                                        <p className="text-gray-700 text-sm mb-4 line-clamp-2">{pod.description}</p>
-                                    )}
+                            <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                                <div className="flex-1 min-w-0 pr-4">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                                        <h2 className="font-semibold text-lg text-gray-900 truncate">{pod.title}</h2>
+                                        <span className="text-xs text-gray-500 whitespace-nowrap hidden md:inline-block">• {formatDate(pod.publishedAt)}</span>
+                                    </div>
+                                    <div className="md:hidden text-xs text-gray-500 mt-1">
+                                        {formatDate(pod.publishedAt)}
+                                    </div>
                                 </div>
-                                <div className="mt-2 md:mt-0">
-                                    <Button variant="outline" size="sm" className="pointer-events-none group-hover:bg-primary group-hover:text-white">View Details</Button>
+                                <div className="flex-shrink-0">
+                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-medium">
+                                        View Details →
+                                    </Button>
                                 </div>
                             </div>
                         </Link>
