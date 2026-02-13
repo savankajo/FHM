@@ -7,36 +7,37 @@ import { cn } from '@/lib/utils';
 // Icons (Simulated with text/emoji for now to avoid icon lib dependency hell without npm, 
 // but normally I'd use lucide-react)
 const NAV_ITEMS = [
-    { label: 'Home', href: '/', icon: '🏠' },
-    { label: 'Teams', href: '/teams', icon: '👥' },
-    { label: 'Events', href: '/events', icon: '📅' },
-    { label: 'Chat', href: '/chat', icon: '💬' },
+  { label: 'Home', href: '/', icon: '🏠' },
+  { label: 'Media', href: '/sermons-and-podcasts', icon: '🎧' },
+  { label: 'Teams', href: '/teams', icon: '👥' },
+  { label: 'Events', href: '/events', icon: '📅' },
+  { label: 'Chat', href: '/chat', icon: '💬' },
 ];
 
 export function BottomNav() {
-    const pathname = usePathname();
+  const pathname = usePathname();
 
-    // Hide nav on login/register pages
-    if (pathname === '/login' || pathname === '/register') return null;
+  // Hide nav on login/register pages
+  if (pathname === '/login' || pathname === '/register') return null;
 
-    return (
-        <nav className="bottom-nav">
-            {NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-                return (
-                    <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn('nav-item', isActive && 'active')}
-                    >
-                        <span className="nav-icon">{item.icon}</span>
-                        <span className="nav-label">{item.label}</span>
-                    </Link>
-                );
-            })}
+  return (
+    <nav className="bottom-nav">
+      {NAV_ITEMS.map((item) => {
+        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn('nav-item', isActive && 'active')}
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{item.label}</span>
+          </Link>
+        );
+      })}
 
-            {/* Styles for this component specifically */}
-            <style jsx global>{`
+      {/* Styles for this component specifically */}
+      <style jsx global>{`
         .bottom-nav {
           position: fixed;
           bottom: 0;
@@ -69,6 +70,6 @@ export function BottomNav() {
           margin-bottom: 2px;
         }
       `}</style>
-        </nav>
-    );
+    </nav>
+  );
 }
