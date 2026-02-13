@@ -44,12 +44,7 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
                 </div>
             </div>
 
-            <div className="prose max-w-none">
-                <h3 className="text-xl font-semibold mb-2">Description</h3>
-                <div className="whitespace-pre-wrap text-gray-700">
-                    {podcast.description || 'No description available.'}
-                </div>
-            </div>
+
         </div>
     );
 }

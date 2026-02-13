@@ -24,37 +24,25 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
                 <span>{formatDate(sermon.date)}</span>
             </div>
 
-            <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg mb-4">
-                {sermon.videoUrl && getYouTubeEmbedUrl(sermon.videoUrl) ? (
-                    <iframe
-                        src={getYouTubeEmbedUrl(sermon.videoUrl)!}
-                        className="w-full h-full"
-                        allowFullScreen
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white bg-gray-900">
-                        <p>Video unavailable or invalid URL</p>
-                    </div>
-                )}
-            </div>
-
-            {sermon.videoUrl && (
-                <div className="mb-8 flex justify-end">
-                    <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
-                        <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white">
-                            Watch on YouTube ↗
-                        </Button>
-                    </a>
-                </div>
-            )}
-
-            <div className="prose max-w-none">
-                <h3 className="text-xl font-semibold mb-2">Notes</h3>
-                <div className="whitespace-pre-wrap text-gray-700 bg-gray-50 p-6 rounded-lg border">
-                    {sermon.notes || 'No notes available for this sermon.'}
+            {/* Video player removed as per request */}
+            <div className="bg-white p-6 rounded-lg shadow-md border mb-8">
+                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
+                    {sermon.videoUrl ? (
+                        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
+                            <span className="font-medium text-lg text-gray-800">{sermon.title}</span>
+                            <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
+                                <Button className="gap-2 bg-red-600 hover:bg-red-700 text-white min-w-[140px]">
+                                    Watch on YouTube ↗
+                                </Button>
+                            </a>
+                        </div>
+                    ) : (
+                        <p className="text-center text-gray-500 italic">No video link available</p>
+                    )}
                 </div>
             </div>
+
+
         </div>
     );
 }
