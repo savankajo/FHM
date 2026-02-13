@@ -43,8 +43,17 @@ export function getYouTubeEmbedUrl(url: string): string | null {
     return null;
 }
 
-export function ensureAbsoluteUrl(url: string | null): string | undefined {
+export function ensureAbsoluteUrl(url: string | null | undefined): string | undefined {
     if (!url) return undefined;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
+    const trimmed = url.trim();
+    if (!trimmed) return undefined;
+
+    // Handle protocol-relative URLs
+    if (trimmed.startsWith('//')) return `https:${trimmed}`;
+
+    // Handle existing protocols
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+
+    // Default to https
+    return `https://${trimmed}`;
 }
