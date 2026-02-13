@@ -1,11 +1,13 @@
 :root {
-  --background: #fcfcfc;
+  --background: #ffffff;
   --foreground: #1f2937;
 
-  --primary: #d97706; /* Amber-600 - Richer Gold/Orange */
+  --primary: #d97706;
+  /* Amber-600 - Richer Gold/Orange */
   --primary-foreground: #ffffff;
 
-  --secondary: #fef3c7; /* Amber-100 */
+  --secondary: #fef3c7;
+  /* Amber-100 */
   --secondary-foreground: #92400e;
 
   --muted: #f3f4f6;
@@ -24,8 +26,7 @@
 body {
   margin: 0;
   /* Font is set by Next.js layout */
-  background: linear-gradient(180deg, #fffbf2 0%, #ffffff 100%);
-  background-attachment: fixed; /* Parallax-like effect */
+  background: var(--background);
   color: var(--foreground);
   min-height: 100vh;
 }
@@ -93,12 +94,15 @@ a {
   color: var(--muted-foreground);
   box-shadow: none;
 }
+
 .btn-ghost:hover {
-    background-color: var(--muted);
-    color: var(--foreground);
+  background-color: var(--muted);
+  color: var(--foreground);
 }
 
-.w-full { width: 100%; }
+.w-full {
+  width: 100%;
+}
 
 .input-group {
   display: flex;
@@ -139,7 +143,7 @@ a {
 }
 
 .card:hover {
-    box-shadow: var(--shadow);
+  box-shadow: var(--shadow);
 }
 
 /* Home Page Styles */

@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sermon, PodcastEpisode } from '@prisma/client';
+import { AppHeader } from '@/components/layout/app-header';
 
 async function getSermons(): Promise<Sermon[]> {
     return await prisma.sermon.findMany({
@@ -23,13 +24,8 @@ export const dynamic = 'force-dynamic'; // Ensure we don't cache static builds t
 
 export default async function SermonsAndPodcastsPage() {
     const session = await getSession();
-    let user = null;
-    if (session) {
-        user = await prisma.user.findUnique({
-            where: { id: session.userId },
-            select: { name: true }
-        });
-    }
+    // user fetching handled in AppHeader
+
     const sermons = await getSermons();
     const podcasts = await getPodcasts();
 
@@ -40,30 +36,7 @@ export default async function SermonsAndPodcastsPage() {
 
     return (
         <div className="home-page">
-            <header className="home-header">
-                <h1>FHM Church</h1>
-
-                {session ? (
-                    <div className="flex items-center gap-4">
-                        <Link href="/profile" className="text-sm hover:underline">Welcome, {user?.name || 'Member'}</Link>
-                        <form action={async () => {
-                            'use server';
-                            const { logout } = await import('@/app/actions/auth');
-                            await logout();
-                        }}>
-                            <Button variant="outline" className="h-8 text-xs">Sign Out</Button>
-                        </form>
-                    </div>
-                ) : (
-                    <p>Welcome, Guest</p>
-                )}
-
-                {!session && (
-                    <div className="guest-actions">
-                        <Link href="/login"><Button variant="outline">Sign In</Button></Link>
-                    </div>
-                )}
-            </header>
+            <AppHeader />
 
             {/* Admin Controls Placeholder */}
             {isAdmin && (
