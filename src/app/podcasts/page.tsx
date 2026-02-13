@@ -37,7 +37,7 @@ export default async function PodcastsPage({
                 <div className="space-y-4">
                     {podcasts.map((pod) => (
                         <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block group">
-                            <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                            <div className="border-b border-gray-200 py-6 px-2 hover:bg-gray-50 transition-colors flex flex-row items-center justify-between gap-4">
                                 <div className="flex-1 min-w-0 pr-4">
                                     <h2 className="font-semibold text-lg text-gray-900 truncate">{pod.title}</h2>
                                 </div>

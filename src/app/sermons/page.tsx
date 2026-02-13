@@ -37,7 +37,7 @@ export default async function SermonsPage({
                 <div className="space-y-4">
                     {sermons.map((sermon) => (
                         <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="block group">
-                            <div className="border-b border-gray-200 py-4 px-2 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                            <div className="border-b border-gray-200 py-6 px-2 hover:bg-gray-50 transition-colors flex flex-row items-center justify-between gap-4">
                                 <div className="flex-1 min-w-0 pr-4">
                                     {/* Simple one-line title */}
                                     <h2 className="font-semibold text-lg text-gray-900 truncate">{sermon.title}</h2>
