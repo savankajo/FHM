@@ -89,18 +89,20 @@ export default async function HomePage() {
             <p className="empty-state">No sermons available.</p>
           ) : (
             sermons.map((sermon) => (
-              <div key={sermon.id} className="card sermon-card">
-                {sermon.videoUrl && (
-                  <div className="video-thumbnail">
-                    {/* Placeholder for fetching thumbnail or just an icon */}
-                    <div className="play-icon">▶</div>
+              <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="block no-underline">
+                <div className="card sermon-card hover:shadow-lg transition-shadow">
+                  {sermon.videoUrl && (
+                    <div className="video-thumbnail">
+                      {/* Placeholder for fetching thumbnail or just an icon */}
+                      <div className="play-icon">▶</div>
+                    </div>
+                  )}
+                  <div className="card-content">
+                    <h3>{sermon.title}</h3>
+                    <p className="meta">{sermon.speaker} • {formatDate(sermon.date)}</p>
                   </div>
-                )}
-                <div className="card-content">
-                  <h3>{sermon.title}</h3>
-                  <p className="meta">{sermon.speaker} • {formatDate(sermon.date)}</p>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
@@ -117,13 +119,15 @@ export default async function HomePage() {
             <p className="empty-state">No episodes available.</p>
           ) : (
             podcasts.map((pod) => (
-              <div key={pod.id} className="card podcast-card">
-                <div className="card-content">
-                  <h3>{pod.title}</h3>
-                  <p className="meta">{formatDate(pod.publishedAt)}</p>
-                  <Button variant="outline" className="mt-2 text-xs">Listen</Button>
+              <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block no-underline">
+                <div className="card podcast-card hover:shadow-lg transition-shadow">
+                  <div className="card-content">
+                    <h3>{pod.title}</h3>
+                    <p className="meta">{formatDate(pod.publishedAt)}</p>
+                    <Button variant="outline" className="mt-2 text-xs">Listen</Button>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
