@@ -52,3 +52,20 @@ export async function removeTeamMember(teamId: string, userId: string) {
     revalidatePath(`/admin/teams/${teamId}`);
     return { success: true };
 }
+
+export async function deleteService(serviceId: string, teamId: string) {
+    const session = await getSession();
+    if (session?.role !== 'ADMIN') {
+        return { error: 'Unauthorized' };
+    }
+
+    try {
+        await prisma.service.delete({
+            where: { id: serviceId }
+        });
+        revalidatePath(`/teams/${teamId}`);
+        return { success: true };
+    } catch (error) {
+        return { error: 'Failed to delete service' };
+    }
+}

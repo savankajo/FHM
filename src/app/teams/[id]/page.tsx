@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import VolunteerButton from './volunteer-button';
+import DeleteServiceButton from './delete-service-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
         where: { id: params.id },
         include: {
             services: {
-                where: { date: { gte: new Date() } }, // Only future services
+                where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } }, // Future services + today
                 orderBy: { date: 'asc' },
                 include: { volunteers: true }
             },
@@ -80,7 +81,10 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
                                             <p className="spots">{spotsLeft} spots left</p>
                                         )}
                                     </div>
-                                    <div className="action">
+                                    <div className="action flex gap-2">
+                                        {session.role === 'ADMIN' && (
+                                            <DeleteServiceButton serviceId={service.id} teamId={team.id} />
+                                        )}
                                         <VolunteerButton
                                             serviceId={service.id}
                                             isVolunteering={isVolunteering}
