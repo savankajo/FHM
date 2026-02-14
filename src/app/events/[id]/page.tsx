@@ -66,6 +66,8 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
                         currentStatus={myVote?.status}
                         currentLocIndex={myVote?.selectedLocationIndex}
                         locations={locations}
+                        eventTitle={event.title}
+                        votingDeadline={event.votingDeadline}
                     />
                 )}
             </div>
