@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { GlobalSearch } from '@/components/ui/global-search';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,14 +54,7 @@ export default async function HomePage() {
         </header>
 
         <div className="search-bar-container">
-          <div className="search-input-wrapper">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search"
-              className="search-input"
-            />
-          </div>
+          <GlobalSearch />
         </div>
       </section>
 

@@ -22,7 +22,12 @@ export default async function AdminSermonsPage() {
                             <h3 className="font-bold">{sermon.title}</h3>
                             <p className="text-sm text-gray-500">{new Date(sermon.date).toLocaleDateString()}</p>
                         </div>
-                        <DeleteSermonButton id={sermon.id} />
+                        <div className="flex gap-2">
+                            <Link href={`/admin/sermons/edit/${sermon.id}`}>
+                                <Button variant="outline" size="sm">Edit</Button>
+                            </Link>
+                            <DeleteSermonButton id={sermon.id} />
+                        </div>
                     </div>
                 ))}
             </div>

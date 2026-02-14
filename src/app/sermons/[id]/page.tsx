@@ -25,7 +25,8 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
             </div>
 
             {/* Clean row layout for action button */}
-            {sermon.videoUrl && (
+            {/* Clean row layout for action button */}
+            {sermon.type === 'VIDEO' && sermon.videoUrl && (
                 <div className="mt-8 border-t pt-6 flex flex-row items-center justify-between gap-4">
                     <span className="font-semibold text-lg text-gray-900 flex-1">{sermon.title}</span>
                     <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer">
@@ -33,6 +34,24 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
                             Watch on YouTube ↗
                         </Button>
                     </a>
+                </div>
+            )}
+
+            {sermon.type === 'PDF' && sermon.fileUrl && (
+                <div className="mt-8 border-t pt-6 flex flex-row items-center justify-between gap-4">
+                    <span className="font-semibold text-lg text-gray-900 flex-1">{sermon.title}</span>
+                    <a href={ensureAbsoluteUrl(sermon.fileUrl)} target="_blank" rel="noopener noreferrer">
+                        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white min-w-[160px] font-medium text-base">
+                            Read PDF ↗
+                        </Button>
+                    </a>
+                </div>
+            )}
+
+            {sermon.notes && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-bold mb-2">Notes</h3>
+                    <p className="whitespace-pre-wrap">{sermon.notes}</p>
                 </div>
             )}
 

@@ -72,12 +72,19 @@ model Service {
   volunteers User[]
 }
 
+enum SermonType {
+  VIDEO
+  PDF
+}
+
 model Sermon {
   id        String   @id @default(uuid())
   title     String
   speaker   String
   date      DateTime
-  videoUrl  String
+  type      SermonType @default(VIDEO)
+  videoUrl  String?
+  fileUrl   String?
   isLive    Boolean  @default(false)
   notes     String?
   createdAt DateTime @default(now())

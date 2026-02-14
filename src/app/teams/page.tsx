@@ -47,35 +47,21 @@ export default async function TeamsPage() {
                         {myTeams.map(team => (
                             <Link key={team.id} href={`/teams/${team.id}`}>
                                 <div className="card team-card">
-                                    <div className="team-icon">🛡️</div>
-                                    <div>
-                                        <h3 className="font-bold">{team.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{team._count.members} Members</p>
+                                    <div className="flex flex-col gap-2 w-full">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-bold bg-orange-100 text-orange-800 px-3 py-1 rounded-md inline-block">{team.name}</h3>
+                                                <p className="text-sm text-muted-foreground mt-1">{team._count.members} Members</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-2 flex items-center text-sm text-gray-500 bg-gray-50 p-2 rounded hover:bg-gray-100 transition-colors">
+                                            <span className="mr-2">💬</span>
+                                            <span>Press to chat</span>
+                                        </div>
                                     </div>
-                                    <div className="ml-auto pointer">➡️</div>
                                 </div>
                             </Link>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            <section>
-                <h2 className="section-title">Explore Teams</h2>
-                {otherTeams.length === 0 ? (
-                    <p className="text-muted-foreground">No other teams available.</p>
-                ) : (
-                    <div className="card-list">
-                        {otherTeams.map(team => (
-                            <div key={team.id} className="card team-card">
-                                <div className="team-icon">👥</div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold">{team.name}</h3>
-                                    <p className="text-sm text-muted-foreground">{team.description || 'No description'}</p>
-                                </div>
-                                {/* <JoinButton teamId={team.id} /> REMOVED: Admin only access */}
-                                <span className="text-xs text-muted-foreground">Contact Admin to Join</span>
-                            </div>
                         ))}
                     </div>
                 )}

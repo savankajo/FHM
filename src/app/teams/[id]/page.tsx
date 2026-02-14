@@ -86,6 +86,16 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
                                         {spotsLeft !== null && (
                                             <p className="spots">{spotsLeft} spots left</p>
                                         )}
+                                        {service.volunteers.length > 0 && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                <p className="font-semibold text-xs text-gray-400 uppercase">Volunteers:</p>
+                                                <ul className="list-disc list-inside">
+                                                    {service.volunteers.map(v => (
+                                                        <li key={v.id}>{v.name}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="action flex gap-2">
                                         {session.role === 'ADMIN' && (
