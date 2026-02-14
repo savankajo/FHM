@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import JoinButton from './join-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,13 +25,6 @@ export default async function TeamsPage() {
         include: { _count: { select: { members: true } } }
     });
 
-    const otherTeams = await prisma.team.findMany({
-        where: {
-            NOT: { members: { some: { id: session.userId } } }
-        },
-        include: { _count: { select: { members: true } } }
-    });
-
     return (
         <div className="min-h-screen bg-white">
             <div className="max-w-[980px] mx-auto px-7 py-8">
@@ -45,7 +37,7 @@ export default async function TeamsPage() {
 
                     {myTeams.length === 0 ? (
                         <div className="border border-dashed border-gray-300 rounded-xl p-8 text-center">
-                            <p className="text-gray-400 text-sm">You are not in any teams yet.</p>
+                            <p className="text-gray-400 text-sm">You are not in any teams yet. Contact an admin to be added to a team.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -70,29 +62,6 @@ export default async function TeamsPage() {
                         </div>
                     )}
                 </section>
-
-                {otherTeams.length > 0 && (
-                    <>
-                        <hr className="border-0 border-t border-gray-200 my-8" />
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Teams</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {otherTeams.map(team => (
-                                    <div key={team.id} className="border border-gray-200 rounded-xl p-6 bg-white">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">{team.name}</h3>
-                                                <p className="text-sm text-gray-500 mt-1">{team._count.members} Members</p>
-                                            </div>
-                                            <JoinButton teamId={team.id} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    </>
-                )}
 
             </div>
         </div>
