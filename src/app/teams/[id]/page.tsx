@@ -9,15 +9,21 @@ import DeleteServiceButton from './delete-service-button';
 export const dynamic = 'force-dynamic';
 
 export default async function TeamDetailsPage({ params }: { params: { id: string } }) {
+    // Verify session
     const session = await getSession();
     if (!session) return <p>Unauthorized</p>;
+
+    // Prepare service filter: Admins see all, others see only future + today
+    const serviceWhere = session.role === 'ADMIN'
+        ? {}
+        : { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } };
 
     // Fetch team with relations
     const team = await prisma.team.findUnique({
         where: { id: params.id },
         include: {
             services: {
-                where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } }, // Future services + today
+                where: serviceWhere,
                 orderBy: { date: 'asc' },
                 include: { volunteers: true }
             },
