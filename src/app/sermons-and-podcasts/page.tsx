@@ -61,7 +61,9 @@ export default async function SermonsAndPodcastsPage() {
             <section className="section">
                 <div className="section-header">
                     <h2>Latest Sermons</h2>
-                    <Link href="/sermons" className="view-all">View All</Link>
+                    <Link href="/sermons">
+                        <Button variant="outline" size="sm">View All</Button>
+                    </Link>
                 </div>
 
                 <div className="card-list">
@@ -73,13 +75,11 @@ export default async function SermonsAndPodcastsPage() {
                                 <div className="card sermon-card hover:shadow-lg transition-shadow">
                                     {sermon.videoUrl && (
                                         <div className="video-thumbnail">
-                                            {/* Placeholder for fetching thumbnail or just an icon */}
-                                            <div className="play-icon">▶</div>
+                                            {/* Placeholder for video */}
                                         </div>
                                     )}
                                     <div className="card-content">
-                                        <h3>{sermon.title}</h3>
-                                        <p className="meta">{sermon.speaker} • {formatDate(sermon.date)}</p>
+                                        <h3 className="text-center py-2">{sermon.title}</h3>
                                     </div>
                                 </div>
                             </Link>
@@ -91,7 +91,9 @@ export default async function SermonsAndPodcastsPage() {
             <section className="section">
                 <div className="section-header">
                     <h2>Podcasts</h2>
-                    <Link href="/podcasts" className="view-all">View All</Link>
+                    <Link href="/podcasts">
+                        <Button variant="outline" size="sm">View All</Button>
+                    </Link>
                 </div>
 
                 <div className="card-list">
@@ -102,9 +104,7 @@ export default async function SermonsAndPodcastsPage() {
                             <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block no-underline">
                                 <div className="card podcast-card hover:shadow-lg transition-shadow">
                                     <div className="card-content">
-                                        <h3>{pod.title}</h3>
-                                        <p className="meta">{formatDate(pod.publishedAt)}</p>
-                                        <Button variant="outline" className="mt-2 text-xs">Listen</Button>
+                                        <h3 className="text-center py-2">{pod.title}</h3>
                                     </div>
                                 </div>
                             </Link>
