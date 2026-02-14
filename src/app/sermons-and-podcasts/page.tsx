@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sermon, PodcastEpisode } from '@prisma/client';
 import { AppHeader } from '@/components/layout/app-header';
@@ -9,114 +8,146 @@ import { AppHeader } from '@/components/layout/app-header';
 async function getSermons(): Promise<Sermon[]> {
     return await prisma.sermon.findMany({
         orderBy: { date: 'desc' },
-        take: 3,
+        take: 5,
     });
 }
 
 async function getPodcasts(): Promise<PodcastEpisode[]> {
     return await prisma.podcastEpisode.findMany({
         orderBy: { publishedAt: 'desc' },
-        take: 3,
+        take: 5,
     });
 }
 
-export const dynamic = 'force-dynamic'; // Ensure we don't cache static builds too hard for this demo
+export const dynamic = 'force-dynamic';
 
 export default async function SermonsAndPodcastsPage() {
     const session = await getSession();
-    // user fetching handled in AppHeader
-
     const sermons = await getSermons();
     const podcasts = await getPodcasts();
-
-    // Use a proper type check or just string comparison for role
-    // In `src/lib/auth.ts` I defined role as string in payload, but schema says enum. 
-    // It comes back as string from JWT.
     const isAdmin = session?.role === 'ADMIN';
 
     return (
-        <div className="home-page">
+        <div className="min-h-screen bg-white">
             <AppHeader />
 
-            {/* Admin Controls Placeholder */}
-            {isAdmin && (
-                <div className="admin-panel-link">
-                    <Link href="/admin">
-                        <Button variant="ghost" className="w-full border-dashed border-2">
-                            🔧 Admin Dashboard
-                        </Button>
-                    </Link>
-                </div>
-            )}
+            <main className="max-w-[980px] mx-auto px-7 py-8">
 
-            {/* Live Stream Banner (Mock for now, normally check if any sermon isLive) */}
-            {sermons.some(s => s.isLive) && (
-                <div className="live-banner">
-                    <span className="live-indicator">● LIVE</span>
-                    <span>Sunday Service is streaming now!</span>
-                    <Button size="sm" className="ml-auto">Watch</Button>
-                </div>
-            )}
+                {/* Admin link */}
+                {isAdmin && (
+                    <div className="mb-6">
+                        <Link href="/admin">
+                            <Button variant="ghost" className="w-full border-dashed border-2">
+                                🔧 Admin Dashboard
+                            </Button>
+                        </Link>
+                    </div>
+                )}
 
-            <section className="section">
-                <div className="section-header">
-                    <h2>Latest Sermons</h2>
-                    <Link href="/sermons">
-                        <Button variant="outline" size="sm">View All</Button>
-                    </Link>
-                </div>
+                {/* Live Stream Banner */}
+                <LiveLinkSection />
 
-                <div className="card-list">
-                    {sermons.length === 0 ? (
-                        <p className="empty-state">No sermons available.</p>
-                    ) : (
-                        sermons.map((sermon) => (
-                            <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="block no-underline">
-                                <div className="card sermon-card hover:shadow-lg transition-shadow">
-                                    {sermon.videoUrl && (
-                                        <div className="video-thumbnail">
-                                            {/* Placeholder for video */}
-                                        </div>
-                                    )}
-                                    <div className="card-content">
-                                        <h3 className="text-center py-2">{sermon.title}</h3>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))
-                    )}
-                </div>
-            </section>
+                {/* ── Sermons ────────────────────────── */}
+                <section className="py-2">
+                    <div className="flex items-baseline justify-between gap-4 mb-3">
+                        <h2 className="m-0 text-2xl font-semibold tracking-tight text-gray-900">
+                            Latest Sermons
+                        </h2>
+                        <Link
+                            href="/sermons"
+                            className="text-gray-500 text-sm font-bold no-underline hover:text-gray-900 hover:underline"
+                        >
+                            View all →
+                        </Link>
+                    </div>
 
-            <section className="section">
-                <div className="section-header">
-                    <h2>Podcasts</h2>
-                    <Link href="/podcasts">
-                        <Button variant="outline" size="sm">View All</Button>
-                    </Link>
-                </div>
+                    <ul className="m-0 p-0 list-none border border-gray-200 rounded-xl overflow-hidden">
+                        {sermons.length === 0 ? (
+                            <li className="p-5 text-center text-gray-400 text-sm bg-white">
+                                No sermons available.
+                            </li>
+                        ) : (
+                            sermons.map((sermon, i) => (
+                                <li
+                                    key={sermon.id}
+                                    className={`bg-white ${i !== 0 ? 'border-t border-gray-200' : ''}`}
+                                >
+                                    <Link
+                                        href={`/sermons/${sermon.id}`}
+                                        className="block px-5 py-4 text-gray-900 font-bold no-underline hover:bg-gray-50 transition-colors leading-snug"
+                                    >
+                                        {sermon.title}
+                                        <span className="block text-xs text-gray-400 font-normal mt-1">
+                                            {new Date(sermon.date).toLocaleDateString()} • {sermon.speaker}
+                                        </span>
+                                    </Link>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </section>
 
-                <div className="card-list">
-                    {podcasts.length === 0 ? (
-                        <p className="empty-state">No episodes available.</p>
-                    ) : (
-                        podcasts.map((pod) => (
-                            <Link key={pod.id} href={`/podcasts/${pod.id}`} className="block no-underline">
-                                <div className="card podcast-card hover:shadow-lg transition-shadow">
-                                    <div className="card-content">
-                                        <h3 className="text-center py-2">{pod.title}</h3>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))
-                    )}
-                </div>
-            </section>
+                <hr className="border-0 border-t border-gray-200 my-6" />
 
-            {/* Live Link Section */}
-            <LiveLinkSection />
+                {/* ── Podcasts ───────────────────────── */}
+                <section className="py-2">
+                    <div className="flex items-baseline justify-between gap-4 mb-3">
+                        <h2 className="m-0 text-2xl font-semibold tracking-tight text-gray-900">
+                            Podcasts
+                        </h2>
+                        <Link
+                            href="/podcasts"
+                            className="text-gray-500 text-sm font-bold no-underline hover:text-gray-900 hover:underline"
+                        >
+                            View all →
+                        </Link>
+                    </div>
 
+                    <ul className="m-0 p-0 list-none border border-gray-200 rounded-xl overflow-hidden">
+                        {podcasts.length === 0 ? (
+                            <li className="p-5 text-center text-gray-400 text-sm bg-white">
+                                No episodes available.
+                            </li>
+                        ) : (
+                            podcasts.map((pod, i) => (
+                                <li
+                                    key={pod.id}
+                                    className={`bg-white ${i !== 0 ? 'border-t border-gray-200' : ''}`}
+                                >
+                                    <Link
+                                        href={`/podcasts/${pod.id}`}
+                                        className="block px-5 py-4 text-gray-900 font-bold no-underline hover:bg-gray-50 transition-colors leading-snug"
+                                    >
+                                        {pod.title}
+                                        <span className="block text-xs text-gray-400 font-normal mt-1">
+                                            {new Date(pod.publishedAt).toLocaleDateString()}
+                                        </span>
+                                    </Link>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </section>
 
+                <hr className="border-0 border-t border-gray-200 my-6" />
+
+                {/* ── Articles (placeholder) ────────── */}
+                <section className="py-2 opacity-50">
+                    <div className="flex items-baseline justify-between gap-4 mb-3">
+                        <h2 className="m-0 text-2xl font-semibold tracking-tight text-gray-900">
+                            Articles
+                        </h2>
+                        <span className="text-gray-400 text-sm font-bold">Coming Soon</span>
+                    </div>
+
+                    <ul className="m-0 p-0 list-none border border-gray-200 rounded-xl overflow-hidden">
+                        <li className="px-5 py-4 bg-white">
+                            <span className="text-gray-400 font-bold leading-snug">(No articles yet)</span>
+                        </li>
+                    </ul>
+                </section>
+
+            </main>
         </div>
     );
 }
@@ -125,7 +156,7 @@ async function LiveLinkSection() {
     try {
         const liveLink = await prisma.liveLink.findFirst({
             where: {
-                expiresAt: { gt: new Date() } // Only show if not expired
+                expiresAt: { gt: new Date() }
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -133,7 +164,7 @@ async function LiveLinkSection() {
         if (!liveLink) return null;
 
         return (
-            <section className="section bg-red-50 border border-red-100 rounded-xl p-6 mt-8">
+            <section className="bg-red-50 border border-red-100 rounded-xl p-6 mb-8">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <span className="relative flex h-3 w-3">
