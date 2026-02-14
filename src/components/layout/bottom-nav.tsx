@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { label: 'Media', href: '/sermons-and-podcasts', icon: '🎧' },
   { label: 'Teams', href: '/teams', icon: '👥' },
   { label: 'Events', href: '/events', icon: '📅' },
-  { label: 'Chat', href: '/chat', icon: '💬' },
+  { label: 'Profile', href: '/profile', icon: '👤' },
 ];
 
 export function BottomNav() {

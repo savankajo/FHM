@@ -26,7 +26,17 @@ export default async function ProfilePage() {
                 <div className="bg-blue-50 p-6 rounded-lg text-blue-800 h-fit">
                     <h3 className="font-bold mb-2">Account Info</h3>
                     <p className="text-sm">Role: <span className="font-semibold">{session.role}</span></p>
-                    <p className="text-sm mt-2">To change your role or permissions, please contact an administrator.</p>
+                    <p className="text-sm mt-2 mb-4">To change your role or permissions, please contact an administrator.</p>
+
+                    <form action={async () => {
+                        'use server';
+                        const { logout } = await import('@/app/actions/auth');
+                        await logout();
+                    }}>
+                        <button className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Sign Out
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
