@@ -105,6 +105,8 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
                                             serviceId={service.id}
                                             isVolunteering={isVolunteering}
                                             disabled={spotsLeft === 0 && !isVolunteering}
+                                            serviceTitle={service.title}
+                                            serviceDate={service.date}
                                         />
                                     </div>
                                 </div>
