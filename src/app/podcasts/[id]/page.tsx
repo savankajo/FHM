@@ -27,7 +27,7 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
                 <div className="mt-8 border-t pt-6 flex flex-row items-center justify-between gap-4">
                     <span className="font-semibold text-lg text-gray-900 flex-1">{podcast.title}</span>
                     <a href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer">
-                        <Button className="gap-2 bg-orange-600 hover:bg-orange-700 text-white min-w-[160px] font-medium text-base">
+                        <Button className="gap-2 bg-orange-600 hover:bg-orange-700 text-black min-w-[160px] font-medium text-base">
                             {getYouTubeEmbedUrl(podcast.audioUrl) ? 'Watch on YouTube ↗' : 'Listen / Download ⬇'}
                         </Button>
                     </a>

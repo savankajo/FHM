@@ -36,7 +36,7 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
                         {sermon.title}
                     </span>
                     <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                        <span className="inline-flex items-center px-6 py-3 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold shadow-sm transition-colors cursor-pointer">
+                        <span className="inline-flex items-center px-6 py-3 rounded-lg bg-orange-600 hover:bg-orange-700 text-black text-sm font-bold shadow-sm transition-colors cursor-pointer">
                             Watch on YouTube ↗
                         </span>
                     </a>
