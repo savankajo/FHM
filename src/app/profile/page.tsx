@@ -1,9 +1,19 @@
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import ProfileForm from './profile-form';
+import Link from 'next/link';
+import ProfileActions from './profile-actions';
 
 export const dynamic = 'force-dynamic';
+
+// ── Chevron Icon ──────────────────────────────────────────────
+function ChevronRight() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+        </svg>
+    );
+}
 
 export default async function ProfilePage() {
     const session = await getSession();
@@ -16,29 +26,75 @@ export default async function ProfilePage() {
 
     if (!user) redirect('/login');
 
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">My Profile</h1>
-            <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                    <ProfileForm user={user} />
-                </div>
-                <div className="bg-blue-50 p-6 rounded-lg text-blue-800 h-fit">
-                    <h3 className="font-bold mb-2">Account Info</h3>
-                    <p className="text-sm">Role: <span className="font-semibold">{session.role}</span></p>
-                    <p className="text-sm mt-2 mb-4">To change your role or permissions, please contact an administrator.</p>
+    const initials = user.name
+        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        : user.email[0].toUpperCase();
 
-                    <form action={async () => {
-                        'use server';
-                        const { logout } = await import('@/app/actions/auth');
-                        await logout();
-                    }}>
-                        <button className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                            Sign Out
-                        </button>
-                    </form>
+    return (
+        <div className="profile-page">
+
+            {/* ── Profile Hero ─────────────────────────────────── */}
+            <div className="profile-hero">
+                <div className="profile-avatar-wrap">
+                    <div className="profile-avatar">
+                        <span style={{ fontSize: '32px', fontWeight: 800, color: 'white' }}>{initials}</span>
+                    </div>
+                </div>
+                <div className="profile-name">{user.name || 'Church Member'}</div>
+                <div className="profile-email">{user.email}</div>
+                <div className="profile-role-badge">{session.role}</div>
+            </div>
+
+            {/* ── Menu Card ────────────────────────────────────── */}
+            <div className="profile-card">
+
+                <Link href="/profile/favorites" className="profile-menu-item">
+                    <div className="profile-menu-icon orange">❤️</div>
+                    <span className="profile-menu-label">My Favorites</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
+                <Link href="/events" className="profile-menu-item">
+                    <div className="profile-menu-icon blue">📅</div>
+                    <span className="profile-menu-label">Event Registrations</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
+                <Link href="/bible" className="profile-menu-item">
+                    <div className="profile-menu-icon green">📖</div>
+                    <span className="profile-menu-label">Bible Reading Plan</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
+                <Link href="/profile/settings" className="profile-menu-item">
+                    <div className="profile-menu-icon purple">⚙️</div>
+                    <span className="profile-menu-label">Settings</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
+                {/* Logout — needs server action */}
+                <ProfileActions />
+
+            </div>
+
+            {/* ── Edit Profile Form ─────────────────────────────── */}
+            <div style={{ padding: '0 20px 8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                    Edit Profile
                 </div>
             </div>
+
+            <div className="profile-form-section">
+                <ProfileFormWrapper user={user} />
+            </div>
+
         </div>
     );
+}
+
+// ── Profile Form Wrapper ──────────────────────────────────────
+import ProfileForm from './profile-form';
+
+function ProfileFormWrapper({ user }: { user: { name: string | null; email: string; phone: string | null } }) {
+    return <ProfileForm user={user} />;
 }

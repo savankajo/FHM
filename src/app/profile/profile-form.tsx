@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { updateProfile } from '@/app/actions/profile';
 
 type User = {
@@ -11,15 +10,13 @@ type User = {
 };
 
 export default function ProfileForm({ user }: { user: User }) {
-    const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit(formData: FormData) {
         setLoading(true);
         setStatus(null);
-
         const result = await updateProfile(formData);
-
         if (result.error) {
             setStatus({ type: 'error', message: result.error });
         } else {
@@ -29,68 +26,89 @@ export default function ProfileForm({ user }: { user: User }) {
     }
 
     return (
-        <form action={handleSubmit} className="space-y-4 max-w-md bg-white p-6 rounded-lg shadow-md border border-gray-100">
-            <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
+        <form action={handleSubmit}>
+
+            <div className="input-group">
+                <label className="input-label">Full Name</label>
                 <input
                     name="name"
                     defaultValue={user.name || ''}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    placeholder="Your full name"
+                    className="input"
                 />
             </div>
 
-            <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
+            <div className="input-group">
+                <label className="input-label">Email Address</label>
                 <input
                     name="email"
                     type="email"
                     defaultValue={user.email}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all bg-gray-100 cursor-not-allowed"
+                    className="input"
                     readOnly
                     title="Email cannot be changed"
+                    style={{ opacity: 0.6, cursor: 'not-allowed', background: 'var(--bg-muted)' }}
                 />
             </div>
-            <div>
-                <label className="block text-sm font-medium mb-1">Phone Number</label>
+
+            <div className="input-group">
+                <label className="input-label">Phone Number</label>
                 <input
                     name="phone"
                     type="tel"
                     defaultValue={user.phone || ''}
                     placeholder="+1 (555) 000-0000"
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    className="input"
                 />
             </div>
 
-            <hr className="my-4 border-gray-200" />
+            <div style={{ height: '1px', background: 'var(--border-light)', margin: '16px 0' }} />
 
-            <div>
-                <label className="block text-sm font-medium mb-1">New Password (leave blank to keep current)</label>
+            <div className="input-group">
+                <label className="input-label">New Password</label>
                 <input
                     name="password"
                     type="password"
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    placeholder="Leave blank to keep current"
+                    className="input"
                 />
             </div>
-            <div>
-                <label className="block text-sm font-medium mb-1">Confirm New Password</label>
+
+            <div className="input-group">
+                <label className="input-label">Confirm New Password</label>
                 <input
                     name="confirmPassword"
                     type="password"
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    placeholder="Confirm new password"
+                    className="input"
                 />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <button
+                type="submit"
+                className="btn btn-primary btn-full"
+                disabled={loading}
+                style={{ marginTop: '8px' }}
+            >
                 {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
+            </button>
 
-            {
-                status && (
-                    <div className={`p-3 rounded text-sm ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                        {status.message}
-                    </div>
-                )
-            }
-        </form >
+            {status && (
+                <div
+                    style={{
+                        marginTop: '12px',
+                        padding: '12px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        background: status.type === 'error' ? '#fef2f2' : '#f0fdf4',
+                        color: status.type === 'error' ? '#dc2626' : '#16a34a',
+                        border: `1px solid ${status.type === 'error' ? '#fecaca' : '#bbf7d0'}`,
+                    }}
+                >
+                    {status.message}
+                </div>
+            )}
+        </form>
     );
 }

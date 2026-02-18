@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { GlobalSearch } from '@/components/ui/global-search';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,107 +30,167 @@ export default async function HomePage() {
   const uploads = [
     ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}` })),
     ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast' }))
-  ].sort(() => -1).slice(0, 3); // Simple sort/slice
+  ].sort(() => -1).slice(0, 3);
 
   return (
     <div className="home-page-container">
-      {/* Orange Hero Section */}
-      <section className="hero-section">
-        <header className="home-header">
-          <h1 className="home-title">
-            Father's Heart Church <span className="add-btn">+</span>
-          </h1>
-          <div className="header-actions">
-            {isAdmin && (
-              <Link href="/admin" className="admin-link">
-                Admin
-              </Link>
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <header className="home-header">
+        <div className="home-logo-area">
+          <div className="home-logo-icon">
+            {/* Heart / Cross icon */}
+            <svg viewBox="0 0 24 24" fill="white">
+              <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z" />
+            </svg>
+          </div>
+          <div>
+            <div className="home-church-name">Father's Heart</div>
+            <div className="home-church-sub">Church</div>
+          </div>
+        </div>
+
+        <div className="home-header-actions">
+          {isAdmin && (
+            <Link href="/admin" className="admin-badge">Admin</Link>
+          )}
+          <Link href="/profile" className="header-icon-btn" aria-label="Profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+          </Link>
+        </div>
+      </header>
+
+      {/* ── Hero Card (Live Service) ─────────────────────── */}
+      <div className="hero-card-wrap">
+        <div className="hero-card">
+          <div className="hero-card-bg" />
+          <div className="hero-card-overlay" />
+          <div className="hero-card-content">
+            <div className="hero-card-text">
+              <div className="hero-live-badge">
+                <span className="hero-live-dot" />
+                Live Service
+              </div>
+              <div className="hero-card-title">Live Service</div>
+              <div className="hero-card-subtitle">Saturday 4:00 PM</div>
+            </div>
+
+            {liveLink ? (
+              <a
+                href={liveLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-join-btn"
+              >
+                Join Now
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
+              </a>
+            ) : (
+              <span className="hero-join-btn" style={{ opacity: 0.6, cursor: 'default' }}>
+                Join Now
+              </span>
             )}
-            <Link href="/profile" className="profile-btn">
-              👤
-            </Link>
-          </div>
-        </header>
-
-        <div className="search-bar-container">
-          <GlobalSearch />
-        </div>
-      </section>
-
-      {/* Featured / Live Card */}
-      <section className="featured-section">
-        <div className="live-card">
-          <div className="live-card-image">
-            {/* Placeholder Image or specific one if live */}
-            <div className="play-button-overlay">
-              {liveLink ? (
-                <a href={liveLink.url} target="_blank" rel="noopener noreferrer" className="text-primary">▶</a>
-              ) : (
-                <span className="text-gray-300">▶</span>
-              )}
-            </div>
-          </div>
-          <div className="live-card-content">
-            <div className="live-status">
-              {liveLink ? (
-                <>
-                  <span className="live-indicator text-red-500 animate-pulse">●</span>
-                  <a href={liveLink.url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
-                    Join Live Meeting Now
-                  </a>
-                </>
-              ) : (
-                <span className="text-gray-500">Live Meeting</span>
-              )}
-            </div>
-            <h3>Saturday 04:00 pm</h3>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Quick Actions */}
-      <section className="quick-actions-grid">
+      {/* ── Quick Actions ────────────────────────────────── */}
+      <div className="quick-actions-grid">
         <Link href="/sermons-and-podcasts" className="action-item">
-          <div className="action-icon-circle">📺</div>
-          <span className="action-label">Videos</span>
+          <div className="action-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="3" />
+              <polygon points="10,9 16,12 10,15" fill="currentColor" />
+            </svg>
+          </div>
+          <span className="action-label">Media</span>
         </Link>
+
         <Link href="/bible" className="action-item">
-          <div className="action-icon-circle">📖</div>
+          <div className="action-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <line x1="12" y1="7" x2="12" y2="13" />
+              <line x1="9" y1="10" x2="15" y2="10" />
+            </svg>
+          </div>
           <span className="action-label">Bible</span>
         </Link>
-        <a href="https://maps.app.goo.gl/CK4iVbRy25KjZS8m9" target="_blank" rel="noopener noreferrer" className="action-item">
-          <div className="action-icon-circle">📍</div>
+
+        <a
+          href="https://maps.app.goo.gl/CK4iVbRy25KjZS8m9"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="action-item"
+        >
+          <div className="action-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
           <span className="action-label">Location</span>
         </a>
-      </section>
 
-      {/* Recently Uploaded */}
+        <Link href="/events" className="action-item">
+          <div className="action-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="3" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+              <circle cx="8" cy="15" r="1" fill="currentColor" />
+              <circle cx="12" cy="15" r="1" fill="currentColor" />
+            </svg>
+          </div>
+          <span className="action-label">Events</span>
+        </Link>
+      </div>
+
+      {/* ── Recently Uploaded ────────────────────────────── */}
       <section className="recent-section">
         <div className="section-header">
-          <span className="section-title-highlight">Recently Uploaded</span>
+          <span className="section-title">Recently Uploaded</span>
+          <Link href="/sermons-and-podcasts" className="section-link">See all →</Link>
         </div>
 
-        <div className="recent-list">
-          {uploads.length > 0 ? (
-            uploads.map((item, i) => (
-              <Link href={item.url} key={i} className="recent-item">
-                <div className="recent-thumbnail bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-                  {item.type === 'sermon' ? '🎥' : '🎧'}
+        {uploads.length > 0 ? (
+          <div className="recent-scroll-wrap">
+            {uploads.map((item, i) => (
+              <Link href={item.url} key={i} className="recent-card">
+                <div className="recent-card-thumb" style={{
+                  background: item.type === 'sermon'
+                    ? 'linear-gradient(135deg, #3a1a08, #C7511F)'
+                    : 'linear-gradient(135deg, #1a0830, #7c3aed)'
+                }}>
+                  <span className="recent-card-thumb-icon">
+                    {item.type === 'sermon' ? '🎥' : '🎧'}
+                  </span>
+                  <div className="recent-card-play">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5,3 19,12 5,21" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="recent-info">
-                  <span className="recent-title truncate">{item.title}</span>
-                  <span className="recent-meta">{item.speaker}</span>
+                <div className="recent-card-info">
+                  <div className="recent-card-title">{item.title}</div>
+                  <div className="recent-card-meta">{item.speaker}</div>
                 </div>
-                <div className="play-icon-small">▶</div>
               </Link>
-            ))
-          ) : (
-            <p className="text-gray-500 text-sm italic text-center py-4">No recent uploads found.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state" style={{ padding: '32px 20px' }}>
+            <div className="empty-state-icon">🎵</div>
+            <p>No recent uploads yet.<br />Check back soon!</p>
+          </div>
+        )}
       </section>
+
     </div>
-  )
+  );
 }
-
-
