@@ -16,16 +16,19 @@ function ChevronRight() {
 
 function PlayIcon() {
     return (
-        <svg viewBox="0 0 24 24" fill="white">
+        <svg viewBox="0 0 24 24" fill="white" width="18" height="18">
             <polygon points="5,3 19,12 5,21" />
         </svg>
     );
 }
 
+// ── Sermon Card ───────────────────────────────────────────────
 function SermonCard({ sermon, featured }: { sermon: Sermon; featured?: boolean }) {
+    const thumb = (sermon as any).thumbnailUrl;
+
     if (featured) {
         return (
-            <Link href={`/sermons/${sermon.id}`} className="featured-media-card">
+            <Link href={`/sermons/${sermon.id}`} className="featured-media-card" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
                 <div className="featured-media-overlay" />
                 <div className="featured-media-content">
                     <div className="featured-media-badge">
@@ -44,8 +47,8 @@ function SermonCard({ sermon, featured }: { sermon: Sermon; featured?: boolean }
 
     return (
         <Link href={`/sermons/${sermon.id}`} className="media-list-card">
-            <div className="media-list-thumb" style={{ background: 'linear-gradient(135deg, #3a1a08, #C7511F)' }}>
-                <span style={{ fontSize: '20px' }}>🎥</span>
+            <div className="media-list-thumb" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #3a1a08, #C7511F)' }}>
+                {!thumb && <span style={{ fontSize: '20px' }}>🎥</span>}
                 <div className="media-list-play"><PlayIcon /></div>
             </div>
             <div className="media-list-info">
@@ -60,10 +63,20 @@ function SermonCard({ sermon, featured }: { sermon: Sermon; featured?: boolean }
     );
 }
 
+// ── Podcast Card ──────────────────────────────────────────────
 function PodcastCard({ pod, featured }: { pod: PodcastEpisode; featured?: boolean }) {
+    const thumb = (pod as any).thumbnailUrl;
+
     if (featured) {
         return (
-            <Link href={`/podcasts/${pod.id}`} className="featured-media-card" style={{ background: 'linear-gradient(135deg, #1a0830 0%, #5b21b6 100%)' }}>
+            <Link
+                href={`/podcasts/${pod.id}`}
+                className="featured-media-card"
+                style={thumb
+                    ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: 'linear-gradient(135deg, #1a0830 0%, #5b21b6 100%)' }
+                }
+            >
                 <div className="featured-media-overlay" />
                 <div className="featured-media-content">
                     <div className="featured-media-badge" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -80,8 +93,8 @@ function PodcastCard({ pod, featured }: { pod: PodcastEpisode; featured?: boolea
 
     return (
         <Link href={`/podcasts/${pod.id}`} className="media-list-card">
-            <div className="media-list-thumb" style={{ background: 'linear-gradient(135deg, #1a0830, #7c3aed)' }}>
-                <span style={{ fontSize: '20px' }}>🎧</span>
+            <div className="media-list-thumb" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #1a0830, #7c3aed)' }}>
+                {!thumb && <span style={{ fontSize: '20px' }}>🎧</span>}
                 <div className="media-list-play"><PlayIcon /></div>
             </div>
             <div className="media-list-info">

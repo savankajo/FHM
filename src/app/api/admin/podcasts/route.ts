@@ -14,7 +14,8 @@ export async function POST(request: Request) {
                 title: body.title,
                 description: body.description,
                 publishedAt: new Date(body.publishedAt),
-                audioUrl: body.audioUrl
+                audioUrl: body.audioUrl,
+                thumbnailUrl: body.thumbnailUrl || null
             }
         });
 

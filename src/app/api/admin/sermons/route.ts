@@ -17,7 +17,8 @@ export async function POST(request: Request) {
                 type: body.type, // 'VIDEO' or 'PDF'
                 videoUrl: body.videoUrl || null,
                 fileUrl: body.fileUrl || null,
-                notes: body.notes
+                notes: body.notes,
+                thumbnailUrl: body.thumbnailUrl || null
             }
         });
 
@@ -62,7 +63,8 @@ export async function PUT(request: Request) {
                 type: body.type,
                 videoUrl: body.videoUrl || null,
                 fileUrl: body.fileUrl || null,
-                notes: body.notes
+                notes: body.notes,
+                thumbnailUrl: body.thumbnailUrl || null
             }
         });
 

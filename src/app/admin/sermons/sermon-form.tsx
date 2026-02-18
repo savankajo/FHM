@@ -15,6 +15,7 @@ interface SermonFormProps {
         videoUrl?: string | null;
         fileUrl?: string | null;
         notes?: string | null;
+        thumbnailUrl?: string | null;
     };
 }
 
@@ -22,6 +23,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [type, setType] = useState<'VIDEO' | 'PDF'>(initialData?.type || 'VIDEO');
+    const [thumbPreview, setThumbPreview] = useState<string>(initialData?.thumbnailUrl || '');
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -32,7 +34,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
         const payload = {
             ...data,
             type,
-            id: initialData?.id // Include ID if editing
+            id: initialData?.id
         };
 
         const method = initialData?.id ? 'PUT' : 'POST';
@@ -87,6 +89,27 @@ export default function SermonForm({ initialData }: SermonFormProps) {
             )}
 
             <Input name="notes" label="Notes" placeholder="Additional notes..." defaultValue={initialData?.notes || ''} />
+
+            {/* Thumbnail URL */}
+            <div>
+                <Input
+                    name="thumbnailUrl"
+                    label="Cover Image URL (optional)"
+                    placeholder="https://example.com/image.jpg"
+                    defaultValue={initialData?.thumbnailUrl || ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setThumbPreview(e.target.value)}
+                />
+                {thumbPreview && (
+                    <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '200px', aspectRatio: '16/9', background: '#f0ece6' }}>
+                        <img
+                            src={thumbPreview}
+                            alt="Thumbnail preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                    </div>
+                )}
+            </div>
 
             <Button type="submit" disabled={loading} fullWidth>
                 {loading ? 'Saving...' : (initialData ? 'Update Sermon' : 'Create Sermon')}

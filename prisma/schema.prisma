@@ -78,27 +78,29 @@ enum SermonType {
 }
 
 model Sermon {
-  id        String   @id @default(uuid())
-  title     String
-  speaker   String
-  date      DateTime
-  type      SermonType @default(VIDEO)
-  videoUrl  String?
-  fileUrl   String?
-  isLive    Boolean  @default(false)
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String     @id @default(uuid())
+  title        String
+  speaker      String
+  date         DateTime
+  type         SermonType @default(VIDEO)
+  videoUrl     String?
+  fileUrl      String?
+  isLive       Boolean    @default(false)
+  notes        String?
+  thumbnailUrl String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model PodcastEpisode {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  publishedAt DateTime
-  audioUrl    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  publishedAt  DateTime
+  audioUrl     String
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Event {
