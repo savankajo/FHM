@@ -3773,23 +3773,24 @@ button {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* ── Card shell — warm golden parchment background —————————— */
+/* ── Card shell — lighter amber-to-gold matching reference image ─ */
 .votd-card {
   background: linear-gradient(145deg,
-      #1e0800 0%,
-      #4a1800 15%,
-      #8b3e00 35%,
-      #c47200 60%,
-      #d4900a 78%,
-      #c47200 100%);
+      #3d1400 0%,
+      #7a3200 20%,
+      #b86200 45%,
+      #d48800 68%,
+      #e8a020 85%,
+      #d48800 100%);
   border-radius: 20px;
   border: 1px solid rgba(220, 160, 40, 0.35);
   box-shadow:
-    0 6px 28px rgba(100, 40, 0, 0.45),
-    0 1px 4px rgba(0, 0, 0, 0.3);
+    0 6px 28px rgba(100, 40, 0, 0.38),
+    0 1px 4px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   position: relative;
 }
+
 
 /* Main central glow orb (bright gold) */
 .votd-glow-main {
@@ -3890,28 +3891,28 @@ button {
   text-transform: none;
 }
 
-/* English verse — bold serif */
+/* English verse — bold serif, slightly larger */
 .votd-verse-en {
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.75;
   color: #fffdf5;
   font-style: normal;
   font-weight: 700;
-  margin: 0 0 10px;
+  margin: 8px 0 10px;
   padding: 0;
   font-family: Georgia, 'Times New Roman', serif;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
-/* Arabic verse — bold Arabic serif */
+/* Arabic verse — bold Arabic serif, slightly larger */
 .votd-verse-ar {
   direction: rtl;
   text-align: right;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.9;
   color: #fffdf5;
   font-weight: 700;
-  margin: 0 0 10px;
+  margin: 8px 0 10px;
   padding: 0;
   font-family: 'Amiri', 'Scheherazade New', 'Arabic Typesetting', serif;
   font-style: normal;

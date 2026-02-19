@@ -258,10 +258,7 @@ export default function VerseOfTheDayCard() {
                 className="votd-lang-block votd-lang-link"
                 aria-label={`Read ${verse.ref} in English NIV on Bible app`}
             >
-                <div className="votd-lang-row">
-                    <span className="votd-lang-badge">🇬🇧 English (NIV)</span>
-                    <span className="votd-open-hint">Open ↗</span>
-                </div>
+                <span className="votd-lang-badge">🇬🇧 English (NIV)</span>
                 <blockquote className="votd-verse-en">{verse.en}</blockquote>
                 <div className="votd-ref">{verse.ref} (NIV)</div>
             </a>
@@ -277,10 +274,7 @@ export default function VerseOfTheDayCard() {
                 className="votd-lang-block votd-lang-link votd-rtl"
                 aria-label={`Read ${verse.refAr} in Arabic on Bible app`}
             >
-                <div className="votd-lang-row votd-lang-row-ar">
-                    <span className="votd-open-hint">↙ افتح</span>
-                    <span className="votd-lang-badge votd-badge-ar">🇸🇦 العربية (KJV)</span>
-                </div>
+                <span className="votd-lang-badge votd-badge-ar">🇸🇦 العربية (KJV)</span>
                 <blockquote className="votd-verse-ar">{verse.ar}</blockquote>
                 <div className="votd-ref votd-ref-ar">{verse.refAr}</div>
             </a>
