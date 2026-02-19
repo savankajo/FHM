@@ -3751,3 +3751,347 @@ button {
   /* Inputs inside cards must not overflow on small screens */
   word-break: break-word;
 }
+
+/* ════════════════════════════════════════════════════════════
+   VERSE OF THE DAY
+   ════════════════════════════════════════════════════════════ */
+
+.votd-wrap {
+  padding: 0 var(--page-px, 20px);
+  margin-bottom: 4px;
+}
+
+/* Entry animation */
+.votd-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.votd-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Card shell */
+.votd-card {
+  background: #fffbf5;
+  border-radius: 20px;
+  box-shadow:
+    0 2px 12px rgba(199, 81, 31, 0.10),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(199, 81, 31, 0.14);
+  overflow: hidden;
+  /* Subtle golden glow top-left */
+  position: relative;
+}
+
+.votd-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(199, 81, 31, 0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Header row ─────────────────────────────────────────────── */
+.votd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(199, 81, 31, 0.10);
+}
+
+.votd-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.votd-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.votd-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #C7511F;
+  letter-spacing: 0.01em;
+}
+
+.votd-date {
+  font-size: 11px;
+  color: var(--text-muted, #6b6b6b);
+  font-weight: 500;
+}
+
+/* ── Language blocks ────────────────────────────────────────── */
+.votd-lang-block {
+  padding: 18px 20px 14px;
+}
+
+.votd-lang-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(199, 81, 31, 0.10);
+  color: #C7511F;
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+}
+
+.votd-badge-ar {
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* English verse */
+.votd-verse-en {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #1F1F1F;
+  font-style: italic;
+  margin: 0 0 10px;
+  padding: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Arabic verse */
+.votd-verse-ar {
+  direction: rtl;
+  text-align: right;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #1F1F1F;
+  margin: 0 0 10px;
+  padding: 0;
+  font-family: 'Amiri', 'Scheherazade New', 'Arabic Typesetting', serif;
+  font-style: normal;
+}
+
+.votd-ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: #C7511F;
+}
+
+.votd-ref-ar {
+  direction: rtl;
+  text-align: right;
+}
+
+/* RTL block */
+.votd-rtl {
+  direction: rtl;
+}
+
+/* ── Divider ─────────────────────────────────────────────────── */
+.votd-divider {
+  height: 1px;
+  margin: 0 20px;
+  background: linear-gradient(90deg, transparent, rgba(199, 81, 31, 0.20), transparent);
+}
+
+/* ── CTA Button ─────────────────────────────────────────────── */
+.votd-read-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 14px 20px 18px;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, #C7511F 0%, #e06030 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(199, 81, 31, 0.30);
+}
+
+.votd-read-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(199, 81, 31, 0.38);
+}
+
+/* ════════════════════════════════════════════════════════════
+   SERIES SECTIONS (Sermon & Podcast)
+   ════════════════════════════════════════════════════════════ */
+
+.home-series-section {
+  padding: 0 0 4px;
+}
+
+/* ── Horizontal scroll track ─────────────────────────────────── */
+.series-scroll-wrap {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px var(--page-px, 20px) 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.series-scroll-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Series card ─────────────────────────────────────────────── */
+.series-card {
+  flex: 0 0 156px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--bg-card, #fff);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.series-card:hover {
+  transform: scale(1.025) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.13);
+}
+
+.series-card-thumb {
+  width: 100%;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, #3a1a08 0%, #C7511F 100%);
+  overflow: hidden;
+}
+
+.series-card-icon {
+  font-size: 30px;
+  z-index: 1;
+}
+
+.series-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 60%);
+}
+
+/* Episode count badge */
+.series-ep-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+
+.series-card-body {
+  padding: 10px 12px 12px;
+}
+
+.series-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1F1F1F;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: 4px;
+}
+
+.series-card-type {
+  font-size: 11px;
+  color: var(--text-muted, #6b6b6b);
+  font-weight: 500;
+}
+
+/* ════════════════════════════════════════════════════════════
+   PROFILE AVATAR PROMPT (Header)
+   ════════════════════════════════════════════════════════════ */
+
+.home-avatar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  position: relative;
+}
+
+.home-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(199, 81, 31, 0.10);
+  border: 2px solid rgba(199, 81, 31, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C7511F;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+
+.home-avatar-circle:hover {
+  background: rgba(199, 81, 31, 0.18);
+  border-color: rgba(199, 81, 31, 0.50);
+}
+
+.home-avatar-prompt {
+  font-size: 9px;
+  font-weight: 700;
+  color: #C7511F;
+  background: rgba(199, 81, 31, 0.12);
+  border-radius: 10px;
+  padding: 1px 6px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Pulse animation on the avatar circle when prompt is shown */
+.home-avatar-btn:has(.home-avatar-prompt) .home-avatar-circle::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
+  background: #C7511F;
+  border-radius: 50%;
+  border: 2px solid white;
+  animation: avatar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes avatar-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}

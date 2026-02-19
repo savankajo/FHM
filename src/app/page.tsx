@@ -1,20 +1,24 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import VerseOfTheDayCard from '@/components/home/verse-of-day';
+import { SermonSeriesSection, PodcastSeriesSection } from '@/components/home/series-sections';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
+  // User has no avatarUrl in schema — prompt if logged in
+  const isLoggedIn = !!session;
 
-  // Fetch Live Link (Find latest active one)
+  // Fetch Live Link
   const liveLink = await prisma.liveLink.findFirst({
     where: { expiresAt: { gt: new Date() } },
     orderBy: { createdAt: 'desc' }
   });
 
-  // Fetch Recent Sermons & Podcasts
+  // Fetch Recent Sermons & Podcasts for "Recently Uploaded"
   const recentSermons = await prisma.sermon.findMany({
     orderBy: { date: 'desc' },
     take: 2,
@@ -31,6 +35,20 @@ export default async function HomePage() {
     ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}`, thumbnailUrl: s.thumbnailUrl ?? null })),
     ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast', thumbnailUrl: p.thumbnailUrl ?? null }))
   ].sort(() => -1).slice(0, 3);
+
+  // Fetch Sermon Series data (more sermons for grouping)
+  const allSermons = await prisma.sermon.findMany({
+    orderBy: { date: 'desc' },
+    take: 40,
+    select: { id: true, title: true, speaker: true, thumbnailUrl: true }
+  });
+
+  // Fetch Podcast Series data
+  const allPodcasts = await prisma.podcastEpisode.findMany({
+    orderBy: { publishedAt: 'desc' },
+    take: 8,
+    select: { id: true, title: true, thumbnailUrl: true }
+  });
 
   return (
     <div className="home-page-container">
@@ -53,11 +71,17 @@ export default async function HomePage() {
           {isAdmin && (
             <Link href="/admin" className="admin-badge">Admin</Link>
           )}
-          <Link href="/profile" className="header-icon-btn" aria-label="Profile">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
+          {/* Profile button — shows "Add Photo" prompt if logged in & no avatar */}
+          <Link href="/profile" className="home-avatar-btn" aria-label="Profile">
+            <div className="home-avatar-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+            </div>
+            {isLoggedIn && (
+              <span className="home-avatar-prompt">Add Photo</span>
+            )}
           </Link>
         </div>
       </header>
@@ -96,6 +120,11 @@ export default async function HomePage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* ── Verse of the Day ─────────────────────────────── */}
+      <div className="votd-wrap">
+        <VerseOfTheDayCard />
       </div>
 
       {/* ── Quick Actions ────────────────────────────────── */}
@@ -199,6 +228,14 @@ export default async function HomePage() {
         )}
       </section>
 
+      {/* ── Sermon Series ────────────────────────────────── */}
+      <SermonSeriesSection sermons={allSermons} />
+
+      {/* ── Podcast Series ───────────────────────────────── */}
+      <PodcastSeriesSection podcasts={allPodcasts} />
+
+      {/* Bottom padding for nav */}
+      <div style={{ height: '24px' }} />
     </div>
   );
 }
