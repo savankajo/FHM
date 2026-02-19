@@ -3773,37 +3773,71 @@ button {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* Card shell */
+/* ── Card shell — warm golden parchment background —————————— */
 .votd-card {
-  background: #fffbf5;
+  background: linear-gradient(145deg,
+      #1e0800 0%,
+      #4a1800 15%,
+      #8b3e00 35%,
+      #c47200 60%,
+      #d4900a 78%,
+      #c47200 100%);
   border-radius: 20px;
+  border: 1px solid rgba(220, 160, 40, 0.35);
   box-shadow:
-    0 2px 12px rgba(199, 81, 31, 0.10),
-    0 1px 3px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(199, 81, 31, 0.14);
+    0 6px 28px rgba(100, 40, 0, 0.45),
+    0 1px 4px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  /* Subtle golden glow top-left */
   position: relative;
 }
 
-.votd-card::before {
-  content: '';
+/* Main central glow orb (bright gold) */
+.votd-glow-main {
   position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, rgba(199, 81, 31, 0.10) 0%, transparent 70%);
+  top: -20px;
+  right: -30px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle,
+      rgba(255, 230, 120, 0.65) 0%,
+      rgba(240, 180, 60, 0.30) 40%,
+      transparent 70%);
   pointer-events: none;
+  z-index: 0;
 }
+
+/* Secondary softer glow (amber, lower-left) */
+.votd-glow-secondary {
+  position: absolute;
+  bottom: 10px;
+  left: -20px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle,
+      rgba(220, 140, 20, 0.35) 0%,
+      rgba(180, 100, 10, 0.10) 50%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All content sits above the glow layers */
+.votd-header,
+.votd-lang-block,
+.votd-divider,
+.votd-read-btn {
+  position: relative;
+  z-index: 1;
+}
+
 
 /* ── Header row ─────────────────────────────────────────────── */
 .votd-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid rgba(199, 81, 31, 0.10);
+  padding: 15px 18px 12px;
+  border-bottom: 1px solid rgba(255, 200, 80, 0.20);
 }
 
 .votd-header-left {
@@ -3815,19 +3849,21 @@ button {
 .votd-icon {
   font-size: 18px;
   line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(255, 200, 60, 0.6));
 }
 
 .votd-label {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 14px;
-  color: #C7511F;
-  letter-spacing: 0.01em;
+  color: #fff8e8;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .votd-date {
   font-size: 11px;
-  color: var(--text-muted, #6b6b6b);
-  font-weight: 500;
+  color: rgba(255, 230, 160, 0.85);
+  font-weight: 600;
 }
 
 /* ── Language blocks ────────────────────────────────────────── */
@@ -3854,34 +3890,39 @@ button {
   text-transform: none;
 }
 
-/* English verse */
+/* English verse — bold serif */
 .votd-verse-en {
   font-size: 15px;
   line-height: 1.75;
-  color: #1F1F1F;
-  font-style: italic;
+  color: #fffdf5;
+  font-style: normal;
+  font-weight: 700;
   margin: 0 0 10px;
   padding: 0;
   font-family: Georgia, 'Times New Roman', serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
-/* Arabic verse */
+/* Arabic verse — bold Arabic serif */
 .votd-verse-ar {
   direction: rtl;
   text-align: right;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.9;
-  color: #1F1F1F;
+  color: #fffdf5;
+  font-weight: 700;
   margin: 0 0 10px;
   padding: 0;
   font-family: 'Amiri', 'Scheherazade New', 'Arabic Typesetting', serif;
   font-style: normal;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .votd-ref {
   font-size: 12px;
-  font-weight: 700;
-  color: #C7511F;
+  font-weight: 800;
+  color: rgba(255, 220, 130, 0.95);
+  letter-spacing: 0.02em;
 }
 
 .votd-ref-ar {
@@ -3897,8 +3938,8 @@ button {
 /* ── Divider ─────────────────────────────────────────────────── */
 .votd-divider {
   height: 1px;
-  margin: 0 20px;
-  background: linear-gradient(90deg, transparent, rgba(199, 81, 31, 0.20), transparent);
+  margin: 0 18px;
+  background: linear-gradient(90deg, transparent, rgba(255, 200, 80, 0.35), transparent);
 }
 
 /* ── CTA Button ─────────────────────────────────────────────── */

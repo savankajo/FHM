@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import VerseOfTheDayCard from '@/components/home/verse-of-day';
-import { SermonSeriesSection, PodcastSeriesSection } from '@/components/home/series-sections';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,20 +34,6 @@ export default async function HomePage() {
     ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}`, thumbnailUrl: s.thumbnailUrl ?? null })),
     ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast', thumbnailUrl: p.thumbnailUrl ?? null }))
   ].sort(() => -1).slice(0, 3);
-
-  // Fetch Sermon Series data (more sermons for grouping)
-  const allSermons = await prisma.sermon.findMany({
-    orderBy: { date: 'desc' },
-    take: 40,
-    select: { id: true, title: true, speaker: true, thumbnailUrl: true }
-  });
-
-  // Fetch Podcast Series data
-  const allPodcasts = await prisma.podcastEpisode.findMany({
-    orderBy: { publishedAt: 'desc' },
-    take: 8,
-    select: { id: true, title: true, thumbnailUrl: true }
-  });
 
   return (
     <div className="home-page-container">
@@ -227,12 +212,6 @@ export default async function HomePage() {
           </div>
         )}
       </section>
-
-      {/* ── Sermon Series ────────────────────────────────── */}
-      <SermonSeriesSection sermons={allSermons} />
-
-      {/* ── Podcast Series ───────────────────────────────── */}
-      <PodcastSeriesSection podcasts={allPodcasts} />
 
       {/* Bottom padding for nav */}
       <div style={{ height: '24px' }} />
