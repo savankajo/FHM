@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { addTeamMember, removeTeamMember } from '@/app/actions/team-admin';
 
 type Member = {
@@ -10,29 +9,31 @@ type Member = {
     email: string;
 };
 
+function getRoleBadge(email: string) {
+    // Derive a short role label from email domain hints or fallback
+    if (email.includes('admin') || email.includes('ministry')) return 'AD';
+    return 'SA';
+}
+
 export default function TeamMemberManager({ teamId, members, allUsers }: { teamId: string, members: Member[], allUsers: Member[] }) {
     const [selectedEmail, setSelectedEmail] = useState('');
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [loading, setLoading] = useState(false);
 
-    // Filter out users who are already members
     const availableUsers = allUsers.filter(u => !members.some(m => m.id === u.id));
 
-    async function handleAdd(formData: FormData) {
+    async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
         setLoading(true);
         setStatus(null);
-        // Use selectedEmail from state as fallback/primary if not in formData (select usually works with formData though)
-        // But since we use controlled select, we can pass it directly or let formData pick it up.
-        // The form action will receive formData.
-        const email = formData.get('email') as string;
 
-        if (!email) {
+        if (!selectedEmail) {
             setStatus({ type: 'error', message: 'Please select a user' });
             setLoading(false);
             return;
         }
 
-        const result = await addTeamMember(teamId, email);
+        const result = await addTeamMember(teamId, selectedEmail);
 
         if (result.error) {
             setStatus({ type: 'error', message: result.error });
@@ -45,7 +46,6 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
 
     async function handleRemove(userId: string) {
         if (!confirm('Are you sure you want to remove this member?')) return;
-
         const result = await removeTeamMember(teamId, userId);
         if (result.error) {
             alert(result.error);
@@ -53,59 +53,101 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
     }
 
     return (
-        <div className="space-y-6">
-            <div className="bg-white p-4 rounded shadow border border-gray-100">
-                <h3 className="font-bold mb-3 text-lg">Add Team Member</h3>
-                <form action={handleAdd} className="flex gap-2">
-                    <select
-                        name="email"
-                        className="flex-1 p-2 border rounded bg-gray-50 text-black"
-                        required
-                        value={selectedEmail}
-                        onChange={e => setSelectedEmail(e.target.value)}
-                    >
-                        <option value="">-- Select a User --</option>
-                        {availableUsers.map(user => (
-                            <option key={user.id} value={user.email}>
-                                {user.name || user.email} ({user.email})
+        <div className="atm-member-manager">
+            {/* Add Team Member Card */}
+            <div className="atm-card atm-add-member-card">
+                <div className="atm-card-label">Add Team Member</div>
+                <form onSubmit={handleAdd} className="atm-add-form">
+                    <div className="atm-select-wrap">
+                        <select
+                            name="email"
+                            className="atm-select"
+                            required
+                            value={selectedEmail}
+                            onChange={e => setSelectedEmail(e.target.value)}
+                            disabled={availableUsers.length === 0}
+                        >
+                            <option value="">
+                                {availableUsers.length === 0 ? 'All users are members' : '— Select a User —'}
                             </option>
-                        ))}
-                    </select>
-                    <Button type="submit" disabled={loading || !selectedEmail}>
-                        {loading ? 'Adding...' : 'Add Member'}
-                    </Button>
+                            {availableUsers.map(user => (
+                                <option key={user.id} value={user.email}>
+                                    {user.name || user.email} ({user.email})
+                                </option>
+                            ))}
+                        </select>
+                        <span className="atm-select-chevron">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </span>
+                    </div>
+
+                    <div className="atm-add-form-footer">
+                        {status && (
+                            <p className={`atm-status-msg ${status.type === 'error' ? 'atm-status-error' : 'atm-status-success'}`}>
+                                {status.type === 'success' ? '✓ ' : '⚠ '}{status.message}
+                            </p>
+                        )}
+                        <button
+                            type="submit"
+                            className="atm-btn-primary"
+                            disabled={loading || !selectedEmail}
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="atm-spinner" />
+                                    Adding...
+                                </>
+                            ) : (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    Add Member
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </form>
-                {status && (
-                    <p className={`mt-2 text-sm ${status.type === 'error' ? 'text-red-500' : 'text-green-600'}`}>
-                        {status.message}
-                    </p>
-                )}
             </div>
 
-            <div className="bg-white p-4 rounded shadow border border-gray-100">
-                <h3 className="font-bold mb-3 text-lg">Current Members ({members.length})</h3>
+            {/* Confirmed Members List */}
+            <div className="atm-card atm-members-card">
+                <div className="atm-card-label">
+                    Confirmed Members
+                    <span className="atm-member-count">{members.length}</span>
+                </div>
+
                 {members.length === 0 ? (
-                    <p className="text-gray-500 text-sm italic">No members in this team.</p>
+                    <div className="atm-members-empty">
+                        <span style={{ fontSize: '28px', opacity: 0.4 }}>👥</span>
+                        <p>No members yet. Add your first team member above.</p>
+                    </div>
                 ) : (
-                    <ul className="space-y-2">
-                        {members.map(member => (
-                            <li key={member.id} className="flex justify-between items-center border-b pb-2 last:border-0">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                        {(member.name || member.email).substring(0, 2).toUpperCase()}
+                    <ul className="atm-members-scroll-list">
+                        {members.map(member => {
+                            const initials = (member.name || member.email).substring(0, 2).toUpperCase();
+                            const role = getRoleBadge(member.email);
+                            return (
+                                <li key={member.id} className="atm-member-row">
+                                    <div className="atm-member-left">
+                                        <span className="atm-role-pill">{role}</span>
+                                        <div className="atm-member-info">
+                                            <div className="atm-member-name">{member.name || initials}</div>
+                                            <div className="atm-member-email">{member.email}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="font-medium">{member.name || 'Unnamed'}</div>
-                                        <div className="text-xs text-gray-500">{member.email}</div>
-                                    </div>
-                                </div>
-                                <form action={() => handleRemove(member.id)}>
-                                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                    <button
+                                        className="atm-remove-btn"
+                                        onClick={() => handleRemove(member.id)}
+                                        aria-label={`Remove ${member.name || member.email}`}
+                                    >
                                         Remove
-                                    </Button>
-                                </form>
-                            </li>
-                        ))}
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </div>

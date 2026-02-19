@@ -18,18 +18,18 @@ export default async function HomePage() {
   const recentSermons = await prisma.sermon.findMany({
     orderBy: { date: 'desc' },
     take: 2,
-    select: { id: true, title: true, speaker: true, videoUrl: true }
+    select: { id: true, title: true, speaker: true, videoUrl: true, thumbnailUrl: true }
   });
 
   const recentPodcasts = await prisma.podcastEpisode.findMany({
     orderBy: { publishedAt: 'desc' },
     take: 1,
-    select: { id: true, title: true, publishedAt: true }
+    select: { id: true, title: true, publishedAt: true, thumbnailUrl: true }
   });
 
   const uploads = [
-    ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}` })),
-    ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast' }))
+    ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}`, thumbnailUrl: s.thumbnailUrl ?? null })),
+    ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast', thumbnailUrl: p.thumbnailUrl ?? null }))
   ].sort(() => -1).slice(0, 3);
 
   return (
@@ -161,14 +161,23 @@ export default async function HomePage() {
           <div className="recent-scroll-wrap">
             {uploads.map((item, i) => (
               <Link href={item.url} key={i} className="recent-card">
-                <div className="recent-card-thumb" style={{
-                  background: item.type === 'sermon'
-                    ? 'linear-gradient(135deg, #3a1a08, #C7511F)'
-                    : 'linear-gradient(135deg, #1a0830, #7c3aed)'
-                }}>
-                  <span className="recent-card-thumb-icon">
-                    {item.type === 'sermon' ? '🎥' : '🎧'}
-                  </span>
+                <div
+                  className="recent-card-thumb"
+                  style={item.thumbnailUrl ? {
+                    backgroundImage: `url(${item.thumbnailUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  } : {
+                    background: item.type === 'sermon'
+                      ? 'linear-gradient(135deg, #3a1a08, #C7511F)'
+                      : 'linear-gradient(135deg, #1a0830, #7c3aed)'
+                  }}
+                >
+                  {!item.thumbnailUrl && (
+                    <span className="recent-card-thumb-icon">
+                      {item.type === 'sermon' ? '🎥' : '🎧'}
+                    </span>
+                  )}
                   <div className="recent-card-play">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                       <polygon points="5,3 19,12 5,21" />

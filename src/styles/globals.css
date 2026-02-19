@@ -3067,3 +3067,687 @@ button {
     transform: rotate(360deg);
   }
 }
+
+/* ============================================================
+   HOME PAGE — Recent Card Thumbnail (match media page style)
+   ============================================================ */
+
+.recent-card-thumb {
+  width: 100%;
+  height: 95px;
+  background: linear-gradient(135deg, #3a1a08, #7a3010);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ============================================================
+   ADMIN TEAM MANAGE PAGE  (atm-* namespace)
+   ============================================================ */
+
+/* ── Page container: breaks out of the 480px mobile shell ──── */
+.atm-page {
+  /* Expand beyond the .container max-width on wide screens */
+  width: 100%;
+  padding-bottom: 100px;
+  /* above bottom nav */
+}
+
+/* ── Override the root container on admin team manage page ─── */
+/* 
+  The root layout wraps everything in .container (max-width: 480px).
+  We lift the constraint by letting .atm-page use negative margins
+  to fill parent width, then pin its own max-width.
+*/
+.atm-page {
+  /* Simply let the content be full width up to a sensible max */
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Page Header ───────────────────────────────────────────── */
+.atm-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px var(--page-px) 16px;
+  background: var(--bg-app);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.atm-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--transition);
+  box-shadow: var(--shadow-xs);
+  flex-shrink: 0;
+}
+
+.atm-back-btn:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+  transform: translateX(-2px);
+}
+
+.atm-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.atm-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.atm-subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Body: 2-column grid ───────────────────────────────────── */
+.atm-body {
+  padding: 24px var(--page-px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .atm-body {
+    grid-template-columns: 55fr 45fr;
+    align-items: start;
+  }
+}
+
+.atm-col-left,
+.atm-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Section labels ────────────────────────────────────────── */
+.atm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.atm-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+/* ── Base Card ─────────────────────────────────────────────── */
+.atm-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  border: 1px solid var(--border-light);
+}
+
+.atm-card-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Member count badge ────────────────────────────────────── */
+.atm-member-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-glow);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Add Member section ────────────────────────────────────── */
+.atm-member-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.atm-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Custom Select ─────────────────────────────────────────── */
+.atm-select-wrap {
+  position: relative;
+}
+
+.atm-select {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 44px 12px 16px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--bg-muted);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-primary);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+
+.atm-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: var(--bg-card);
+}
+
+.atm-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.atm-select-chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Add Form Footer (status + button) ─────────────────────── */
+.atm-add-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── Primary Button ────────────────────────────────────────── */
+.atm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-orange);
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.atm-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(199, 81, 31, 0.38);
+}
+
+.atm-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.atm-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Mobile: full-width button */
+@media (max-width: 899px) {
+  .atm-add-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .atm-btn-primary {
+    width: 100%;
+  }
+}
+
+/* ── Status messages ───────────────────────────────────────── */
+.atm-status-msg {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  flex: 1;
+}
+
+.atm-status-error {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.atm-status-success {
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+/* ── Members scrollable list ───────────────────────────────── */
+/* Mobile: no inner scroll — page scrolls naturally */
+.atm-members-scroll-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  overflow: visible;
+}
+
+/* Desktop only: inner scroll so left column doesn't grow too tall */
+@media (min-width: 900px) {
+  .atm-members-scroll-list {
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .atm-members-scroll-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .atm-members-scroll-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .atm-members-scroll-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+}
+
+.atm-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  transition: var(--transition-fast);
+}
+
+.atm-member-row:last-child {
+  border-bottom: none;
+}
+
+.atm-member-row:hover {
+  background: var(--bg-muted);
+}
+
+.atm-member-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* ── Role Pill Badge ───────────────────────────────────────── */
+.atm-role-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--primary-glow);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  min-width: 32px;
+}
+
+.atm-member-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.atm-member-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atm-member-email {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Remove Button ─────────────────────────────────────────── */
+.atm-remove-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  background: transparent;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.atm-remove-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+/* ── Members Empty State ───────────────────────────────────── */
+.atm-members-empty {
+  text-align: center;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.atm-members-empty p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Scheduled Services ────────────────────────────────────── */
+/* Mobile: no inner scroll — page scrolls naturally */
+.atm-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+}
+
+/* Desktop only: inner scroll */
+@media (min-width: 900px) {
+  .atm-services-list {
+    max-height: 360px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .atm-services-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .atm-services-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+}
+
+.atm-service-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: 14px 16px;
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.atm-service-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--border);
+}
+
+.atm-service-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.atm-service-day {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.atm-service-title-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.atm-service-datetime {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.atm-volunteer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary-glow);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ───────────────────────────────────────────── */
+.atm-empty {
+  text-align: center;
+  padding: 32px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.atm-empty-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+.atm-empty p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Add Service Form ──────────────────────────────────────── */
+.atm-service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.atm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.atm-form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.atm-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--bg-muted);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: var(--transition);
+  outline: none;
+}
+
+.atm-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: var(--bg-card);
+}
+
+.atm-input::placeholder {
+  color: var(--text-muted);
+}
+
+.atm-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+
+.atm-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+@media (max-width: 899px) {
+  .atm-form-footer {
+    justify-content: stretch;
+  }
+
+  .atm-form-footer .atm-btn-primary {
+    width: 100%;
+  }
+}
+
+/* ── Success banner for service form ───────────────────────── */
+.atm-success-banner {
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: #16a34a;
+  text-align: center;
+}
+
+/* ── Spinner ───────────────────────────────────────────────── */
+.atm-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Wide screen override for .container constraint ─────────── */
+/*
+  On mobile the .container max-width: 480px is fine — phone screens
+  are ≤ 430px so the page fills the screen and scrolls naturally.
+
+  On desktop (≥ 900px) we escape the 480px cap so the 2-column
+  layout can breathe. We use a viewport-width approach.
+*/
+@media (min-width: 900px) {
+
+  /* Make atm-page break out of the narrow container */
+  .atm-page {
+    width: 100vw;
+    max-width: 1100px;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .atm-header,
+  .atm-body {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+/* ── Ensure the page always scrolls on mobile ──────────────── */
+/* (guard against any ancestor overflow:hidden) */
+.atm-page * {
+  /* reset any accidental overflow hidden on children */
+  -webkit-overflow-scrolling: touch;
+}
+
+.atm-body {
+  /* Prevent any horizontal overflow that would break mobile */
+  overflow-x: hidden;
+}
+
+.atm-card {
+  /* Inputs inside cards must not overflow on small screens */
+  word-break: break-word;
+}
