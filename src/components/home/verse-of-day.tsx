@@ -253,70 +253,50 @@ export default function VerseOfTheDayCard() {
     const arUrl = bibleUrl(ARABIC_VERSION, verse.book, verse.chapter, verse.verse);
 
     return (
-        // votd-wrap adds the 20px side margins
         <div className="votd-wrap">
             <div
                 className={`votd-card ${mounted ? 'votd-visible' : 'votd-hidden'}`}
                 style={{ backgroundImage: `url(${verse.bg})` }}
             >
-                {/* Warm amber overlay so text stays readable over the photo */}
                 <div className="votd-overlay" />
 
-                {/* ── Header ── */}
-                <div className="votd-header">
-                    <div className="votd-header-left">
-                        <span className="votd-icon">📖</span>
-                        <span className="votd-label">Verse of the Day</span>
+                <div className="votd-content text-center">
+                    {/* ── English Verse ── */}
+                    <div className="px-4">
+                        <blockquote className="votd-verse-en">
+                            "{verse.en.replace(/^"|"$/g, '')}"
+                        </blockquote>
+                        <div className="votd-ref">{verse.ref} (NIV)</div>
                     </div>
-                    <span className="votd-date">{today}</span>
+
+                    <div className="votd-divider" />
+
+                    {/* ── Arabic Verse ── */}
+                    <div className="px-4">
+                        <blockquote className="votd-verse-ar">{verse.ar}</blockquote>
+                        <div className="votd-ref">{verse.refAr}</div>
+                    </div>
                 </div>
 
-                {/* ── English (NIV) — taps open Bible app ── */}
-                <a
-                    href={enUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="votd-lang-block votd-lang-link"
-                    aria-label={`Read ${verse.ref} in English NIV on Bible app`}
-                >
-                    <span className="votd-lang-badge">🇬🇧 English (NIV)</span>
-                    <blockquote className="votd-verse-en">{verse.en}</blockquote>
-                    <div className="votd-ref">{verse.ref} (NIV)</div>
-                </a>
+                {/* ── Footer ── */}
+                <div className="votd-footer">
+                    <div className="votd-actions">
+                        <button className="votd-action-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                            Like
+                        </button>
+                        <button className="votd-action-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                            Share
+                        </button>
+                    </div>
 
-                {/* ── Divider ── */}
-                <div className="votd-divider" />
-
-                {/* ── Arabic (Van Dyck / KJV) — taps open Bible app ── */}
-                <a
-                    href={arUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="votd-lang-block votd-lang-link votd-rtl"
-                    aria-label={`Read ${verse.refAr} in Arabic on Bible app`}
-                >
-                    <span className="votd-lang-badge votd-badge-ar">🇸🇦 العربية (KJV)</span>
-                    <blockquote className="votd-verse-ar">{verse.ar}</blockquote>
-                    <div className="votd-ref votd-ref-ar">{verse.refAr}</div>
-                </a>
-
-                {/* ── Read Full Chapter button ── */}
-                <a
-                    href={enUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="votd-read-btn"
-                >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                    Read Full Chapter
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M7 17L17 7M17 7H7M17 7v10" />
-                    </svg>
-                </a>
+                    <a href={enUrl} target="_blank" rel="noopener noreferrer" className="votd-read-link">
+                        Read Full Chapter
+                    </a>
+                </div>
             </div>
         </div>
     );
 }
+

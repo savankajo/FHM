@@ -3757,193 +3757,153 @@ button {
    ════════════════════════════════════════════════════════════ */
 
 .votd-wrap {
-  padding: 0 var(--page-px, 20px);
-  margin-bottom: 4px;
+  padding: 0 24px;
+  margin-bottom: 24px;
 }
 
 /* Entry animation */
 .votd-hidden {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(12px);
 }
 
 .votd-visible {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* ── Card shell — nature photo background ───────────────────── */
 .votd-card {
   background-size: cover;
-  background-position: center center;
-  background-color: #5a2a00;
-  /* fallback while image loads */
-  border-radius: 20px;
-  border: 1px solid rgba(220, 160, 40, 0.30);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    0 2px 6px rgba(0, 0, 0, 0.20);
+  background-position: center;
+  background-color: #1a1a1a;
+  border-radius: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   position: relative;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px 20px;
 }
 
-/* Warm amber tint overlay — keeps text readable over any photo */
+/* Dark gradient overlay for a cinematic look */
 .votd-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg,
-      rgba(30, 8, 0, 0.80) 0%,
-      rgba(80, 30, 0, 0.68) 30%,
-      rgba(140, 65, 0, 0.52) 65%,
-      rgba(190, 100, 0, 0.44) 100%);
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.6) 60%,
+      rgba(0, 0, 0, 0.9) 100%);
   z-index: 0;
   pointer-events: none;
 }
 
-/* All content sits above the overlay */
-.votd-header,
-.votd-lang-block,
-.votd-divider,
-.votd-read-btn {
+/* Content sitting above the overlay */
+.votd-content {
   position: relative;
   z-index: 1;
-}
-
-
-
-/* ── Header row ─────────────────────────────────────────────── */
-.votd-header {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 18px 12px;
-  border-bottom: 1px solid rgba(255, 200, 80, 0.20);
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
 }
 
-.votd-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.votd-icon {
-  font-size: 18px;
-  line-height: 1;
-  filter: drop-shadow(0 1px 3px rgba(255, 200, 60, 0.6));
-}
-
-.votd-label {
-  font-weight: 800;
-  font-size: 14px;
-  color: #fff8e8;
-  letter-spacing: 0.02em;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-.votd-date {
-  font-size: 11px;
-  color: rgba(255, 230, 160, 0.85);
-  font-weight: 600;
-}
-
-/* ── Language blocks ────────────────────────────────────────── */
-.votd-lang-block {
-  padding: 18px 20px 14px;
-}
-
-.votd-lang-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: rgba(199, 81, 31, 0.10);
-  color: #C7511F;
-  border-radius: 20px;
-  padding: 3px 10px;
-  margin-bottom: 10px;
-}
-
-.votd-badge-ar {
-  font-size: 11px;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* English verse — bold serif, slightly larger */
+/* English verse — elegant serif */
 .votd-verse-en {
-  font-size: 17px;
-  line-height: 1.75;
-  color: #fffdf5;
-  font-style: normal;
-  font-weight: 700;
-  margin: 8px 0 10px;
-  padding: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  font-size: 20px;
+  line-height: 1.6;
+  color: #ffffff;
+  font-style: italic;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  margin: 0 auto;
 }
 
-/* Arabic verse — bold Arabic serif, slightly larger */
+/* Arabic verse — elegant Arabic font */
 .votd-verse-ar {
-  direction: rtl;
-  text-align: right;
-  font-size: 18px;
-  line-height: 1.9;
-  color: #fffdf5;
-  font-weight: 700;
-  margin: 8px 0 10px;
-  padding: 0;
   font-family: 'Amiri', 'Scheherazade New', 'Arabic Typesetting', serif;
-  font-style: normal;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  font-size: 24px;
+  line-height: 1.8;
+  color: #ffffff;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  direction: rtl;
 }
 
 .votd-ref {
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(255, 220, 130, 0.95);
-  letter-spacing: 0.02em;
-}
-
-.votd-ref-ar {
-  direction: rtl;
-  text-align: right;
-}
-
-/* RTL block */
-.votd-rtl {
-  direction: rtl;
-}
-
-/* ── Divider ─────────────────────────────────────────────────── */
-.votd-divider {
-  height: 1px;
-  margin: 0 18px;
-  background: linear-gradient(90deg, transparent, rgba(255, 200, 80, 0.35), transparent);
-}
-
-/* ── CTA Button ─────────────────────────────────────────────── */
-.votd-read-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  margin: 14px 20px 18px;
-  padding: 11px 20px;
-  background: linear-gradient(135deg, #C7511F 0%, #e06030 100%);
-  color: #fff;
   font-size: 13px;
   font-weight: 700;
-  border-radius: 12px;
-  text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 3px 10px rgba(199, 81, 31, 0.30);
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 8px;
 }
 
-.votd-read-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 14px rgba(199, 81, 31, 0.38);
+.votd-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 8px 0;
+}
+
+/* ── Footer Actions ────────────────────────────────────────── */
+.votd-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 4px 10px;
+}
+
+.votd-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.votd-action-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.votd-action-link:hover {
+  opacity: 1;
+}
+
+.votd-action-link svg {
+  stroke-width: 2.5;
+}
+
+.votd-read-link {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+.votd-read-link:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 /* ════════════════════════════════════════════════════════════
