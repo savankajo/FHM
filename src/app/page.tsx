@@ -108,9 +108,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── Verse of the Day ─────────────────────────────── */}
-      <div className="votd-wrap">
-        <VerseOfTheDayCard />
-      </div>
+      <VerseOfTheDayCard />
 
       {/* ── Quick Actions ────────────────────────────────── */}
       <div className="quick-actions-grid">

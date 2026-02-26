@@ -248,9 +248,32 @@ export default function VerseOfTheDayCard() {
         return () => clearTimeout(timer);
     }, []);
 
+    const [isLiked, setIsLiked] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('fhm_liked_verses');
+        if (saved) {
+            const liked = JSON.parse(saved);
+            if (liked.includes(verseIndex)) setIsLiked(true);
+        }
+    }, [verseIndex]);
+
+    const toggleLike = () => {
+        const saved = localStorage.getItem('fhm_liked_verses');
+        let liked = saved ? JSON.parse(saved) : [];
+
+        if (isLiked) {
+            liked = liked.filter((i: number) => i !== verseIndex);
+        } else {
+            liked.push(verseIndex);
+        }
+
+        localStorage.setItem('fhm_liked_verses', JSON.stringify(liked));
+        setIsLiked(!isLiked);
+    };
+
     const verse = VERSES[verseIndex];
     const enUrl = bibleUrl(NIV_VERSION, verse.book, verse.chapter, verse.verse);
-    const arUrl = bibleUrl(ARABIC_VERSION, verse.book, verse.chapter, verse.verse);
 
     return (
         <div className="votd-wrap">
@@ -281,12 +304,26 @@ export default function VerseOfTheDayCard() {
                 {/* ── Footer ── */}
                 <div className="votd-footer">
                     <div className="votd-actions">
-                        <button className="votd-action-link">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                            Like
+                        <button
+                            className={`votd-action-link ${isLiked ? 'active' : ''}`}
+                            onClick={toggleLike}
+                        >
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill={isLiked ? 'currentColor' : 'none'}
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                            {isLiked ? 'Liked' : 'Like'}
                         </button>
                         <button className="votd-action-link">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
                             Share
                         </button>
                     </div>
@@ -299,4 +336,5 @@ export default function VerseOfTheDayCard() {
         </div>
     );
 }
+
 

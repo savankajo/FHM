@@ -59,6 +59,26 @@
   --transition-fast: all 0.15s ease;
 }
 
+/* ── Dark Mode Overrides ────────────────────────────────────── */
+.dark {
+  --bg-app: #0A0A0A;
+  --bg-card: #141414;
+  --bg-muted: #1A1A1A;
+  --bg-overlay: rgba(10, 10, 10, 0.95);
+
+  --text-primary: #F5F5F5;
+  --text-secondary: #A0A0A0;
+  --text-muted: #666666;
+
+  --border: #262626;
+  --border-light: #1F1F1F;
+
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
 /* ── Reset & Base ──────────────────────────────────────────── */
 *,
 *::before,
