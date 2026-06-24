@@ -2579,6 +2579,180 @@ button {
 }
 
 /* ============================================================
+   ADMIN LIST PAGES
+   ============================================================ */
+.admin-list-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px var(--page-px) 110px;
+}
+
+.admin-list-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-list-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.admin-list-title-copy {
+  min-width: 0;
+}
+
+.admin-list-create {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.admin-list-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.admin-list-card-link {
+  transition: var(--transition);
+}
+
+.admin-list-card-link:hover {
+  border-color: rgba(199, 81, 31, 0.42);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+  transform: translateY(-1px);
+}
+
+.admin-list-card-main {
+  min-width: 0;
+}
+
+.admin-list-card-main h2 {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-list-card-main p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.admin-list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-list-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(199, 81, 31, 0.14);
+  color: var(--primary-light);
+}
+
+.admin-delete-btn {
+  color: #FF8A8A;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.admin-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.admin-empty-state {
+  padding: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  background: var(--bg-card);
+  text-align: center;
+}
+
+.admin-empty-state h2 {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.admin-empty-state p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+@media (max-width: 520px) {
+  .admin-list-page {
+    padding-top: 14px;
+  }
+
+  .admin-list-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .admin-list-title-row {
+    align-items: center;
+  }
+
+  .admin-list-create,
+  .admin-list-create .btn {
+    width: 100%;
+  }
+
+  .admin-list-card {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .admin-list-card-link {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .admin-list-actions {
+    justify-content: stretch;
+  }
+
+  .admin-list-actions a,
+  .admin-list-actions .btn {
+    flex: 1;
+  }
+}
+
+/* ============================================================
    SETTINGS
    ============================================================ */
 .settings-page {

@@ -1,4 +1,5 @@
 'use client';
+
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
@@ -11,5 +12,5 @@ export default function DeletePodcastButton({ id }: { id: string }) {
         router.refresh();
     };
 
-    return <Button variant="ghost" className="text-red-500" onClick={handleDelete}>🗑️</Button>;
+    return <Button variant="ghost" size="sm" className="admin-delete-btn" onClick={handleDelete}>Delete</Button>;
 }
