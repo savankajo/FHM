@@ -10,6 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@netlify/database": "^1.1.0",
     "@prisma/client": "^5.10.2",
     "bcrypt": "^5.1.1",
     "clsx": "^2.1.1",

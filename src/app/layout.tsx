@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Outfit } from 'next/font/google'
 import { Providers } from '@/components/providers'
 import { BottomNav } from '@/components/layout/bottom-nav'
@@ -10,7 +10,12 @@ export const metadata: Metadata = {
     title: 'FHM Church',
     description: 'Father Heart Church App',
     manifest: '/manifest.json',
-    viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+}
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
 }
 
 export default function RootLayout({
