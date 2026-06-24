@@ -16,18 +16,23 @@ export default async function AdminUsersPage() {
     const users = await prisma.user.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
-            // Include team memberships to show if they belong to any
             teams: { select: { name: true } }
         }
     });
 
     return (
         <div className="p-4 max-w-4xl mx-auto pb-24">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <Link href="/admin" className="text-sm text-gray-500 hover:text-primary mb-2 block">← Back to Dashboard</Link>
-                    <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
-                    <p className="text-gray-500 text-sm">Total Users: {users.length}</p>
+            <div className="admin-topbar">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin" className="page-back-btn" aria-label="Back to Admin Dashboard">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
+                        <p className="text-gray-500 text-sm">Total Users: {users.length}</p>
+                    </div>
                 </div>
             </div>
 
@@ -56,8 +61,8 @@ export default async function AdminUsersPage() {
                                         <td className="p-4 text-gray-600">{user.email}</td>
                                         <td className="p-4">
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.role === 'ADMIN'
-                                                    ? 'bg-purple-100 text-purple-700'
-                                                    : 'bg-green-100 text-green-700'
+                                                ? 'bg-purple-100 text-purple-700'
+                                                : 'bg-green-100 text-green-700'
                                                 }`}>
                                                 {user.role}
                                             </span>

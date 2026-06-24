@@ -54,7 +54,6 @@ export default function EditEventForm({ event }: EditEventFormProps) {
         }
     };
 
-    // Format datetime for input (YYYY-MM-DDTHH:mm)
     const formatDateTimeLocal = (date: any) => {
         if (!date) return '';
         const d = new Date(date);
@@ -68,9 +67,17 @@ export default function EditEventForm({ event }: EditEventFormProps) {
 
     return (
         <div>
-            <Link href="/admin/events" className="text-sm text-gray-500 hover:text-primary mb-4 block">
-                ← Back to Events
-            </Link>
+            <header className="page-header" style={{ paddingLeft: 0, paddingRight: 0 }}>
+                <Link href="/admin/events" className="page-back-btn" aria-label="Back to Events">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </Link>
+                <div>
+                    <h1 className="page-title">Edit Event</h1>
+                    <p className="page-kicker">Update event details</p>
+                </div>
+            </header>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <Input

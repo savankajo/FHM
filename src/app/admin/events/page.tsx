@@ -15,10 +15,17 @@ export default async function AdminEventsPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <Link href="/admin" className="text-sm text-gray-500 hover:text-primary mb-2 block">← Back to Admin</Link>
-                    <h1 className="text-3xl font-bold">Manage Events</h1>
+            <div className="admin-topbar">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin" className="page-back-btn" aria-label="Back to Admin Dashboard">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold">Manage Events</h1>
+                        <p className="page-kicker">Create and update event listings</p>
+                    </div>
                 </div>
                 <Link href="/admin/events/new"><Button>+ New Event</Button></Link>
             </div>
@@ -43,27 +50,27 @@ export default async function AdminEventsPage() {
 
                                         {firstLocation && (
                                             <div className="text-sm text-gray-500 mb-2">
-                                                📍 {firstLocation.name}
+                                                {firstLocation.name}
                                                 {locations.length > 1 && ` (+${locations.length - 1} more)`}
                                             </div>
                                         )}
 
                                         {firstLocation?.startTime && (
                                             <div className="text-sm text-gray-500 mb-3">
-                                                📅 {new Date(firstLocation.startTime).toLocaleDateString()} at {new Date(firstLocation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {new Date(firstLocation.startTime).toLocaleDateString()} at {new Date(firstLocation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         )}
 
                                         {event.votingDeadline && (
                                             <div className="text-sm text-orange-600 mb-3">
-                                                ⏰ Voting deadline: {new Date(event.votingDeadline).toLocaleDateString()}
+                                                Voting deadline: {new Date(event.votingDeadline).toLocaleDateString()}
                                             </div>
                                         )}
 
                                         <div className="flex gap-4 text-sm">
-                                            <span className="text-green-600 font-semibold">✓ {yesCount} Yes</span>
-                                            <span className="text-yellow-600 font-semibold">? {maybeCount} Maybe</span>
-                                            <span className="text-red-600 font-semibold">✗ {noCount} No</span>
+                                            <span className="text-green-600 font-semibold">{yesCount} Yes</span>
+                                            <span className="text-yellow-600 font-semibold">{maybeCount} Maybe</span>
+                                            <span className="text-red-600 font-semibold">{noCount} No</span>
                                         </div>
                                     </div>
 

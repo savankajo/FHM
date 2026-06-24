@@ -2456,21 +2456,29 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  border-radius: var(--radius-md);
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 16px;
   background: var(--bg-card);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
+  border: 1.5px solid rgba(199, 81, 31, 0.22);
+  box-shadow: 0 8px 24px rgba(61, 31, 18, 0.10);
+  color: var(--primary);
   text-decoration: none;
   transition: var(--transition);
   flex-shrink: 0;
 }
 
+.page-back-btn svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.75;
+}
+
 .page-back-btn:hover {
-  background: var(--bg-muted);
-  box-shadow: var(--shadow-md);
+  background: var(--primary-glow);
+  border-color: rgba(199, 81, 31, 0.45);
+  box-shadow: 0 10px 28px rgba(199, 81, 31, 0.16);
   transform: translateX(-2px);
 }
 
@@ -2484,8 +2492,8 @@ button {
 .page-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px var(--page-px) 12px;
+  gap: 14px;
+  padding: 18px var(--page-px) 14px;
 }
 
 .page-title {
@@ -2494,6 +2502,34 @@ button {
   color: var(--text-primary);
   letter-spacing: -0.3px;
   margin: 0;
+}
+
+.page-kicker {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.content-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 var(--page-px) 110px;
+}
+
+.content-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
 }
 
 /* ============================================================
@@ -3147,10 +3183,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  border-radius: var(--radius-md);
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 16px;
   background: var(--bg-card);
   border: 1.5px solid var(--border);
   color: var(--primary);
@@ -3164,6 +3200,12 @@ button {
   background: var(--primary-glow);
   border-color: var(--primary);
   transform: translateX(-2px);
+}
+
+.atm-back-btn svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.75;
 }
 
 .atm-header-text {

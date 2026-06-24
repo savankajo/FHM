@@ -36,8 +36,17 @@ export default function AdminLiveLinkPage() {
 
     return (
         <div className="p-4 max-w-lg mx-auto">
-            <Link href="/admin" className="text-sm text-gray-500 hover:text-primary mb-4 block">← Back to Admin</Link>
-            <h1 className="text-2xl font-bold mb-6">Manage Live Link</h1>
+            <header className="page-header" style={{ paddingLeft: 0, paddingRight: 0 }}>
+                <Link href="/admin" className="page-back-btn" aria-label="Back to Admin Dashboard">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </Link>
+                <div>
+                    <h1 className="page-title">Manage Live Link</h1>
+                    <p className="page-kicker">Update the service stream</p>
+                </div>
+            </header>
 
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <form action={handleCreate} className="space-y-4">
