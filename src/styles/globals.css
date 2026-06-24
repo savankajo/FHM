@@ -2611,6 +2611,17 @@ button {
   text-decoration: none;
 }
 
+.admin-list-create .btn {
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
+  box-shadow: var(--shadow-orange);
+}
+
+.admin-list-create .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(199, 81, 31, 0.38);
+}
+
 .admin-list-stack {
   display: grid;
   gap: 14px;
