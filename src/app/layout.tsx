@@ -16,6 +16,7 @@ export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
+    themeColor: '#0A0A0A',
 }
 
 export default function RootLayout({
@@ -24,7 +25,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
             <body className={outfit.className}>
                 <Providers>
                     <main className="container">
