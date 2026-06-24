@@ -2607,17 +2607,23 @@ button {
 }
 
 .admin-list-create {
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
-.admin-list-create .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 45px;
+  padding: 13px 24px;
+  border-radius: var(--radius-lg);
   background: var(--gradient-primary);
   color: var(--text-on-primary);
   box-shadow: var(--shadow-orange);
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition);
 }
 
-.admin-list-create .btn:hover {
+.admin-list-create:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(199, 81, 31, 0.38);
 }
@@ -2681,6 +2687,25 @@ button {
   flex-shrink: 0;
 }
 
+.admin-list-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-md);
+  color: var(--primary-light);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.admin-list-action-link:hover {
+  background: var(--primary-glow);
+}
+
 .admin-list-chevron {
   display: flex;
   align-items: center;
@@ -2737,8 +2762,7 @@ button {
     align-items: center;
   }
 
-  .admin-list-create,
-  .admin-list-create .btn {
+  .admin-list-create {
     width: 100%;
   }
 
@@ -2757,7 +2781,7 @@ button {
     justify-content: stretch;
   }
 
-  .admin-list-actions a,
+  .admin-list-action-link,
   .admin-list-actions .btn {
     flex: 1;
   }

@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import DeletePodcastButton from './delete-button';
 
@@ -22,9 +21,7 @@ export default async function AdminPodcastsPage() {
                         <p className="page-kicker">{podcasts.length} podcast episodes</p>
                     </div>
                 </div>
-                <Link href="/admin/podcasts/new" className="admin-list-create">
-                    <Button>+ New Episode</Button>
-                </Link>
+                <Link href="/admin/podcasts/new" className="admin-list-create">+ New Episode</Link>
             </div>
 
             <div className="admin-list-stack">

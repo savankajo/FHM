@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -24,9 +23,7 @@ export default async function AdminTeamsPage() {
                         <p className="page-kicker">{teams.length} teams and service groups</p>
                     </div>
                 </div>
-                <Link href="/admin/teams/new" className="admin-list-create">
-                    <Button>+ New Team</Button>
-                </Link>
+                <Link href="/admin/teams/new" className="admin-list-create">+ New Team</Link>
             </div>
 
             <div className="admin-list-stack">

@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import DeleteSermonButton from './delete-button';
 
@@ -22,9 +21,7 @@ export default async function AdminSermonsPage() {
                         <p className="page-kicker">{sermons.length} sermon recordings</p>
                     </div>
                 </div>
-                <Link href="/admin/sermons/new" className="admin-list-create">
-                    <Button>+ New Sermon</Button>
-                </Link>
+                <Link href="/admin/sermons/new" className="admin-list-create">+ New Sermon</Link>
             </div>
 
             <div className="admin-list-stack">
@@ -41,9 +38,7 @@ export default async function AdminSermonsPage() {
                                 <p>{new Date(sermon.date).toLocaleDateString()}</p>
                             </div>
                             <div className="admin-list-actions">
-                                <Link href={`/admin/sermons/edit/${sermon.id}`}>
-                                    <Button variant="outline" size="sm">Edit</Button>
-                                </Link>
+                                <Link href={`/admin/sermons/edit/${sermon.id}`} className="admin-list-action-link">Edit</Link>
                                 <DeleteSermonButton id={sermon.id} />
                             </div>
                         </div>
