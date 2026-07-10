@@ -14,7 +14,7 @@ export async function PUT(
         }
 
         const body = await request.json();
-        const { title, description, votingDeadline, locations } = body;
+        const { title, description, votingDeadline, locations, audienceTeamIds = [] } = body;
 
         const updatedEvent = await prisma.event.update({
             where: { id: params.id },
@@ -22,7 +22,9 @@ export async function PUT(
                 title,
                 description,
                 votingDeadline: votingDeadline ? new Date(votingDeadline) : null,
-                locations: locations || []
+                locations: locations || [],
+                teamScope: audienceTeamIds.length ? 'RESTRICTED' : null,
+                teams: { set: audienceTeamIds.map((id: string) => ({ id })) }
             }
         });
 

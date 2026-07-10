@@ -72,6 +72,14 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         }
     };
 
+    const moderate = async (action: 'report' | 'block', msg: Message) => {
+        const prompt = action === 'report' ? 'Report this message to church administrators?' : `Block ${msg.user.name}? Their messages will be hidden.`;
+        if (!confirm(prompt)) return;
+        const res = await fetch('/api/chat/moderation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, messageId: msg.id, userId: msg.userId }) });
+        if (res.ok) { alert(action === 'report' ? 'Message reported. Thank you.' : 'User blocked.'); fetchMessages(); }
+        else alert('Unable to complete that action.');
+    };
+
     return (
         <div className="chat-room">
             <div className="messages-area">
@@ -93,6 +101,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                             <span className="timestamp">
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
+                            {!isMine && <span className="message-actions"><button onClick={() => moderate('report', msg)}>Report</button><button onClick={() => moderate('block', msg)}>Block user</button></span>}
                         </div>
                     );
                 })}
@@ -168,6 +177,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           margin-top: 2px;
           opacity: 0.7;
         }
+        .message-actions { display: flex; gap: .65rem; margin-top: 3px; }
+        .message-actions button { border: 0; background: transparent; color: var(--muted-foreground); font-size: .68rem; text-decoration: underline; cursor: pointer; padding: 2px; }
         
         .input-area {
           padding: 0.75rem;

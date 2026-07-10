@@ -8,6 +8,18 @@ export async function POST(request: Request) {
 
     const { eventId, status, selectedLocationIndex } = await request.json();
 
+    const event = await prisma.event.findFirst({
+        where: session.role === 'ADMIN' ? { id: eventId } : {
+            id: eventId,
+            OR: [
+                { teamScope: null },
+                { teams: { some: { members: { some: { id: session.userId } } } } }
+            ]
+        },
+        select: { id: true }
+    });
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+
     try {
         const vote = await prisma.eventVote.upsert({
             where: {

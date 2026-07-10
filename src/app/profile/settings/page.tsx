@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/context/theme-context';
 import Link from 'next/link';
+import AccountControls from './account-controls';
 
 export default function SettingsPage() {
     const { theme } = useTheme();
@@ -44,6 +45,19 @@ export default function SettingsPage() {
                         <strong>Dark Mode</strong> is locked on so the app has one consistent visual style across devices.
                     </p>
                 </div>
+                <section className="settings-section">
+                    <h2 className="settings-section-title">Privacy & Support</h2>
+                    <div className="settings-card" style={{ padding: 16, display: 'grid', gap: 12 }}>
+                        <Link href="/privacy">Privacy Policy</Link>
+                        <Link href="/terms">Terms & Community Standards</Link>
+                        <Link href="/support">Contact Support</Link>
+                    </div>
+                </section>
+                <section className="settings-section">
+                    <h2 className="settings-section-title">Account</h2>
+                    <p className="settings-description">Deleting your account permanently removes your profile and associated activity.</p>
+                    <AccountControls />
+                </section>
             </div>
         </div>
     );

@@ -15,7 +15,8 @@ export async function POST(request: Request) {
                 description: body.description,
                 publishedAt: new Date(body.publishedAt),
                 audioUrl: body.audioUrl,
-                thumbnailUrl: body.thumbnailUrl || null
+                thumbnailUrl: body.thumbnailUrl || null,
+                audienceTeamIds: body.audienceTeamIds || []
             }
         });
 

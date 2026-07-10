@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Sermon, PodcastEpisode } from '@prisma/client';
+import { canSeeAudience } from '@/lib/audience';
 
 async function getSermons(): Promise<Sermon[]> {
     return await prisma.sermon.findMany({
@@ -213,9 +214,11 @@ import MediaPageClient from './media-client';
 
 export default async function SermonsAndPodcastsPage() {
     const session = await getSession();
-    const sermons = await getSermons();
-    const podcasts = await getPodcasts();
     const isAdmin = session?.role === 'ADMIN';
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
+    const teamIds = teams.map(team => team.id);
+    const sermons = (await getSermons()).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin));
+    const podcasts = (await getPodcasts()).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin));
 
     return (
         <div className="media-page">

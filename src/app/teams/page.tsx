@@ -94,7 +94,7 @@ export default async function TeamsPage() {
     }
 
     const myTeams = await prisma.team.findMany({
-        where: {
+        where: session.role === 'ADMIN' ? undefined : {
             members: { some: { id: session.userId } }
         },
         include: { _count: { select: { members: true } } }

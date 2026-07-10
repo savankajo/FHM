@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import ChatRoom from './chat-room';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,12 +10,12 @@ export default async function ChatPage({ params }: { params: { teamId: string } 
     const session = await getSession();
     if (!session) return <p>Unauthorized</p>;
 
-    const team = await prisma.team.findUnique({
-        where: { id: params.teamId },
+    const team = await prisma.team.findFirst({
+        where: session.role === 'ADMIN' ? { id: params.teamId } : { id: params.teamId, members: { some: { id: session.userId } } },
         select: { id: true, name: true }
     });
 
-    if (!team) return <p>Team not found</p>;
+    if (!team) notFound();
 
     const isMember = await prisma.team.findFirst({
         where: {

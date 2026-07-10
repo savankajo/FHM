@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AudienceSelector from '@/components/admin/audience-selector';
 
 interface SermonFormProps {
     initialData?: {
@@ -16,6 +17,7 @@ interface SermonFormProps {
         fileUrl?: string | null;
         notes?: string | null;
         thumbnailUrl?: string | null;
+        audienceTeamIds?: unknown;
     };
 }
 
@@ -30,11 +32,14 @@ export default function SermonForm({ initialData }: SermonFormProps) {
         setLoading(true);
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData);
+        const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
+        if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
         const payload = {
             ...data,
             type,
-            id: initialData?.id
+            id: initialData?.id,
+            audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
         const method = initialData?.id ? 'PUT' : 'POST';
@@ -59,6 +64,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
             <Input name="title" label="Title" required placeholder="Sunday Service" defaultValue={initialData?.title} />
             <Input name="speaker" label="Speaker" required placeholder="Pastor John" defaultValue={initialData?.speaker} />
             <Input name="date" label="Date" type="date" required defaultValue={defaultDate} />
+            <AudienceSelector defaultTeamIds={Array.isArray(initialData?.audienceTeamIds) ? initialData.audienceTeamIds as string[] : []} />
 
             <div className="flex gap-4 items-center">
                 <label className="font-medium text-sm">Type:</label>

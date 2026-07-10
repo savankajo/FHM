@@ -2,15 +2,20 @@ import { prisma } from '@/lib/prisma';
 import { formatDate, ensureAbsoluteUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getSession } from '@/lib/auth';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SermonDetailPage({ params }: { params: { id: string } }) {
+    const session = await getSession();
     const sermon = await prisma.sermon.findUnique({
         where: { id: params.id },
     });
 
     if (!sermon) notFound();
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
+    if (!canSeeAudience(sermon.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN')) notFound();
 
     return (
         <div className="content-shell">

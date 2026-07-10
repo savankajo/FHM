@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import AudienceSelector from '@/components/admin/audience-selector';
 
 interface EditEventFormProps {
     event: any;
@@ -22,6 +23,8 @@ export default function EditEventForm({ event }: EditEventFormProps) {
         setLoading(true);
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData);
+        const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
+        if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
         const location = {
             name: data.locName,
@@ -35,7 +38,8 @@ export default function EditEventForm({ event }: EditEventFormProps) {
             title: data.title,
             description: data.description,
             votingDeadline: data.votingDeadline ? new Date(data.votingDeadline as string) : null,
-            locations: [location]
+            locations: [location],
+            audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
         const res = await fetch(`/api/events/${event.id}`, {
@@ -87,6 +91,7 @@ export default function EditEventForm({ event }: EditEventFormProps) {
                     placeholder="Summer Picnic"
                     defaultValue={event.title}
                 />
+                <AudienceSelector defaultTeamIds={(event.teams || []).map((team: { id: string }) => team.id)} />
                 <Input
                     name="description"
                     label="Description"

@@ -3,15 +3,20 @@ import { formatDate, getYouTubeEmbedUrl, ensureAbsoluteUrl } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getSession } from '@/lib/auth';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PodcastDetailPage({ params }: { params: { id: string } }) {
+    const session = await getSession();
     const podcast = await prisma.podcastEpisode.findUnique({
         where: { id: params.id },
     });
 
     if (!podcast) notFound();
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
+    if (!canSeeAudience(podcast.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN')) notFound();
 
     return (
         <div className="content-shell">

@@ -19,7 +19,7 @@ export default async function ChatIndexPage() {
 
     // Get user's teams
     const myTeams = await prisma.team.findMany({
-        where: {
+        where: session.role === 'ADMIN' ? undefined : {
             members: { some: { id: session.userId } }
         },
         select: { id: true, name: true }

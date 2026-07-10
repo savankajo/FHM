@@ -16,6 +16,7 @@ export default async function AdminDashboard() {
         { label: 'Manage Events', href: '/admin/events', icon: 'Event' },
         { label: 'Manage Users', href: '/admin/users', icon: 'Users' },
         { label: 'Manage Live Link', href: '/admin/live', icon: 'Live' },
+        { label: 'Review Safety Reports', href: '/admin/reports', icon: 'Safety' },
     ];
 
     return (

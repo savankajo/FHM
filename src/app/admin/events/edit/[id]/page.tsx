@@ -13,7 +13,8 @@ export default async function EditEventPage({ params }: { params: { id: string }
     }
 
     const event = await prisma.event.findUnique({
-        where: { id: params.id }
+        where: { id: params.id },
+        include: { teams: { select: { id: true } } }
     });
 
     if (!event) {

@@ -4525,3 +4525,7 @@ button {
     transform: scale(1.2);
   }
 }
+.legal-page { max-width: 720px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 20px calc(100px + env(safe-area-inset-bottom)); line-height: 1.65; }
+.legal-page h1 { margin-bottom: 8px; }
+.legal-page h2 { margin-top: 28px; }
+.legal-page a { color: var(--primary); text-decoration: underline; }

@@ -23,6 +23,7 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
     const event = await prisma.event.findUnique({
         where: { id: params.id },
         include: {
+            teams: { select: { id: true } },
             votes: {
                 include: { user: { select: { id: true, name: true } } }
             }
@@ -30,6 +31,10 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
     });
 
     if (!event) return <p>Event not found</p>;
+    if (session.role !== 'ADMIN' && event.teamScope) {
+        const allowed = await prisma.team.findFirst({ where: { id: { in: event.teams.map(team => team.id) }, members: { some: { id: session.userId } } }, select: { id: true } });
+        if (!allowed) return <p>Event not found</p>;
+    }
 
     const myVote = event.votes.find(v => v.userId === session.userId);
     const locations = event.locations as any[];

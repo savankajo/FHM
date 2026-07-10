@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import VolunteerButton from './volunteer-button';
 import DeleteServiceButton from './delete-service-button';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,8 +26,8 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
         ? {}
         : { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } };
 
-    const team = await prisma.team.findUnique({
-        where: { id: params.id },
+    const team = await prisma.team.findFirst({
+        where: session.role === 'ADMIN' ? { id: params.id } : { id: params.id, members: { some: { id: session.userId } } },
         include: {
             services: {
                 where: serviceWhere,
@@ -37,7 +38,7 @@ export default async function TeamDetailsPage({ params }: { params: { id: string
         }
     });
 
-    if (!team) return <p>Team not found</p>;
+    if (!team) notFound();
 
     const isMember = await prisma.team.findFirst({
         where: {

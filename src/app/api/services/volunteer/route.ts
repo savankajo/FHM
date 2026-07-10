@@ -9,8 +9,8 @@ export async function POST(request: Request) {
     const { serviceId } = await request.json();
 
     try {
-        const service = await prisma.service.findUnique({
-            where: { id: serviceId },
+        const service = await prisma.service.findFirst({
+            where: session.role === 'ADMIN' ? { id: serviceId } : { id: serviceId, team: { members: { some: { id: session.userId } } } },
             include: { volunteers: true }
         });
 

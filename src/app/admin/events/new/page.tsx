@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AudienceSelector from '@/components/admin/audience-selector';
 
 export default function NewEventPage() {
     const router = useRouter();
@@ -15,6 +16,8 @@ export default function NewEventPage() {
         setLoading(true);
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData);
+        const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
+        if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
         // Construct simplified location object
         const location = {
@@ -29,7 +32,8 @@ export default function NewEventPage() {
             title: data.title,
             description: data.description,
             votingDeadline: data.votingDeadline ? new Date(data.votingDeadline as string) : null,
-            locations: [location] // Array of 1 for now
+            locations: [location],
+            audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
         await fetch('/api/admin/events', {
@@ -49,6 +53,7 @@ export default function NewEventPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <Input name="title" label="Event Title" required placeholder="Summer Picnic" />
                 <Input name="description" label="Description" placeholder="Details..." />
+                <AudienceSelector />
 
                 <h3 className="font-bold mt-2">Location & Time</h3>
                 <Input name="locName" label="Location Name" required placeholder="Central Park" />

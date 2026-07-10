@@ -63,7 +63,7 @@ export default async function EventsPage() {
     const userTeamIds = userTeams.map(t => t.id);
 
     const events = await prisma.event.findMany({
-        where: {
+        where: session.role === 'ADMIN' ? undefined : {
             OR: [
                 { teamScope: null },
                 { teams: { some: { id: { in: userTeamIds } } } }

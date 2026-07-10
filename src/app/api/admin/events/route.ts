@@ -16,7 +16,8 @@ export async function POST(request: Request) {
                 votingDeadline: body.votingDeadline,
                 locations: body.locations,
                 createdByUserId: session.userId,
-                // teamScope: null // Defaulting to global for now
+                teamScope: body.audienceTeamIds?.length ? 'RESTRICTED' : null,
+                teams: body.audienceTeamIds?.length ? { connect: body.audienceTeamIds.map((id: string) => ({ id })) } : undefined
             }
         });
 

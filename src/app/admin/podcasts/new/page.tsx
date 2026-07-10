@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AudienceSelector from '@/components/admin/audience-selector';
 
 export default function NewPodcastPage() {
     const router = useRouter();
@@ -14,10 +15,13 @@ export default function NewPodcastPage() {
         e.preventDefault();
         setLoading(true);
         const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData);
+        const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
+        if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
         await fetch('/api/admin/podcasts', {
             method: 'POST',
-            body: JSON.stringify(Object.fromEntries(formData)),
+            body: JSON.stringify({ ...data, audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : [] }),
             headers: { 'Content-Type': 'application/json' }
         });
 
@@ -34,6 +38,7 @@ export default function NewPodcastPage() {
                 <Input name="publishedAt" label="Date" type="date" required />
                 <Input name="audioUrl" label="Audio URL" required placeholder="https://..." />
                 <Input name="description" label="Description" placeholder="Episode summary..." />
+                <AudienceSelector />
 
                 {/* Thumbnail URL */}
                 <div>

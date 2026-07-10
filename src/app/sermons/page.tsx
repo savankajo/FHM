@@ -3,6 +3,8 @@ import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { SearchBar } from '@/components/ui/search-bar';
+import { getSession } from '@/lib/auth';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,8 +14,10 @@ export default async function SermonsPage({
     searchParams?: { query?: string };
 }) {
     const query = searchParams?.query || '';
+    const session = await getSession();
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
 
-    const sermons = await prisma.sermon.findMany({
+    const sermons = (await prisma.sermon.findMany({
         where: query
             ? {
                 OR: [
@@ -23,7 +27,7 @@ export default async function SermonsPage({
             }
             : undefined,
         orderBy: { date: 'desc' },
-    });
+    })).filter(item => canSeeAudience(item.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN'));
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">

@@ -18,7 +18,8 @@ export async function POST(request: Request) {
                 videoUrl: body.videoUrl || null,
                 fileUrl: body.fileUrl || null,
                 notes: body.notes,
-                thumbnailUrl: body.thumbnailUrl || null
+                thumbnailUrl: body.thumbnailUrl || null,
+                audienceTeamIds: body.audienceTeamIds || []
             }
         });
 
@@ -64,7 +65,8 @@ export async function PUT(request: Request) {
                 videoUrl: body.videoUrl || null,
                 fileUrl: body.fileUrl || null,
                 notes: body.notes,
-                thumbnailUrl: body.thumbnailUrl || null
+                thumbnailUrl: body.thumbnailUrl || null,
+                audienceTeamIds: body.audienceTeamIds || []
             }
         });
 

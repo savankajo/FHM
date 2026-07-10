@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function SupportPage() { return <article className="legal-page"><h1>Support</h1><p>For account help, content concerns, accessibility support, or questions about FHM Church, email <a href="mailto:support@fhmchurch.ca">support@fhmchurch.ca</a>.</p><p>Include a description of the issue and the page where it occurred. Do not email passwords or sensitive information.</p><p><Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Community Standards</Link> · <Link href="/">Return home</Link></p></article> }

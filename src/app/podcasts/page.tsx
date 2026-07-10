@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { SearchBar } from '@/components/ui/search-bar';
+import { getSession } from '@/lib/auth';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +13,10 @@ export default async function PodcastsPage({
     searchParams?: { query?: string };
 }) {
     const query = searchParams?.query || '';
+    const session = await getSession();
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
 
-    const podcasts = await prisma.podcastEpisode.findMany({
+    const podcasts = (await prisma.podcastEpisode.findMany({
         where: query
             ? {
                 OR: [
@@ -22,7 +26,7 @@ export default async function PodcastsPage({
             }
             : undefined,
         orderBy: { publishedAt: 'desc' },
-    });
+    })).filter(item => canSeeAudience(item.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN'));
 
     return (
         <div className="max-w-[980px] mx-auto px-7 py-8">

@@ -25,10 +25,12 @@ export async function GET(
     }
 
     // Fetch messages that haven't expired
+    const blocks = await prisma.userBlock.findMany({ where: { blockerId: session.userId }, select: { blockedId: true } });
     const messages = await prisma.chatMessage.findMany({
         where: {
             teamId,
-            expiresAt: { gt: new Date() } // Only future expiration
+            expiresAt: { gt: new Date() },
+            userId: { notIn: blocks.map(block => block.blockedId) }
         },
         orderBy: { createdAt: 'asc' },
         include: {
@@ -54,6 +56,7 @@ export async function POST(
     if (!text || !text.trim()) {
         return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
+    if (text.trim().length > 1000) return NextResponse.json({ error: 'Message is too long' }, { status: 400 });
 
     // Check membership
     const isMember = await prisma.team.findFirst({

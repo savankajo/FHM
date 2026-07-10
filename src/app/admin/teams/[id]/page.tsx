@@ -2,10 +2,14 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import AddServiceForm from './add-service-form';
 import MemberManager from './member-manager';
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminTeamDetailsPage({ params }: { params: { id: string } }) {
+    const session = await getSession();
+    if (session?.role !== 'ADMIN') redirect('/');
     const team = await prisma.team.findUnique({
         where: { id: params.id },
         include: {
