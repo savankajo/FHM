@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import VoteButtons from './vote-buttons';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ function BackArrow({ href, label }: { href: string; label: string }) {
 
 export default async function EventDetailsPage({ params }: { params: { id: string } }) {
     const session = await getSession();
-    if (!session) return <p>Unauthorized</p>;
+    if (!session) notFound();
 
     const event = await prisma.event.findUnique({
         where: { id: params.id },
@@ -30,10 +31,10 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
         }
     });
 
-    if (!event) return <p>Event not found</p>;
+    if (!event) notFound();
     if (session.role !== 'ADMIN' && event.teamScope) {
         const allowed = await prisma.team.findFirst({ where: { id: { in: event.teams.map(team => team.id) }, members: { some: { id: session.userId } } }, select: { id: true } });
-        if (!allowed) return <p>Event not found</p>;
+        if (!allowed) notFound();
     }
 
     const myVote = event.votes.find(v => v.userId === session.userId);
