@@ -8,23 +8,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function ChatPage({ params }: { params: { teamId: string } }) {
     const session = await getSession();
-    if (!session) return <p>Unauthorized</p>;
+    if (!session) notFound();
 
     const team = await prisma.team.findFirst({
-        where: session.role === 'ADMIN' ? { id: params.teamId } : { id: params.teamId, members: { some: { id: session.userId } } },
+        where: { id: params.teamId, members: { some: { id: session.userId } } },
         select: { id: true, name: true }
     });
 
     if (!team) notFound();
-
-    const isMember = await prisma.team.findFirst({
-        where: {
-            id: params.teamId,
-            members: { some: { id: session.userId } }
-        }
-    });
-
-    if (!isMember && session.role !== 'ADMIN') return <p>Access Denied</p>;
 
     const currentUser = await prisma.user.findUnique({
         where: { id: session.userId },

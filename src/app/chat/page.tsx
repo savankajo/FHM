@@ -17,12 +17,13 @@ export default async function ChatIndexPage() {
         );
     }
 
-    // Get user's teams
+    // Chats are only available for teams the current user belongs to.
     const myTeams = await prisma.team.findMany({
-        where: session.role === 'ADMIN' ? undefined : {
+        where: {
             members: { some: { id: session.userId } }
         },
-        select: { id: true, name: true }
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' }
     });
 
     return (

@@ -20,7 +20,7 @@ export async function GET(
         }
     });
 
-    if (!isMember && session.role !== 'ADMIN') {
+    if (!isMember) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -66,7 +66,7 @@ export async function POST(
         }
     });
 
-    if (!isMember && session.role !== 'ADMIN') {
+    if (!isMember) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
