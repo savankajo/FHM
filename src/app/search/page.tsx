@@ -43,12 +43,20 @@ export default async function SearchPage({
         })
     ]);
 
-    const results = [
-        ...sermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}` })),
-        ...podcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast' }))
+    type SearchResult = {
+        id: string;
+        title: string;
+        speaker: string;
+        type: 'sermon' | 'podcast';
+        url: string;
+        displayDate: Date;
+    };
+
+    const results: SearchResult[] = [
+        ...sermons.map(s => ({ id: s.id, title: s.title, speaker: s.speaker, type: 'sermon' as const, url: `/sermons/${s.id}`, displayDate: s.date })),
+        ...podcasts.map(p => ({ id: p.id, title: p.title, speaker: 'Podcast', type: 'podcast' as const, url: `/podcasts/${p.id}`, displayDate: p.publishedAt }))
     ].sort((a, b) => {
-        // @ts-ignore
-        return new Date(b.date || b.publishedAt).getTime() - new Date(a.date || a.publishedAt).getTime();
+        return b.displayDate.getTime() - a.displayDate.getTime();
     });
 
     return (
@@ -72,8 +80,7 @@ export default async function SearchPage({
                                                 {item.type}
                                             </span>
                                             <span className="text-sm text-gray-500">
-                                                {/* @ts-ignore */}
-                                                {formatDate(item.date || item.publishedAt)}
+                                                {formatDate(item.displayDate)}
                                             </span>
                                         </div>
                                         <h3 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">
@@ -84,7 +91,7 @@ export default async function SearchPage({
                                         </p>
                                     </div>
                                     <div className="text-gray-400 group-hover:text-orange-500 text-2xl">
-                                        →
+                                        &rarr;
                                     </div>
                                 </div>
                             </div>

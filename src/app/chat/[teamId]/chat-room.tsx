@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -18,7 +18,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [loading, setLoading] = useState(true);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    const fetchMessages = async () => {
+    const fetchMessages = useCallback(async () => {
         try {
             const res = await fetch(`/api/chat/${teamId}`);
             if (res.ok) {
@@ -30,13 +30,13 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         } finally {
             setLoading(false);
         }
-    };
+    }, [teamId]);
 
     useEffect(() => {
         fetchMessages();
         const interval = setInterval(fetchMessages, 3000); // Poll every 3s
         return () => clearInterval(interval);
-    }, [teamId]);
+    }, [fetchMessages]);
 
     useEffect(() => {
         // Scroll to bottom when messages change
