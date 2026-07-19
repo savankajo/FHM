@@ -17,10 +17,19 @@ function getRoleBadge(email: string) {
 
 export default function TeamMemberManager({ teamId, members, allUsers }: { teamId: string, members: Member[], allUsers: Member[] }) {
     const [selectedEmail, setSelectedEmail] = useState('');
+    const [userSearch, setUserSearch] = useState('');
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [loading, setLoading] = useState(false);
 
     const availableUsers = allUsers.filter(u => !members.some(m => m.id === u.id));
+    const normalizedSearch = userSearch.trim().toLowerCase();
+    const filteredAvailableUsers = normalizedSearch
+        ? availableUsers.filter(user => {
+            const name = user.name?.toLowerCase() || '';
+            const email = user.email.toLowerCase();
+            return name.startsWith(normalizedSearch) || email.startsWith(normalizedSearch);
+        })
+        : availableUsers;
 
     async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -40,6 +49,7 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
         } else {
             setStatus({ type: 'success', message: 'Member added successfully!' });
             setSelectedEmail('');
+            setUserSearch('');
         }
         setLoading(false);
     }
@@ -54,10 +64,25 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
 
     return (
         <div className="atm-member-manager">
-            {/* Add Team Member Card */}
             <div className="atm-card atm-add-member-card">
                 <div className="atm-card-label">Add Team Member</div>
                 <form onSubmit={handleAdd} className="atm-add-form">
+                    <div className="atm-form-group">
+                        <label className="atm-form-label" htmlFor="member-search">Search users</label>
+                        <input
+                            id="member-search"
+                            className="atm-input"
+                            type="search"
+                            placeholder="Type the first letters of a name or email"
+                            value={userSearch}
+                            onChange={e => {
+                                setUserSearch(e.target.value);
+                                setSelectedEmail('');
+                            }}
+                            disabled={availableUsers.length === 0}
+                        />
+                    </div>
+
                     <div className="atm-select-wrap">
                         <select
                             name="email"
@@ -65,12 +90,16 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
                             required
                             value={selectedEmail}
                             onChange={e => setSelectedEmail(e.target.value)}
-                            disabled={availableUsers.length === 0}
+                            disabled={availableUsers.length === 0 || filteredAvailableUsers.length === 0}
                         >
                             <option value="">
-                                {availableUsers.length === 0 ? 'All users are members' : '— Select a User —'}
+                                {availableUsers.length === 0
+                                    ? 'All users are members'
+                                    : filteredAvailableUsers.length === 0
+                                        ? 'No users match your search'
+                                        : 'Select a User'}
                             </option>
-                            {availableUsers.map(user => (
+                            {filteredAvailableUsers.map(user => (
                                 <option key={user.id} value={user.email}>
                                     {user.name || user.email} ({user.email})
                                 </option>
@@ -86,7 +115,7 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
                     <div className="atm-add-form-footer">
                         {status && (
                             <p className={`atm-status-msg ${status.type === 'error' ? 'atm-status-error' : 'atm-status-success'}`}>
-                                {status.type === 'success' ? '✓ ' : '⚠ '}{status.message}
+                                {status.type === 'success' ? 'Done: ' : 'Error: '}{status.message}
                             </p>
                         )}
                         <button
@@ -112,7 +141,6 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
                 </form>
             </div>
 
-            {/* Confirmed Members List */}
             <div className="atm-card atm-members-card">
                 <div className="atm-card-label">
                     Confirmed Members
@@ -121,7 +149,7 @@ export default function TeamMemberManager({ teamId, members, allUsers }: { teamI
 
                 {members.length === 0 ? (
                     <div className="atm-members-empty">
-                        <span style={{ fontSize: '28px', opacity: 0.4 }}>👥</span>
+                        <span style={{ fontSize: '28px', opacity: 0.4 }}>Users</span>
                         <p>No members yet. Add your first team member above.</p>
                     </div>
                 ) : (
