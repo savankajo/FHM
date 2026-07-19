@@ -1,2 +1,26 @@
 import Link from 'next/link';
-export default function PrivacyPage() { return <article className="legal-page"><h1>Privacy Policy</h1><p>Last updated: July 10, 2026</p><h2>Information we collect</h2><p>FHM Church collects the name, email address, optional phone number, team memberships, event responses, volunteer activity, and messages you provide to operate the app.</p><h2>How we use information</h2><p>We use this information only to authenticate members, provide church communications and team features, maintain safety, and support the service. We do not sell personal information or use it for cross-app tracking.</p><h2>Retention and deletion</h2><p>Team chat messages expire after 48 hours. Safety reports may be retained as needed to address abuse. You can permanently delete your account and associated data in Profile → Settings.</p><h2>Service providers</h2><p>Hosting and database providers process data solely to operate the service. Linked media and maps may be provided by third parties under their own privacy policies.</p><h2>Contact</h2><p>Privacy questions or requests: <a href="mailto:privacy@fhmchurch.ca">privacy@fhmchurch.ca</a>.</p><p><Link href="/">Return home</Link></p></article> }
+
+export default function PrivacyPage() {
+    return (
+        <article className="legal-page">
+            <Link href="/" className="page-back-btn legal-back-btn" aria-label="Back to Home">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </Link>
+            <h1>Privacy Policy</h1>
+            <p>Last updated: July 10, 2026</p>
+            <h2>Information we collect</h2>
+            <p>FHM Church collects the name, email address, optional phone number, team memberships, event responses, volunteer activity, and messages you provide to operate the app.</p>
+            <h2>How we use information</h2>
+            <p>We use this information only to authenticate members, provide church communications and team features, maintain safety, and support the service. We do not sell personal information or use it for cross-app tracking.</p>
+            <h2>Retention and deletion</h2>
+            <p>Team chat messages expire after 48 hours. Safety reports may be retained as needed to address abuse. You can permanently delete your account and associated data in Profile &gt; Settings.</p>
+            <h2>Service providers</h2>
+            <p>Hosting and database providers process data solely to operate the service. Linked media and maps may be provided by third parties under their own privacy policies.</p>
+            <h2>Contact</h2>
+            <p>Privacy questions or requests: <a href="mailto:privacy@fhmchurch.ca">privacy@fhmchurch.ca</a>.</p>
+            <p><Link href="/support">Contact support</Link> | <Link href="/">Return home</Link></p>
+        </article>
+    );
+}
