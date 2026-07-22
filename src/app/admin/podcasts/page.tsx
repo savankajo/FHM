@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import DeletePodcastButton from './delete-button';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 import { getPodcastSeason } from '@/lib/media-metadata';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +14,8 @@ const seasonLabels = {
 };
 
 export default async function AdminPodcastsPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
     const podcasts = await prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' } });
 
     return (

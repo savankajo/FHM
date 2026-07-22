@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ProfileActions from './profile-actions';
 import ProfileForm from './profile-form';
+import { getUserPermissions } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,7 @@ export default async function ProfilePage() {
     });
 
     if (!user) redirect('/login');
+    const { canOpenAdmin } = await getUserPermissions(session.userId, session.role);
 
     const initials = user.name
         ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -65,6 +67,14 @@ export default async function ProfilePage() {
                     <span className="profile-menu-label">Settings</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
+
+                {canOpenAdmin && (
+                    <Link href="/admin" className="profile-menu-item">
+                        <div className="profile-menu-icon green">Go</div>
+                        <span className="profile-menu-label">Manage Assigned Tools</span>
+                        <span className="profile-menu-arrow"><ChevronRight /></span>
+                    </Link>
+                )}
 
                 <ProfileActions />
             </div>

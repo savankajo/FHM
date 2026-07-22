@@ -103,6 +103,7 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
 
             {selectedUser ? (() => {
                 const permissions = normalizePermissions(selectedUser.permissions);
+                const isFullAdmin = selectedUser.role === 'ADMIN';
                 return (
                     <div key={selectedUser.id} className="admin-list-card" style={{ alignItems: 'stretch', flexDirection: 'column' }}>
                         <div className="admin-list-card-main">
@@ -120,6 +121,19 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
                             </select>
                         </label>
 
+                        {isFullAdmin ? (
+                            <div className="settings-card" style={{ padding: 14 }}>
+                                <strong>Full Admin Access</strong>
+                                <p className="settings-description" style={{ marginTop: 4 }}>
+                                    Admin users can access every admin tool. Use Leader or Member for limited access.
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="settings-description">
+                                This user will only see the tools checked below.
+                            </p>
+                        )}
+
                         <div className="user-permission-grid">
                             {TOPICS.map(topic => (
                                 <div key={topic.id} className="user-permission-topic">
@@ -129,6 +143,7 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
                                             <label key={action.id}>
                                                 <input
                                                     type="checkbox"
+                                                    disabled={isFullAdmin}
                                                     checked={(permissions[topic.id] || []).includes(action.id)}
                                                     onChange={() => togglePermission(selectedUser.id, topic.id, action.id)}
                                                 /> {action.label}

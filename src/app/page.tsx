@@ -2,12 +2,14 @@ import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import VerseOfTheDayCard from '@/components/home/verse-of-day';
+import { getUserPermissions } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
+  const { canOpenAdmin } = await getUserPermissions(session?.userId, session?.role);
   // User has no avatarUrl in schema — prompt if logged in
   const isLoggedIn = !!session;
 
@@ -53,8 +55,8 @@ export default async function HomePage() {
         </div>
 
         <div className="home-header-actions">
-          {isAdmin && (
-            <Link href="/admin" className="admin-badge">Admin</Link>
+          {canOpenAdmin && (
+            <Link href="/admin" className="admin-badge">{isAdmin ? 'Admin' : 'Manage'}</Link>
           )}
           {/* Profile button — shows "Add Photo" prompt if logged in & no avatar */}
           <Link href="/profile" className="home-avatar-btn" aria-label="Profile">

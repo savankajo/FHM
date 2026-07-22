@@ -3,10 +3,16 @@ import Link from 'next/link';
 import SermonForm from '../../sermon-form';
 import { notFound } from 'next/navigation';
 import DeleteSermonButton from '../../delete-button';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditSermonPage({ params }: { params: { id: string } }) {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
+
     const sermon = await prisma.sermon.findUnique({
         where: { id: params.id }
     });

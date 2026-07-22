@@ -25,3 +25,12 @@ export async function hasAnyAdminAccess(userId: string | undefined, role: string
     if (!user?.permissions || typeof user.permissions !== 'object') return false;
     return Object.values(user.permissions as UserPermissions).some(actions => Array.isArray(actions) && actions.length > 0);
 }
+
+export async function getUserPermissions(userId: string | undefined, role: string | undefined) {
+    if (!userId) return { canOpenAdmin: false, permissions: {} as UserPermissions };
+    if (role === 'ADMIN') return { canOpenAdmin: true, permissions: {} as UserPermissions };
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { permissions: true } });
+    const permissions = user?.permissions && typeof user.permissions === 'object' ? user.permissions as UserPermissions : {};
+    const canOpenAdmin = Object.values(permissions).some(actions => Array.isArray(actions) && actions.length > 0);
+    return { canOpenAdmin, permissions };
+}

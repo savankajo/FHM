@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSermonCollection } from '@/lib/media-metadata';
 import MediaAccessClient, { CollectionAccessState, MediaAccessItem, TeamOption } from './media-access-client';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +15,8 @@ const collectionLabels = {
 };
 
 export default async function AdminMediaAccessPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
     const sermons = await prisma.sermon.findMany({
         orderBy: { date: 'desc' },
         take: 600,

@@ -3,10 +3,16 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PodcastForm from '../../podcast-form';
 import DeletePodcastButton from '../../delete-button';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditPodcastPage({ params }: { params: { id: string } }) {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
+
     const podcast = await prisma.podcastEpisode.findUnique({
         where: { id: params.id },
     });

@@ -1,9 +1,13 @@
-'use client';
-
 import Link from 'next/link';
 import SermonForm from '../sermon-form';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
-export default function NewSermonPage() {
+export default async function NewSermonPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'add')) redirect('/admin');
+
     return (
         <div className="admin-list-page">
             <div className="admin-list-topbar">

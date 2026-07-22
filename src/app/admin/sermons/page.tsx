@@ -2,6 +2,9 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import DeleteSermonButton from './delete-button';
 import { getSermonCollection } from '@/lib/media-metadata';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +15,8 @@ const collectionLabels = {
 };
 
 export default async function AdminSermonsPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
     const sermons = await prisma.sermon.findMany({ orderBy: { date: 'desc' } });
 
     return (

@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import MediaEditClient, { MediaEditItem } from './media-edit-client';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminMediaEditPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
     const [sermons, podcasts] = await Promise.all([
         prisma.sermon.findMany({ orderBy: { date: 'desc' }, take: 600 }),
         prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }),

@@ -2,10 +2,15 @@ import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import DeleteEventButton from './delete-event-button';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminEventsPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'events', 'edit')) redirect('/admin');
     const events = await prisma.event.findMany({
         orderBy: { createdAt: 'desc' },
         include: {

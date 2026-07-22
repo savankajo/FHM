@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import PodcastForm from '../podcast-form';
+import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
+import { redirect } from 'next/navigation';
 
-export default function NewPodcastPage() {
+export default async function NewPodcastPage() {
+    const session = await getSession();
+    if (!await canManage(session?.userId, session?.role, 'media', 'add')) redirect('/admin');
+
     return (
         <div className="admin-list-page">
             <div className="admin-list-topbar">
