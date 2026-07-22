@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PodcastForm from '../../podcast-form';
+import DeletePodcastButton from '../../delete-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ export default async function EditPodcastPage({ params }: { params: { id: string
                         <p className="page-kicker">Edit details and access</p>
                     </div>
                 </div>
+                <DeletePodcastButton id={podcast.id} redirectTo="/admin/media-edit" />
             </div>
             <PodcastForm initialData={podcast} />
         </div>

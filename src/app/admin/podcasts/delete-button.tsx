@@ -3,12 +3,16 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
-export default function DeletePodcastButton({ id }: { id: string }) {
+export default function DeletePodcastButton({ id, redirectTo }: { id: string; redirectTo?: string }) {
     const router = useRouter();
 
     const handleDelete = async () => {
         if (!confirm('Delete this episode?')) return;
         await fetch(`/api/admin/podcasts?id=${id}`, { method: 'DELETE' });
+        if (redirectTo) {
+            router.push(redirectTo);
+            return;
+        }
         router.refresh();
     };
 

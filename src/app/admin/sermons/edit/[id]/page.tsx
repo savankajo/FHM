@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import SermonForm from '../../sermon-form';
 import { notFound } from 'next/navigation';
+import DeleteSermonButton from '../../delete-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ export default async function EditSermonPage({ params }: { params: { id: string 
                         <p className="page-kicker">Edit details and access</p>
                     </div>
                 </div>
+                <DeleteSermonButton id={sermon.id} redirectTo="/admin/media-access" />
             </div>
             <SermonForm initialData={sermon} />
         </div>
