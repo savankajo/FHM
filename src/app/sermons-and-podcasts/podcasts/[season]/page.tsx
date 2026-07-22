@@ -13,18 +13,20 @@ const seasonTitles: Record<PodcastSeason, string> = {
     'season-2': 'Season 2',
 };
 
-export default async function PodcastSeasonPage({ params }: { params: { season: string } }) {
+export default async function PodcastSeasonPage({ params, searchParams }: { params: { season: string }; searchParams?: { q?: string } }) {
     if (params.season !== 'season-1' && params.season !== 'season-2') notFound();
     const season = params.season as PodcastSeason;
+    const query = (searchParams?.q || '').trim().toLowerCase();
     const session = await getSession();
     const isAdmin = session?.role === 'ADMIN';
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
     const teamIds = teams.map(team => team.id);
-    const podcasts = (await prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }))
+    const allSeasonPodcasts = (await prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }))
         .filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin))
         .filter(item => getPodcastSeason(item.description) === season);
+    const podcasts = allSeasonPodcasts.filter(item => item.title.toLowerCase().includes(query));
 
-    if (podcasts.length === 0 && season === 'season-1') notFound();
+    if (allSeasonPodcasts.length === 0 && season === 'season-1') notFound();
 
     return (
         <div className="media-page">
@@ -40,11 +42,22 @@ export default async function PodcastSeasonPage({ params }: { params: { season: 
                 </div>
             </header>
 
+            <form className="media-search-wrap" action={`/sermons-and-podcasts/podcasts/${season}`}>
+                <input
+                    className="media-search-input"
+                    type="search"
+                    name="q"
+                    defaultValue={searchParams?.q || ''}
+                    placeholder="Search episodes"
+                    aria-label={`Search ${seasonTitles[season]} episodes`}
+                />
+            </form>
+
             {podcasts.length === 0 ? (
                 <div className="empty-state media-empty-state">
-                    <div className="empty-state-icon">Soon</div>
-                    <h2>Coming Soon</h2>
-                    <p>No episodes have been uploaded for this season yet.</p>
+                    <div className="empty-state-icon">{allSeasonPodcasts.length === 0 ? 'Soon' : 'Search'}</div>
+                    <h2>{allSeasonPodcasts.length === 0 ? 'Coming Soon' : 'No Episodes Found'}</h2>
+                    <p>{allSeasonPodcasts.length === 0 ? 'No episodes have been uploaded for this season yet.' : 'Try another English or Arabic search term.'}</p>
                 </div>
             ) : (
                 <div className="media-list">
@@ -55,7 +68,7 @@ export default async function PodcastSeasonPage({ params }: { params: { season: 
                                 style={podcast.thumbnailUrl ? { backgroundImage: `url(${podcast.thumbnailUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #2b183f, #8a4a21)' }}
                             />
                             <div className="media-list-info">
-                                <div className="media-list-title">{podcast.title}</div>
+                                <div className="media-list-title media-list-title-wrap" dir="auto">{podcast.title}</div>
                                 <div className="media-list-meta">{new Date(podcast.publishedAt).toLocaleDateString()}</div>
                             </div>
                             <div className="media-list-arrow">

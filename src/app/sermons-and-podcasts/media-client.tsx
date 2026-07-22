@@ -125,14 +125,20 @@ function EmptyState({ title, text }: { title: string; text: string }) {
 
 export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('sermons');
+    const [sermonSearch, setSermonSearch] = useState('');
+    const [podcastSearch, setPodcastSearch] = useState('');
 
     const saturdaySermons = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'saturday'), [sermons]);
     const tuesdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'tuesday'), [sermons]);
     const thursdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'thursday'), [sermons]);
     const seasonOnePodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-1'), [podcasts]);
     const seasonTwoPodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-2'), [podcasts]);
-    const latestSermons = saturdaySermons.slice(0, 3);
-    const latestPodcasts = seasonOnePodcasts.slice(0, 3);
+    const latestSermons = saturdaySermons
+        .filter(sermon => sermon.title.toLowerCase().includes(sermonSearch.trim().toLowerCase()))
+        .slice(0, 3);
+    const latestPodcasts = seasonOnePodcasts
+        .filter(podcast => podcast.title.toLowerCase().includes(podcastSearch.trim().toLowerCase()))
+        .slice(0, 3);
 
     return (
         <>
@@ -166,29 +172,39 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
                             meta={formatCount(saturdaySermons.length, 'episode')}
                             href="/sermons-and-podcasts/saturday"
                         />
-                        <CollectionCard
+                        {(isAdmin || tuesdayMeetings.length > 0) && <CollectionCard
                             title="Tuesday Meeting"
                             description="Meeting recordings for approved teams."
                             meta={formatCount(tuesdayMeetings.length, 'recording')}
                             href={tuesdayMeetings[0] ? `/sermons/${tuesdayMeetings[0].id}` : undefined}
                             restricted
-                        />
-                        <CollectionCard
+                        />}
+                        {(isAdmin || thursdayMeetings.length > 0) && <CollectionCard
                             title="Thursday Meeting"
                             description="Meeting recordings with separate team visibility."
                             meta={formatCount(thursdayMeetings.length, 'recording')}
                             href={thursdayMeetings[0] ? `/sermons/${thursdayMeetings[0].id}` : undefined}
                             restricted
-                        />
+                        />}
                     </div>
 
-                    {latestSermons.length > 0 && (
-                        <>
-                            <div className="media-section-title">Latest Sermons</div>
-                            <div className="media-list">
+                    <div className="media-section-title">Latest Sermons</div>
+                    <div className="media-search-wrap">
+                        <input
+                            className="media-search-input"
+                            type="search"
+                            value={sermonSearch}
+                            onChange={(event) => setSermonSearch(event.target.value)}
+                            placeholder="Search latest sermons"
+                            aria-label="Search latest sermons"
+                        />
+                    </div>
+                    {latestSermons.length > 0 ? (
+                        <div className="media-list">
                                 {latestSermons.map(sermon => <EpisodeCard key={sermon.id} item={sermon} type="sermon" />)}
-                            </div>
-                        </>
+                        </div>
+                    ) : (
+                        <EmptyState title="No Sermons Found" text="Try another search or open Saturday Sermon for all playlists." />
                     )}
                 </>
             )}
@@ -214,13 +230,23 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
                         />
                     </div>
 
-                    {latestPodcasts.length > 0 && (
-                        <>
-                            <div className="media-section-title">Latest Podcasts</div>
-                            <div className="media-list">
+                    <div className="media-section-title">Latest Podcasts</div>
+                    <div className="media-search-wrap">
+                        <input
+                            className="media-search-input"
+                            type="search"
+                            value={podcastSearch}
+                            onChange={(event) => setPodcastSearch(event.target.value)}
+                            placeholder="Search latest podcasts"
+                            aria-label="Search latest podcasts"
+                        />
+                    </div>
+                    {latestPodcasts.length > 0 ? (
+                        <div className="media-list">
                                 {latestPodcasts.map(podcast => <EpisodeCard key={podcast.id} item={podcast} type="podcast" />)}
-                            </div>
-                        </>
+                        </div>
+                    ) : (
+                        <EmptyState title="No Podcasts Found" text="Try another search or open Coffee With the Shepherd for all episodes." />
                     )}
                 </>
             )}

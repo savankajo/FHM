@@ -6,7 +6,8 @@ import { getSermonCollection, getYoutubePlaylistId, getYoutubePlaylistName } fro
 
 export const dynamic = 'force-dynamic';
 
-export default async function SaturdayPlaylistsPage() {
+export default async function SaturdayPlaylistsPage({ searchParams }: { searchParams?: { q?: string } }) {
+    const query = (searchParams?.q || '').trim().toLowerCase();
     const session = await getSession();
     const isAdmin = session?.role === 'ADMIN';
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
@@ -23,7 +24,8 @@ export default async function SaturdayPlaylistsPage() {
         if (sermon.date > current.latestDate) current.latestDate = sermon.date;
         map.set(id, current);
         return map;
-    }, new Map<string, { id: string; name: string; count: number; latestDate: Date }>()).values());
+    }, new Map<string, { id: string; name: string; count: number; latestDate: Date }>()).values())
+        .filter(playlist => playlist.name.toLowerCase().includes(query));
 
     return (
         <div className="media-page">
@@ -39,12 +41,23 @@ export default async function SaturdayPlaylistsPage() {
                 </div>
             </header>
 
+            <form className="media-search-wrap" action="/sermons-and-podcasts/saturday">
+                <input
+                    className="media-search-input"
+                    type="search"
+                    name="q"
+                    defaultValue={searchParams?.q || ''}
+                    placeholder="Search playlists"
+                    aria-label="Search Saturday Sermon playlists"
+                />
+            </form>
+
             <div className="media-list">
                 {playlists.map(playlist => (
                     <Link key={playlist.id} href={`/sermons-and-podcasts/saturday/${encodeURIComponent(playlist.id)}`} className="media-list-card media-collection-card">
                         <div className="media-collection-mark orange">List</div>
                         <div className="media-list-info">
-                            <div className="media-list-title">{playlist.name}</div>
+                            <div className="media-list-title media-list-title-wrap" dir="auto">{playlist.name}</div>
                             <div className="media-list-meta">{playlist.count} video{playlist.count === 1 ? '' : 's'}</div>
                         </div>
                         <div className="media-list-arrow">
@@ -55,6 +68,13 @@ export default async function SaturdayPlaylistsPage() {
                     </Link>
                 ))}
             </div>
+            {playlists.length === 0 && (
+                <div className="empty-state media-empty-state">
+                    <div className="empty-state-icon">Search</div>
+                    <h2>No Playlists Found</h2>
+                    <p>Try another English or Arabic search term.</p>
+                </div>
+            )}
         </div>
     );
 }

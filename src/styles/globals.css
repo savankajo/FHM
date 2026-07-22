@@ -1095,6 +1095,14 @@ button {
   white-space: nowrap;
 }
 
+.media-list-title-wrap {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
 .media-list-meta {
   font-size: 12px;
   color: var(--text-muted);
@@ -1110,6 +1118,33 @@ button {
 .media-list-arrow svg {
   width: 16px;
   height: 16px;
+}
+
+.media-search-wrap {
+  padding: 0 var(--page-px) 14px;
+}
+
+.media-search-input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  box-shadow: var(--shadow-xs);
+  outline: none;
+}
+
+.media-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.media-search-input:focus {
+  border-color: rgba(199, 81, 31, 0.55);
+  box-shadow: 0 0 0 3px rgba(199, 81, 31, 0.14);
 }
 
 .media-admin-row {
