@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AudienceSelector from '@/components/admin/audience-selector';
+import { getSermonCollection, setSermonCollection, stripSermonCollection } from '@/lib/media-metadata';
 
 interface SermonFormProps {
     initialData?: {
@@ -26,6 +27,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
     const [loading, setLoading] = useState(false);
     const [type, setType] = useState<'VIDEO' | 'PDF'>(initialData?.type || 'VIDEO');
     const [thumbPreview, setThumbPreview] = useState<string>(initialData?.thumbnailUrl || '');
+    const [collection, setCollection] = useState(getSermonCollection(initialData?.notes));
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -39,6 +41,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
             ...data,
             type,
             id: initialData?.id,
+            notes: setSermonCollection(String(data.notes || ''), collection),
             audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
@@ -64,6 +67,18 @@ export default function SermonForm({ initialData }: SermonFormProps) {
             <Input name="title" label="Title" required placeholder="Sunday Service" defaultValue={initialData?.title} />
             <Input name="speaker" label="Speaker" required placeholder="Pastor John" defaultValue={initialData?.speaker} />
             <Input name="date" label="Date" type="date" required defaultValue={defaultDate} />
+            <label className="flex flex-col gap-1 text-sm font-medium">
+                Media Collection
+                <select
+                    value={collection}
+                    onChange={(event) => setCollection(event.target.value as typeof collection)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                >
+                    <option value="saturday">Saturday Sermon</option>
+                    <option value="tuesday">Tuesday Meeting</option>
+                    <option value="thursday">Thursday Meeting</option>
+                </select>
+            </label>
             <AudienceSelector defaultTeamIds={Array.isArray(initialData?.audienceTeamIds) ? initialData.audienceTeamIds as string[] : []} />
 
             <div className="flex gap-4 items-center">
@@ -94,7 +109,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
                 <Input name="fileUrl" label="PDF URL" required={type === 'PDF'} placeholder="https://example.com/sermon.pdf" defaultValue={initialData?.fileUrl || ''} />
             )}
 
-            <Input name="notes" label="Notes" placeholder="Additional notes..." defaultValue={initialData?.notes || ''} />
+            <Input name="notes" label="Notes" placeholder="Additional notes..." defaultValue={stripSermonCollection(initialData?.notes)} />
 
             {/* Thumbnail URL */}
             <div>

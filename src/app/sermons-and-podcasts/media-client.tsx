@@ -1,112 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Sermon, PodcastEpisode } from '@prisma/client';
+import { PodcastEpisode, Sermon } from '@prisma/client';
+import { getPodcastSeason, getSermonCollection } from '@/lib/media-metadata';
 
-type Tab = 'sermons' | 'podcasts' | 'music';
-
-function ChevronRight() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6" />
-        </svg>
-    );
-}
-
-function PlayIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="white" width="18" height="18">
-            <polygon points="5,3 19,12 5,21" />
-        </svg>
-    );
-}
-
-// ── Sermon Card ───────────────────────────────────────────────
-function SermonCard({ sermon, featured }: { sermon: Sermon; featured?: boolean }) {
-    const thumb = (sermon as any).thumbnailUrl;
-
-    if (featured) {
-        return (
-            <Link href={`/sermons/${sermon.id}`} className="featured-media-card" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-                <div className="featured-media-overlay" />
-                <div className="featured-media-content">
-                    <div className="featured-media-badge">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
-                        Featured Sermon
-                    </div>
-                    <div className="featured-media-title">{sermon.title}</div>
-                    <div className="featured-media-meta">
-                        {new Date(sermon.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        {sermon.speaker ? ` · ${sermon.speaker}` : ''}
-                    </div>
-                </div>
-            </Link>
-        );
-    }
-
-    return (
-        <Link href={`/sermons/${sermon.id}`} className="media-list-card">
-            <div className="media-list-thumb" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #3a1a08, #C7511F)' }}>
-                {!thumb && <span style={{ fontSize: '20px' }}>🎥</span>}
-                <div className="media-list-play"><PlayIcon /></div>
-            </div>
-            <div className="media-list-info">
-                <div className="media-list-title">{sermon.title}</div>
-                <div className="media-list-meta">
-                    {new Date(sermon.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    {sermon.speaker ? ` · ${sermon.speaker}` : ''}
-                </div>
-            </div>
-            <div className="media-list-arrow"><ChevronRight /></div>
-        </Link>
-    );
-}
-
-// ── Podcast Card ──────────────────────────────────────────────
-function PodcastCard({ pod, featured }: { pod: PodcastEpisode; featured?: boolean }) {
-    const thumb = (pod as any).thumbnailUrl;
-
-    if (featured) {
-        return (
-            <Link
-                href={`/podcasts/${pod.id}`}
-                className="featured-media-card"
-                style={thumb
-                    ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                    : { background: 'linear-gradient(135deg, #1a0830 0%, #5b21b6 100%)' }
-                }
-            >
-                <div className="featured-media-overlay" />
-                <div className="featured-media-content">
-                    <div className="featured-media-badge" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
-                        🎧 Featured Podcast
-                    </div>
-                    <div className="featured-media-title">{pod.title}</div>
-                    <div className="featured-media-meta">
-                        {new Date(pod.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                </div>
-            </Link>
-        );
-    }
-
-    return (
-        <Link href={`/podcasts/${pod.id}`} className="media-list-card">
-            <div className="media-list-thumb" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #1a0830, #7c3aed)' }}>
-                {!thumb && <span style={{ fontSize: '20px' }}>🎧</span>}
-                <div className="media-list-play"><PlayIcon /></div>
-            </div>
-            <div className="media-list-info">
-                <div className="media-list-title">{pod.title}</div>
-                <div className="media-list-meta">
-                    {new Date(pod.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </div>
-            </div>
-            <div className="media-list-arrow"><ChevronRight /></div>
-        </Link>
-    );
-}
+type Tab = 'sermons' | 'podcasts' | 'articles';
 
 interface Props {
     sermons: Sermon[];
@@ -114,88 +13,224 @@ interface Props {
     isAdmin: boolean;
 }
 
+function ChevronRight() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 18l6-6-6-6" />
+        </svg>
+    );
+}
+
+function ExternalIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7" />
+            <path d="M8 7h9v9" />
+        </svg>
+    );
+}
+
+function isRestricted(item: Sermon | PodcastEpisode) {
+    return Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0;
+}
+
+function formatCount(count: number, label: string) {
+    if (count === 0) return `No ${label}s yet`;
+    return `${count} ${label}${count === 1 ? '' : 's'}`;
+}
+
+function mediaDate(value: Date) {
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function CollectionCard({
+    title,
+    description,
+    meta,
+    href,
+    tone = 'orange',
+    restricted = false,
+    comingSoon = false,
+}: {
+    title: string;
+    description: string;
+    meta: string;
+    href?: string;
+    tone?: 'orange' | 'purple' | 'gray';
+    restricted?: boolean;
+    comingSoon?: boolean;
+}) {
+    const content = (
+        <>
+            <div className={`media-collection-mark ${tone}`}>
+                {comingSoon ? 'Soon' : tone === 'purple' ? 'Pod' : 'Media'}
+            </div>
+            <div className="media-list-info">
+                <div className="media-list-title">{title}</div>
+                <div className="media-list-meta">{description}</div>
+                <div className="media-collection-footer">
+                    <span>{meta}</span>
+                    {restricted && <span className="media-access-badge">Team access</span>}
+                </div>
+            </div>
+            <div className="media-list-arrow">{href ? <ChevronRight /> : <ExternalIcon />}</div>
+        </>
+    );
+
+    if (!href) {
+        return <div className="media-list-card media-collection-card inactive">{content}</div>;
+    }
+
+    return (
+        <Link href={href} className="media-list-card media-collection-card">
+            {content}
+        </Link>
+    );
+}
+
+function EpisodeCard({ item, type }: { item: Sermon | PodcastEpisode; type: 'sermon' | 'podcast' }) {
+    const href = type === 'sermon' ? `/sermons/${item.id}` : `/podcasts/${item.id}`;
+    const thumb = item.thumbnailUrl;
+    const date = type === 'sermon' ? (item as Sermon).date : (item as PodcastEpisode).publishedAt;
+
+    return (
+        <Link href={href} className="media-list-card">
+            <div
+                className="media-list-thumb"
+                style={thumb
+                    ? { backgroundImage: `url(${thumb})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: type === 'sermon' ? 'linear-gradient(135deg, #3a1a08, #C7511F)' : 'linear-gradient(135deg, #2b183f, #8a4a21)' }}
+            />
+            <div className="media-list-info">
+                <div className="media-list-title">{item.title}</div>
+                <div className="media-list-meta">
+                    {mediaDate(date)}
+                    {isRestricted(item) ? ' · Team access' : ''}
+                </div>
+            </div>
+            <div className="media-list-arrow"><ChevronRight /></div>
+        </Link>
+    );
+}
+
+function EmptyState({ title, text }: { title: string; text: string }) {
+    return (
+        <div className="empty-state media-empty-state">
+            <div className="empty-state-icon">Media</div>
+            <h2>{title}</h2>
+            <p>{text}</p>
+        </div>
+    );
+}
+
 export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('sermons');
 
+    const saturdaySermons = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'saturday'), [sermons]);
+    const tuesdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'tuesday'), [sermons]);
+    const thursdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'thursday'), [sermons]);
+    const seasonOnePodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-1'), [podcasts]);
+    const seasonTwoPodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-2'), [podcasts]);
+    const latestSermons = sermons;
+    const latestPodcasts = podcasts;
+
     return (
         <>
-            {/* Tab Bar */}
-            <div className="tab-bar">
-                {(['sermons', 'podcasts', 'music'] as Tab[]).map(tab => (
+            <div className="tab-bar media-tab-bar" role="tablist" aria-label="Media categories">
+                {(['sermons', 'podcasts', 'articles'] as Tab[]).map(tab => (
                     <button
                         key={tab}
                         className={`tab-btn${activeTab === tab ? ' active' : ''}`}
                         onClick={() => setActiveTab(tab)}
+                        role="tab"
+                        aria-selected={activeTab === tab}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                 ))}
             </div>
 
-            {/* Tab Content */}
-            <div style={{ transition: 'opacity 0.2s ease', opacity: 1 }}>
+            {activeTab === 'sermons' && (
+                <>
+                    {isAdmin && (
+                        <div className="media-admin-row">
+                            <Link href="/admin/sermons/new" className="btn btn-outline btn-sm btn-full">Add Sermon</Link>
+                        </div>
+                    )}
 
-                {activeTab === 'sermons' && (
-                    <>
-                        {sermons.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-state-icon">🎥</div>
-                                <p>No sermons uploaded yet.<br />Check back soon!</p>
-                            </div>
-                        ) : (
-                            <>
-                                {isAdmin && (
-                                    <div style={{ padding: '0 20px 16px' }}>
-                                        <Link href="/admin/sermons/new">
-                                            <button className="btn btn-outline btn-sm btn-full">+ Upload Sermon</button>
-                                        </Link>
-                                    </div>
-                                )}
-                                <SermonCard sermon={sermons[0]} featured />
-                                {sermons.length > 1 && (
-                                    <>
-                                        <div className="media-section-title" style={{ marginTop: '20px' }}>Latest Sermons</div>
-                                        <div className="media-list">
-                                            {sermons.slice(1).map(s => <SermonCard key={s.id} sermon={s} />)}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
-                    </>
-                )}
-
-                {activeTab === 'podcasts' && (
-                    <>
-                        {podcasts.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-state-icon">🎧</div>
-                                <p>No podcast episodes yet.<br />Check back soon!</p>
-                            </div>
-                        ) : (
-                            <>
-                                <PodcastCard pod={podcasts[0]} featured />
-                                {podcasts.length > 1 && (
-                                    <>
-                                        <div className="media-section-title" style={{ marginTop: '20px' }}>Podcast Series</div>
-                                        <div className="media-list">
-                                            {podcasts.slice(1).map(p => <PodcastCard key={p.id} pod={p} />)}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
-                    </>
-                )}
-
-                {activeTab === 'music' && (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">🎵</div>
-                        <p>Music library coming soon!<br />Stay tuned for worship music.</p>
+                    <div className="media-section-title">Sermon Collections</div>
+                    <div className="media-list">
+                        <CollectionCard
+                            title="Saturday Sermon"
+                            description="Public weekly sermon messages from FHM Church."
+                            meta={formatCount(saturdaySermons.length, 'episode')}
+                            href="/sermons-and-podcasts/saturday"
+                        />
+                        <CollectionCard
+                            title="Tuesday Meeting"
+                            description="Meeting recordings for approved teams."
+                            meta={formatCount(tuesdayMeetings.length, 'recording')}
+                            href={tuesdayMeetings[0] ? `/sermons/${tuesdayMeetings[0].id}` : undefined}
+                            restricted
+                        />
+                        <CollectionCard
+                            title="Thursday Meeting"
+                            description="Meeting recordings with separate team visibility."
+                            meta={formatCount(thursdayMeetings.length, 'recording')}
+                            href={thursdayMeetings[0] ? `/sermons/${thursdayMeetings[0].id}` : undefined}
+                            restricted
+                        />
                     </div>
-                )}
 
-            </div>
+                    {latestSermons.length > 0 && (
+                        <>
+                            <div className="media-section-title">Saturday Sermon Videos</div>
+                            <div className="media-list">
+                                {latestSermons.map(sermon => <EpisodeCard key={sermon.id} item={sermon} type="sermon" />)}
+                            </div>
+                        </>
+                    )}
+                </>
+            )}
+
+            {activeTab === 'podcasts' && (
+                <>
+                    <div className="media-section-title">Podcast Seasons</div>
+                    <div className="media-list">
+                        <CollectionCard
+                            title="Coffee With the Shepherd"
+                            description="Season 1 podcast conversations and episodes."
+                            meta={formatCount(seasonOnePodcasts.length, 'episode')}
+                            href={seasonOnePodcasts[0] ? `/podcasts/${seasonOnePodcasts[0].id}` : undefined}
+                            tone="purple"
+                        />
+                        <CollectionCard
+                            title="Season 2"
+                            description="A new podcast season is being prepared."
+                            meta={seasonTwoPodcasts.length > 0 ? formatCount(seasonTwoPodcasts.length, 'episode') : 'Coming soon'}
+                            href={seasonTwoPodcasts[0] ? `/podcasts/${seasonTwoPodcasts[0].id}` : undefined}
+                            tone="gray"
+                            comingSoon={seasonTwoPodcasts.length === 0}
+                        />
+                    </div>
+
+                    {latestPodcasts.length > 0 && (
+                        <>
+                            <div className="media-section-title">Coffee With the Shepherd Episodes</div>
+                            <div className="media-list">
+                                {latestPodcasts.map(podcast => <EpisodeCard key={podcast.id} item={podcast} type="podcast" />)}
+                            </div>
+                        </>
+                    )}
+                </>
+            )}
+
+            {activeTab === 'articles' && (
+                <EmptyState
+                    title="Articles Coming Soon"
+                    text="No articles have been uploaded yet. This section will replace the old Music category."
+                />
+            )}
         </>
     );
 }

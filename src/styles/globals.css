@@ -902,7 +902,9 @@ button {
    MEDIA PAGE (Sermons & Podcasts)
    ============================================================ */
 
-.media-page {}
+.media-page {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+}
 
 /* ── Tab Selector ──────────────────────────────────────────── */
 .tab-bar {
@@ -910,6 +912,13 @@ button {
   gap: 4px;
   padding: 0 var(--page-px) 20px;
   background: var(--bg-app);
+}
+
+.media-tab-bar {
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 5;
+  padding-top: 2px;
 }
 
 .tab-btn {
@@ -1028,6 +1037,7 @@ button {
   box-shadow: var(--shadow-xs);
   text-decoration: none;
   transition: var(--transition);
+  min-height: 68px;
 }
 
 .media-list-card:hover {
@@ -1089,6 +1099,7 @@ button {
   font-size: 12px;
   color: var(--text-muted);
   font-weight: 500;
+  line-height: 1.35;
 }
 
 .media-list-arrow {
@@ -1099,6 +1110,97 @@ button {
 .media-list-arrow svg {
   width: 16px;
   height: 16px;
+}
+
+.media-admin-row {
+  padding: 0 var(--page-px) 16px;
+}
+
+.media-collection-card {
+  align-items: stretch;
+}
+
+.media-collection-card.inactive {
+  opacity: 0.78;
+}
+
+.media-collection-mark {
+  width: 70px;
+  min-height: 62px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.media-collection-mark.orange {
+  background: linear-gradient(135deg, #3a1a08, #C7511F);
+}
+
+.media-collection-mark.purple {
+  background: linear-gradient(135deg, #2b183f, #8a4a21);
+}
+
+.media-collection-mark.gray {
+  background: linear-gradient(135deg, #252525, #4a4a4a);
+}
+
+.media-collection-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.media-access-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(199, 81, 31, 0.14);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.media-empty-state {
+  margin: 12px var(--page-px) 24px;
+  padding: 36px 18px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+}
+
+.media-empty-state h2 {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.media-empty-state .empty-state-icon {
+  width: auto;
+  height: auto;
+  margin: 0 auto 12px;
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 /* ── Live Banner (Media Page) ──────────────────────────────── */

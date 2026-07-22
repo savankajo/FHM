@@ -8,14 +8,14 @@ import { canSeeAudience } from '@/lib/audience';
 async function getSermons(): Promise<Sermon[]> {
     return await prisma.sermon.findMany({
         orderBy: { date: 'desc' },
-        take: 10,
+        take: 300,
     });
 }
 
 async function getPodcasts(): Promise<PodcastEpisode[]> {
     return await prisma.podcastEpisode.findMany({
         orderBy: { publishedAt: 'desc' },
-        take: 10,
+        take: 300,
     });
 }
 

@@ -1,8 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import DeletePodcastButton from './delete-button';
+import { getPodcastSeason } from '@/lib/media-metadata';
 
 export const dynamic = 'force-dynamic';
+
+const seasonLabels = {
+    'season-1': 'Coffee With the Shepherd',
+    'season-2': 'Season 2',
+};
 
 export default async function AdminPodcastsPage() {
     const podcasts = await prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' } });
@@ -35,9 +41,16 @@ export default async function AdminPodcastsPage() {
                         <div key={pod.id} className="admin-list-card">
                             <div className="admin-list-card-main">
                                 <h2>{pod.title}</h2>
-                                <p>{new Date(pod.publishedAt).toLocaleDateString()}</p>
+                                <p>
+                                    {seasonLabels[getPodcastSeason(pod.description)]}
+                                    {' · '}
+                                    {new Date(pod.publishedAt).toLocaleDateString()}
+                                    {' · '}
+                                    {Array.isArray(pod.audienceTeamIds) && pod.audienceTeamIds.length > 0 ? 'Selected teams' : 'Everyone'}
+                                </p>
                             </div>
                             <div className="admin-list-actions">
+                                <Link href={`/admin/podcasts/edit/${pod.id}`} className="admin-list-action-link">Edit</Link>
                                 <DeletePodcastButton id={pod.id} />
                             </div>
                         </div>

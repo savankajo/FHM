@@ -1,8 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import DeleteSermonButton from './delete-button';
+import { getSermonCollection } from '@/lib/media-metadata';
 
 export const dynamic = 'force-dynamic';
+
+const collectionLabels = {
+    saturday: 'Saturday Sermon',
+    tuesday: 'Tuesday Meeting',
+    thursday: 'Thursday Meeting',
+};
 
 export default async function AdminSermonsPage() {
     const sermons = await prisma.sermon.findMany({ orderBy: { date: 'desc' } });
@@ -35,7 +42,13 @@ export default async function AdminSermonsPage() {
                         <div key={sermon.id} className="admin-list-card">
                             <div className="admin-list-card-main">
                                 <h2>{sermon.title}</h2>
-                                <p>{new Date(sermon.date).toLocaleDateString()}</p>
+                                <p>
+                                    {collectionLabels[getSermonCollection(sermon.notes)]}
+                                    {' · '}
+                                    {new Date(sermon.date).toLocaleDateString()}
+                                    {' · '}
+                                    {Array.isArray(sermon.audienceTeamIds) && sermon.audienceTeamIds.length > 0 ? 'Selected teams' : 'Everyone'}
+                                </p>
                             </div>
                             <div className="admin-list-actions">
                                 <Link href={`/admin/sermons/edit/${sermon.id}`} className="admin-list-action-link">Edit</Link>
