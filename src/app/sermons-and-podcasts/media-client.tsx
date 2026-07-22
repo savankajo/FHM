@@ -131,8 +131,8 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
     const thursdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'thursday'), [sermons]);
     const seasonOnePodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-1'), [podcasts]);
     const seasonTwoPodcasts = useMemo(() => podcasts.filter(podcast => getPodcastSeason(podcast.description) === 'season-2'), [podcasts]);
-    const latestSermons = sermons;
-    const latestPodcasts = podcasts;
+    const latestSermons = saturdaySermons.slice(0, 3);
+    const latestPodcasts = seasonOnePodcasts.slice(0, 3);
 
     return (
         <>
@@ -184,7 +184,7 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
 
                     {latestSermons.length > 0 && (
                         <>
-                            <div className="media-section-title">Saturday Sermon Videos</div>
+                            <div className="media-section-title">Latest Sermons</div>
                             <div className="media-list">
                                 {latestSermons.map(sermon => <EpisodeCard key={sermon.id} item={sermon} type="sermon" />)}
                             </div>
@@ -201,14 +201,14 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
                             title="Coffee With the Shepherd"
                             description="Season 1 podcast conversations and episodes."
                             meta={formatCount(seasonOnePodcasts.length, 'episode')}
-                            href={seasonOnePodcasts[0] ? `/podcasts/${seasonOnePodcasts[0].id}` : undefined}
+                            href="/sermons-and-podcasts/podcasts/season-1"
                             tone="purple"
                         />
                         <CollectionCard
                             title="Season 2"
                             description="A new podcast season is being prepared."
                             meta={seasonTwoPodcasts.length > 0 ? formatCount(seasonTwoPodcasts.length, 'episode') : 'Coming soon'}
-                            href={seasonTwoPodcasts[0] ? `/podcasts/${seasonTwoPodcasts[0].id}` : undefined}
+                            href={seasonTwoPodcasts.length > 0 ? '/sermons-and-podcasts/podcasts/season-2' : undefined}
                             tone="gray"
                             comingSoon={seasonTwoPodcasts.length === 0}
                         />
