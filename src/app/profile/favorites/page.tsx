@@ -102,6 +102,12 @@ export default function FavoritesPage() {
         setMounted(true);
     }, []);
 
+    const removeLikedVerse = (indexToRemove: number) => {
+        const next = likedIndices.filter(index => index !== indexToRemove);
+        setLikedIndices(next);
+        localStorage.setItem('fhm_liked_verses', JSON.stringify(next));
+    };
+
     if (!mounted) return null;
 
     return (
@@ -144,7 +150,14 @@ export default function FavoritesPage() {
                                         <div className="text-xs font-bold text-primary uppercase tracking-wider">{v.refAr}</div>
                                     </div>
 
-                                    <div className="pt-2 flex justify-end">
+                                    <div className="pt-2 flex justify-between items-center gap-3">
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => removeLikedVerse(index)}
+                                        >
+                                            Remove Like
+                                        </button>
                                         <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-gray-400 hover:text-primary transition-colors flex items-center gap-1">
                                             Read on Bible.com ↗
                                         </a>

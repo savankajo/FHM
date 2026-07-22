@@ -2,22 +2,52 @@ import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
+const ADMIN_SECTIONS = [
+    {
+        title: 'Media',
+        items: [
+            { label: 'Media Access', href: '/admin/media-access' },
+            { label: 'Adding Sermon', href: '/admin/sermons/new' },
+            { label: 'Adding Podcast', href: '/admin/podcasts/new' },
+            { label: 'Adding Articles', href: '', disabled: true },
+            { label: 'Editing Sermon, Podcast or Articles', href: '/admin/media-edit' },
+        ],
+    },
+    {
+        title: 'Teams',
+        items: [
+            { label: 'Editing Teams', href: '/admin/teams' },
+            { label: 'Adding Teams or Groups', href: '/admin/teams/new' },
+        ],
+    },
+    {
+        title: 'Events',
+        items: [
+            { label: 'Adding Event', href: '/admin/events/new' },
+            { label: 'Editing Event', href: '/admin/events' },
+        ],
+    },
+    {
+        title: 'Manage Live',
+        items: [
+            { label: 'Adding Live', href: '/admin/live' },
+        ],
+    },
+    {
+        title: 'Safety & Users',
+        items: [
+            { label: 'Manage Users', href: '/admin/users' },
+            { label: 'Review Safety Reports', href: '/admin/reports' },
+        ],
+    },
+];
+
 export default async function AdminDashboard() {
     const session = await getSession();
 
     if (!session || session.role !== 'ADMIN') {
         redirect('/');
     }
-
-    const ADMIN_LINKS = [
-        { label: 'Manage Sermons', href: '/admin/sermons', icon: 'Media' },
-        { label: 'Manage Podcasts', href: '/admin/podcasts', icon: 'Audio' },
-        { label: 'Manage Teams & Services', href: '/admin/teams', icon: 'Team' },
-        { label: 'Manage Events', href: '/admin/events', icon: 'Event' },
-        { label: 'Manage Users', href: '/admin/users', icon: 'Users' },
-        { label: 'Manage Live Link', href: '/admin/live', icon: 'Live' },
-        { label: 'Review Safety Reports', href: '/admin/reports', icon: 'Safety' },
-    ];
 
     return (
         <div className="min-h-screen bg-white">
@@ -45,21 +75,29 @@ export default async function AdminDashboard() {
                     </form>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {ADMIN_LINKS.map(link => (
-                        <Link key={link.href} href={link.href} className="block no-underline">
-                            <div className="bg-white border border-gray-200 hover:border-gray-400 hover:shadow-md transition-all rounded-xl p-8 flex flex-col items-center justify-center text-center gap-3 min-h-[140px]">
-                                <span className="text-sm font-bold tracking-wide text-orange-700 bg-orange-50 border border-orange-100 rounded-full px-3 py-1">
-                                    {link.icon}
-                                </span>
-                                <span className="font-bold text-gray-800 text-base">{link.label}</span>
+                <div className="grid gap-6">
+                    {ADMIN_SECTIONS.map(section => (
+                        <section key={section.title} className="settings-card" style={{ padding: 18 }}>
+                            <h2 className="settings-section-title" style={{ marginBottom: 14 }}>{section.title}</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {section.items.map(item => item.disabled ? (
+                                    <div key={item.label} className="admin-list-card" style={{ opacity: 0.55 }}>
+                                        <div className="admin-list-card-main">
+                                            <h2>{item.label}</h2>
+                                            <p>Coming soon</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Link key={item.label} href={item.href} className="admin-list-card admin-list-card-link">
+                                        <div className="admin-list-card-main">
+                                            <h2>{item.label}</h2>
+                                            <p>Open</p>
+                                        </div>
+                                    </Link>
+                                ))}
                             </div>
-                        </Link>
+                        </section>
                     ))}
-                </div>
-
-                <div className="mt-10 p-5 bg-yellow-50 rounded-xl border border-yellow-200 text-sm text-yellow-800">
-                    <p><strong>Note:</strong> You have full access to manage content. Changes are live immediately.</p>
                 </div>
             </div>
         </div>

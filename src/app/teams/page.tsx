@@ -133,7 +133,7 @@ export default async function TeamsPage() {
                     {myTeams.map(team => {
                         const meta = getTeamMeta(team.name);
                         return (
-                            <Link key={team.id} href={`/teams/${team.id}`} className="team-card">
+                            <Link key={team.id} href={`/chat/${team.id}`} className="team-card">
                                 {/* Team Image / Icon */}
                                 <div className="team-card-image" style={{ background: meta.gradient }}>
                                     <span style={{ fontSize: '32px' }}>{meta.emoji}</span>
@@ -151,7 +151,7 @@ export default async function TeamsPage() {
                                             <path d="M21 21v-1.5a3.5 3.5 0 0 0-2-3.2" />
                                         </svg>
                                         {team._count.members} {team._count.members === 1 ? 'Member' : 'Members'}
-                                        <span style={{ marginLeft: '8px', color: 'var(--text-muted)' }}>· Open Chat →</span>
+                                        <span style={{ marginLeft: '8px', color: 'var(--text-muted)' }}>Open Chat</span>
                                     </div>
                                 </div>
 

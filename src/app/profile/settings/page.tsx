@@ -4,8 +4,15 @@ import { useTheme } from '@/context/theme-context';
 import Link from 'next/link';
 import AccountControls from './account-controls';
 
+const THEME_OPTIONS = [
+    { id: 'dark', label: 'Dark', description: 'Black background with warm accents' },
+    { id: 'light', label: 'Light', description: 'White background for daytime reading' },
+    { id: 'warm', label: 'Warm', description: 'Soft cream and amber tones' },
+    { id: 'blue', label: 'Blue', description: 'Deep blue with bright accents' },
+] as const;
+
 export default function SettingsPage() {
-    const { theme } = useTheme();
+    const { theme, setTheme } = useTheme();
 
     return (
         <div className="profile-page settings-page">
@@ -21,30 +28,26 @@ export default function SettingsPage() {
                     <h2 className="settings-section-title">Appearance</h2>
 
                     <div className="settings-card">
-                        <div className="settings-row">
-                            <div className="settings-label-group">
-                                <div className="settings-badge">ON</div>
-                                <div className="settings-text">
-                                    <div className="settings-label">Dark Mode</div>
-                                    <div className="settings-description">Always on for the FHM app</div>
-                                </div>
-                            </div>
-
-                            <div
-                                aria-label={`Dark mode is ${theme}`}
-                                className="settings-toggle"
-                            >
-                                <div className="settings-toggle-thumb" />
-                            </div>
+                        <div className="theme-choice-grid">
+                            {THEME_OPTIONS.map(option => (
+                                <button
+                                    key={option.id}
+                                    type="button"
+                                    className={`theme-choice${theme === option.id ? ' active' : ''}`}
+                                    onClick={() => setTheme(option.id)}
+                                    aria-pressed={theme === option.id}
+                                >
+                                    <span className={`theme-choice-swatch ${option.id}`} />
+                                    <span>
+                                        <strong>{option.label}</strong>
+                                        <small>{option.description}</small>
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </section>
 
-                <div className="settings-note">
-                    <p>
-                        <strong>Dark Mode</strong> is locked on so the app has one consistent visual style across devices.
-                    </p>
-                </div>
                 <section className="settings-section">
                     <h2 className="settings-section-title">Privacy & Support</h2>
                     <div className="settings-card" style={{ padding: 16, display: 'grid', gap: 12 }}>

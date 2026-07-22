@@ -1,31 +1,46 @@
 'use client';
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark';
+export type Theme = 'dark' | 'light' | 'warm' | 'blue';
 
 interface ThemeContextType {
     theme: Theme;
+    setTheme: (theme: Theme) => void;
     toggleTheme: () => void;
 }
 
+const THEMES: Theme[] = ['dark', 'light', 'warm', 'blue'];
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function applyTheme(theme: Theme) {
+    document.documentElement.classList.remove(...THEMES);
+    document.documentElement.classList.add(theme);
+    document.documentElement.style.colorScheme = theme === 'light' || theme === 'warm' ? 'light' : 'dark';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    const [theme, setThemeState] = useState<Theme>('dark');
+
     useEffect(() => {
-        document.documentElement.classList.add('dark');
-        document.documentElement.style.colorScheme = 'dark';
-        localStorage.setItem('fhm_theme', 'dark');
+        const saved = localStorage.getItem('fhm_theme') as Theme | null;
+        const nextTheme = saved && THEMES.includes(saved) ? saved : 'dark';
+        setThemeState(nextTheme);
+        applyTheme(nextTheme);
     }, []);
 
+    const setTheme = (nextTheme: Theme) => {
+        setThemeState(nextTheme);
+        applyTheme(nextTheme);
+        localStorage.setItem('fhm_theme', nextTheme);
+    };
+
     const toggleTheme = () => {
-        document.documentElement.classList.add('dark');
-        document.documentElement.style.colorScheme = 'dark';
-        localStorage.setItem('fhm_theme', 'dark');
+        setTheme(theme === 'dark' ? 'light' : 'dark');
     };
 
     return (
-        <ThemeContext.Provider value={{ theme: 'dark', toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
             {children}
         </ThemeContext.Provider>
     );
