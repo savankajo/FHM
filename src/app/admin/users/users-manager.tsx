@@ -38,6 +38,8 @@ function normalizePermissions(permissions: AdminUserRow['permissions']): UserPer
 export default function UsersManager({ users }: { users: AdminUserRow[] }) {
     const [rows, setRows] = useState(() => users.map(user => ({ ...user, permissions: normalizePermissions(user.permissions) })));
     const [savingId, setSavingId] = useState<string | null>(null);
+    const [query, setQuery] = useState('');
+    const [selectedUserId, setSelectedUserId] = useState(users[0]?.id || '');
 
     const updateRole = (userId: string, role: Role) => {
         setRows(current => current.map(user => user.id === userId ? { ...user, role } : user));
@@ -66,21 +68,52 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
         setSavingId(null);
     };
 
+    const filteredRows = rows.filter(user => {
+        const value = `${user.name} ${user.email}`.toLocaleLowerCase();
+        return value.includes(query.trim().toLocaleLowerCase());
+    });
+    const selectedUser = rows.find(user => user.id === selectedUserId) || filteredRows[0] || rows[0];
+
     return (
         <div className="admin-list-stack">
-            {rows.map(user => {
-                const permissions = normalizePermissions(user.permissions);
+            <div className="settings-card user-picker-card">
+                <label className="settings-description">
+                    Search user
+                    <input
+                        className="media-search-input"
+                        type="search"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Search by name or email"
+                    />
+                </label>
+                <label className="settings-description">
+                    Choose user
+                    <select
+                        className="media-search-input"
+                        value={selectedUser?.id || ''}
+                        onChange={(event) => setSelectedUserId(event.target.value)}
+                    >
+                        {filteredRows.map(user => (
+                            <option key={user.id} value={user.id}>{user.name} - {user.email}</option>
+                        ))}
+                    </select>
+                </label>
+            </div>
+
+            {selectedUser ? (() => {
+                const permissions = normalizePermissions(selectedUser.permissions);
                 return (
-                    <div key={user.id} className="admin-list-card" style={{ alignItems: 'stretch', flexDirection: 'column' }}>
+                    <div key={selectedUser.id} className="admin-list-card" style={{ alignItems: 'stretch', flexDirection: 'column' }}>
                         <div className="admin-list-card-main">
-                            <h2>{user.name}</h2>
-                            <p>{user.email}</p>
-                            <p>{user.teams.length ? user.teams.join(', ') : 'No teams'}</p>
+                            <h2>{selectedUser.name}</h2>
+                            <p>{selectedUser.email}</p>
+                            <p>{selectedUser.teams.length ? selectedUser.teams.join(', ') : 'No teams'}</p>
                         </div>
 
                         <label className="settings-description">
                             Role
-                            <select className="media-search-input" value={user.role} onChange={(event) => updateRole(user.id, event.target.value as Role)}>
+                            <select className="media-search-input" value={selectedUser.role} onChange={(event) => updateRole(selectedUser.id, event.target.value as Role)}>
                                 <option value="MEMBER">Member</option>
                                 <option value="LEADER">Leader</option>
                                 <option value="ADMIN">Admin</option>
@@ -97,7 +130,7 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
                                                 <input
                                                     type="checkbox"
                                                     checked={(permissions[topic.id] || []).includes(action.id)}
-                                                    onChange={() => togglePermission(user.id, topic.id, action.id)}
+                                                    onChange={() => togglePermission(selectedUser.id, topic.id, action.id)}
                                                 /> {action.label}
                                             </label>
                                         ))}
@@ -106,12 +139,17 @@ export default function UsersManager({ users }: { users: AdminUserRow[] }) {
                             ))}
                         </div>
 
-                        <button type="button" className="btn btn-primary btn-sm" onClick={() => saveUser(user.id)} disabled={savingId === user.id}>
-                            {savingId === user.id ? 'Saving...' : 'Save User Access'}
+                        <button type="button" className="btn btn-primary btn-sm" onClick={() => saveUser(selectedUser.id)} disabled={savingId === selectedUser.id}>
+                            {savingId === selectedUser.id ? 'Saving...' : 'Save User Access'}
                         </button>
                     </div>
                 );
-            })}
+            })() : (
+                <div className="admin-empty-state">
+                    <h2>No users found</h2>
+                    <p>Try a different name or email.</p>
+                </div>
+            )}
         </div>
     );
 }

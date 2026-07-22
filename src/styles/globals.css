@@ -3093,6 +3093,12 @@ button {
   gap: 12px;
 }
 
+.user-picker-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
 .user-permission-topic {
   display: grid;
   gap: 8px;
