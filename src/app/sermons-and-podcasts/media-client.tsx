@@ -216,7 +216,7 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
 
                     {latestPodcasts.length > 0 && (
                         <>
-                            <div className="media-section-title">Coffee With the Shepherd Episodes</div>
+                            <div className="media-section-title">Latest Podcasts</div>
                             <div className="media-list">
                                 {latestPodcasts.map(podcast => <EpisodeCard key={podcast.id} item={podcast} type="podcast" />)}
                             </div>
