@@ -1,19 +1,37 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { getSermonCollection } from '@/lib/media-metadata';
+import MediaAccessClient, { MediaAccessItem } from './media-access-client';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminMediaAccessPage({ searchParams }: { searchParams?: { q?: string } }) {
-    const q = (searchParams?.q || '').trim();
-    const [sermons, podcasts] = await Promise.all([
-        prisma.sermon.findMany({ orderBy: { date: 'desc' }, take: 300 }),
-        prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }),
-    ]);
-    const query = q.toLowerCase();
-    const rows = [
-        ...sermons.map(item => ({ id: item.id, type: 'Sermon', title: item.title, restricted: Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0, href: `/admin/sermons/edit/${item.id}` })),
-        ...podcasts.map(item => ({ id: item.id, type: 'Podcast', title: item.title, restricted: Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0, href: `/admin/podcasts/edit/${item.id}` })),
-    ].filter(item => item.title.toLowerCase().includes(query));
+const collectionLabels = {
+    saturday: 'Saturday Sermon / عظة السبت',
+    tuesday: 'Tuesday Meeting / اجتماع الثلاثاء',
+    thursday: 'Thursday Meeting / اجتماع الخميس',
+};
+
+export default async function AdminMediaAccessPage() {
+    const sermons = await prisma.sermon.findMany({
+        orderBy: { date: 'desc' },
+        take: 600,
+    });
+
+    const items: MediaAccessItem[] = sermons.map(sermon => {
+        const collection = getSermonCollection(sermon.notes);
+
+        return {
+            id: sermon.id,
+            title: sermon.title,
+            collection,
+            collectionLabel: collectionLabels[collection],
+            dateLabel: new Date(sermon.date).toLocaleDateString(),
+            accessLabel: Array.isArray(sermon.audienceTeamIds) && sermon.audienceTeamIds.length > 0
+                ? 'Selected teams/groups'
+                : 'Everyone',
+            editHref: `/admin/sermons/edit/${sermon.id}`,
+        };
+    });
 
     return (
         <div className="admin-list-page">
@@ -24,23 +42,12 @@ export default async function AdminMediaAccessPage({ searchParams }: { searchPar
                     </Link>
                     <div className="admin-list-title-copy">
                         <h1 className="page-title">Media Access</h1>
-                        <p className="page-kicker">Edit who can see media items</p>
+                        <p className="page-kicker">Edit access for sermon collections</p>
                     </div>
                 </div>
             </div>
-            <form className="media-search-wrap" action="/admin/media-access">
-                <input className="media-search-input" type="search" name="q" defaultValue={q} placeholder="Search sermon or podcast" />
-            </form>
-            <div className="admin-list-stack">
-                {rows.map(item => (
-                    <Link key={`${item.type}-${item.id}`} href={item.href} className="admin-list-card admin-list-card-link">
-                        <div className="admin-list-card-main">
-                            <h2>{item.title}</h2>
-                            <p>{item.type} - {item.restricted ? 'Selected teams/groups' : 'Everyone'}</p>
-                        </div>
-                    </Link>
-                ))}
-            </div>
+
+            <MediaAccessClient items={items} />
         </div>
     );
 }

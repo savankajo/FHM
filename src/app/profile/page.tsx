@@ -3,16 +3,20 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ProfileActions from './profile-actions';
+import ProfileForm from './profile-form';
 
 export const dynamic = 'force-dynamic';
 
-// ── Chevron Icon ──────────────────────────────────────────────
 function ChevronRight() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6" />
         </svg>
     );
+}
+
+function ProfileFormWrapper({ user }: { user: { name: string | null; email: string; phone: string | null } }) {
+    return <ProfileForm user={user} />;
 }
 
 export default async function ProfilePage() {
@@ -32,8 +36,6 @@ export default async function ProfilePage() {
 
     return (
         <div className="profile-page">
-
-            {/* ── Profile Hero ─────────────────────────────────── */}
             <div className="profile-hero">
                 <div className="profile-avatar-wrap">
                     <div className="profile-avatar">
@@ -45,39 +47,28 @@ export default async function ProfilePage() {
                 <div className="profile-role-badge">{session.role}</div>
             </div>
 
-            {/* ── Menu Card ────────────────────────────────────── */}
             <div className="profile-card">
-
                 <Link href="/profile/favorites" className="profile-menu-item">
-                    <div className="profile-menu-icon orange">❤️</div>
+                    <div className="profile-menu-icon orange">Love</div>
                     <span className="profile-menu-label">My Favorites</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
                 <Link href="/events" className="profile-menu-item">
-                    <div className="profile-menu-icon blue">📅</div>
+                    <div className="profile-menu-icon blue">Cal</div>
                     <span className="profile-menu-label">Event Registrations</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
-                <Link href="/bible" className="profile-menu-item">
-                    <div className="profile-menu-icon green">📖</div>
-                    <span className="profile-menu-label">Bible Reading Plan</span>
-                    <span className="profile-menu-arrow"><ChevronRight /></span>
-                </Link>
-
                 <Link href="/profile/settings" className="profile-menu-item">
-                    <div className="profile-menu-icon purple">⚙️</div>
+                    <div className="profile-menu-icon purple">Set</div>
                     <span className="profile-menu-label">Settings</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
-                {/* Logout — needs server action */}
                 <ProfileActions />
-
             </div>
 
-            {/* ── Edit Profile Form ─────────────────────────────── */}
             <div style={{ padding: '0 20px 8px' }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
                     Edit Profile
@@ -87,14 +78,6 @@ export default async function ProfilePage() {
             <div className="profile-form-section">
                 <ProfileFormWrapper user={user} />
             </div>
-
         </div>
     );
-}
-
-// ── Profile Form Wrapper ──────────────────────────────────────
-import ProfileForm from './profile-form';
-
-function ProfileFormWrapper({ user }: { user: { name: string | null; email: string; phone: string | null } }) {
-    return <ProfileForm user={user} />;
 }

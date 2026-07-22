@@ -3042,6 +3042,51 @@ button {
   gap: 14px;
 }
 
+.admin-media-access {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-access-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-access-tab {
+  min-height: 76px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-align: left;
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-fast);
+}
+
+.admin-access-tab.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.admin-access-tab span,
+.admin-access-tab small {
+  display: block;
+}
+
+.admin-access-tab span {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.admin-access-tab small {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
 .admin-list-card {
   display: flex;
   align-items: center;
