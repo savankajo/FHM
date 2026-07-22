@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
 
 export async function GET() {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'teams', 'edit') && !await canManage(session?.userId, session?.role, 'media', 'edit') && !await canManage(session?.userId, session?.role, 'events', 'edit')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
     const teams = await prisma.team.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } });
     return NextResponse.json({ teams });
 }
 
 export async function POST(request: Request) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'teams', 'add')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
 
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json({ team });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to create' }, { status: 500 });
     }
 }

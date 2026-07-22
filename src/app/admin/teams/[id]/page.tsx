@@ -4,12 +4,13 @@ import AddServiceForm from './add-service-form';
 import MemberManager from './member-manager';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { canManage } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminTeamDetailsPage({ params }: { params: { id: string } }) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') redirect('/');
+    if (!await canManage(session?.userId, session?.role, 'teams', 'edit')) redirect('/');
     const team = await prisma.team.findUnique({
         where: { id: params.id },
         include: {

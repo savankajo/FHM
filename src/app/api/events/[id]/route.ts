@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
 
-export async function PUT(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     try {
         const session = await getSession();
-
-        if (!session || session.role !== 'ADMIN') {
+        if (!await canManage(session?.userId, session?.role, 'events', 'edit')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -35,26 +32,15 @@ export async function PUT(
     }
 }
 
-export async function DELETE(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
     try {
         const session = await getSession();
-
-        if (!session || session.role !== 'ADMIN') {
+        if (!await canManage(session?.userId, session?.role, 'events', 'remove')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Delete all votes first (cascade)
-        await prisma.eventVote.deleteMany({
-            where: { eventId: params.id }
-        });
-
-        // Delete the event
-        await prisma.event.delete({
-            where: { id: params.id }
-        });
+        await prisma.eventVote.deleteMany({ where: { eventId: params.id } });
+        await prisma.event.delete({ where: { id: params.id } });
 
         return NextResponse.json({ success: true });
     } catch (error) {

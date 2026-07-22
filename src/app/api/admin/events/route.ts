@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
 
 export async function POST(request: Request) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'events', 'add')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
 
@@ -15,15 +16,15 @@ export async function POST(request: Request) {
                 description: body.description,
                 votingDeadline: body.votingDeadline,
                 locations: body.locations,
-                createdByUserId: session.userId,
+                createdByUserId: session!.userId,
                 teamScope: body.audienceTeamIds?.length ? 'RESTRICTED' : null,
                 teams: body.audienceTeamIds?.length ? { connect: body.audienceTeamIds.map((id: string) => ({ id })) } : undefined
             }
         });
 
         return NextResponse.json({ event });
-    } catch (e) {
-        console.error(e);
+    } catch (error) {
+        console.error(error);
         return NextResponse.json({ error: 'Failed to create' }, { status: 500 });
     }
 }

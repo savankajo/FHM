@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { canManage } from '@/lib/permissions';
 
 export async function POST(request: Request) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'media', 'add')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
 
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
                 title: body.title,
                 speaker: body.speaker,
                 date: new Date(body.date),
-                type: body.type, // 'VIDEO' or 'PDF'
+                type: body.type,
                 videoUrl: body.videoUrl || null,
                 fileUrl: body.fileUrl || null,
                 notes: body.notes,
@@ -24,14 +25,14 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json({ sermon });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to create' }, { status: 500 });
     }
 }
 
 export async function DELETE(request: Request) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'media', 'remove')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -41,17 +42,16 @@ export async function DELETE(request: Request) {
     try {
         await prisma.sermon.delete({ where: { id } });
         return NextResponse.json({ success: true });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
     }
 }
 
 export async function PUT(request: Request) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!await canManage(session?.userId, session?.role, 'media', 'edit')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
-
     if (!body.id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     try {
@@ -71,7 +71,7 @@ export async function PUT(request: Request) {
         });
 
         return NextResponse.json({ sermon });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
 }

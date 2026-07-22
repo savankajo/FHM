@@ -122,18 +122,6 @@ export default async function HomePage() {
           <span className="action-label">Media</span>
         </Link>
 
-        <Link href="/bible" className="action-item">
-          <div className="action-icon-circle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              <line x1="12" y1="7" x2="12" y2="13" />
-              <line x1="9" y1="10" x2="15" y2="10" />
-            </svg>
-          </div>
-          <span className="action-label">Bible</span>
-        </Link>
-
         <a
           href="https://maps.app.goo.gl/CK4iVbRy25KjZS8m9"
           target="_blank"

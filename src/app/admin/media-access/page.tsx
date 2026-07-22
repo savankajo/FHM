@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSermonCollection } from '@/lib/media-metadata';
-import MediaAccessClient, { MediaAccessItem } from './media-access-client';
+import MediaAccessClient, { CollectionAccessState, MediaAccessItem, TeamOption } from './media-access-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +16,10 @@ export default async function AdminMediaAccessPage() {
         orderBy: { date: 'desc' },
         take: 600,
     });
+    const teams: TeamOption[] = await prisma.team.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+    });
 
     const items: MediaAccessItem[] = sermons.map(sermon => {
         const collection = getSermonCollection(sermon.notes);
@@ -29,9 +33,17 @@ export default async function AdminMediaAccessPage() {
             accessLabel: Array.isArray(sermon.audienceTeamIds) && sermon.audienceTeamIds.length > 0
                 ? 'Selected teams/groups'
                 : 'Everyone',
+            audienceTeamIds: Array.isArray(sermon.audienceTeamIds) ? sermon.audienceTeamIds.map(String) : [],
             editHref: `/admin/sermons/edit/${sermon.id}`,
         };
     });
+
+    const collectionAccess = (['saturday', 'tuesday', 'thursday'] as const).reduce((acc, collection) => {
+        const collectionItems = items.filter(item => item.collection === collection);
+        const teamIds = new Set(collectionItems.flatMap(item => item.audienceTeamIds));
+        acc[collection] = Array.from(teamIds);
+        return acc;
+    }, {} as CollectionAccessState);
 
     return (
         <div className="admin-list-page">
@@ -47,7 +59,7 @@ export default async function AdminMediaAccessPage() {
                 </div>
             </div>
 
-            <MediaAccessClient items={items} />
+            <MediaAccessClient items={items} teams={teams} initialAccess={collectionAccess} />
         </div>
     );
 }

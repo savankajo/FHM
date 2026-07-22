@@ -1,43 +1,54 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { hasPermission, PermissionAction, PermissionTopic } from '@/lib/permissions';
 import { redirect } from 'next/navigation';
 
-const ADMIN_SECTIONS = [
+type AdminItem = {
+    label: string;
+    href: string;
+    topic?: PermissionTopic;
+    action?: PermissionAction;
+    adminOnly?: boolean;
+    disabled?: boolean;
+};
+
+const ADMIN_SECTIONS: Array<{ title: string; items: AdminItem[] }> = [
     {
         title: 'Media',
         items: [
-            { label: 'Media Access', href: '/admin/media-access' },
-            { label: 'Adding Sermon', href: '/admin/sermons/new' },
-            { label: 'Adding Podcast', href: '/admin/podcasts/new' },
+            { label: 'Media Access', href: '/admin/media-access', topic: 'media', action: 'edit' },
+            { label: 'Adding Sermon', href: '/admin/sermons/new', topic: 'media', action: 'add' },
+            { label: 'Adding Podcast', href: '/admin/podcasts/new', topic: 'media', action: 'add' },
             { label: 'Adding Articles', href: '', disabled: true },
-            { label: 'Editing Sermon, Podcast or Articles', href: '/admin/media-edit' },
+            { label: 'Editing Sermon, Podcast or Articles', href: '/admin/media-edit', topic: 'media', action: 'edit' },
         ],
     },
     {
         title: 'Teams',
         items: [
-            { label: 'Editing Teams', href: '/admin/teams' },
-            { label: 'Adding Teams or Groups', href: '/admin/teams/new' },
+            { label: 'Editing Teams', href: '/admin/teams', topic: 'teams', action: 'edit' },
+            { label: 'Adding Teams or Groups', href: '/admin/teams/new', topic: 'teams', action: 'add' },
         ],
     },
     {
         title: 'Events',
         items: [
-            { label: 'Adding Event', href: '/admin/events/new' },
-            { label: 'Editing Event', href: '/admin/events' },
+            { label: 'Adding Event', href: '/admin/events/new', topic: 'events', action: 'add' },
+            { label: 'Editing Event', href: '/admin/events', topic: 'events', action: 'edit' },
         ],
     },
     {
         title: 'Manage Live',
         items: [
-            { label: 'Adding Live', href: '/admin/live' },
+            { label: 'Adding Live', href: '/admin/live', topic: 'live', action: 'add' },
         ],
     },
     {
         title: 'Safety & Users',
         items: [
-            { label: 'Manage Users', href: '/admin/users' },
-            { label: 'Review Safety Reports', href: '/admin/reports' },
+            { label: 'Manage Users', href: '/admin/users', adminOnly: true },
+            { label: 'Review Safety Reports', href: '/admin/reports', adminOnly: true },
         ],
     },
 ];
@@ -45,9 +56,20 @@ const ADMIN_SECTIONS = [
 export default async function AdminDashboard() {
     const session = await getSession();
 
-    if (!session || session.role !== 'ADMIN') {
-        redirect('/');
-    }
+    if (!session) redirect('/');
+    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { permissions: true } });
+    const isAdmin = session.role === 'ADMIN';
+    const canOpen = (item: AdminItem) => {
+        if (item.disabled) return true;
+        if (isAdmin) return true;
+        if (item.adminOnly) return false;
+        return !!item.topic && !!item.action && hasPermission(user?.permissions, item.topic, item.action);
+    };
+    const sections = ADMIN_SECTIONS.map(section => ({
+        ...section,
+        items: section.items.filter(canOpen),
+    })).filter(section => section.items.length > 0);
+    if (!sections.length) redirect('/');
 
     return (
         <div className="min-h-screen bg-white">
@@ -76,7 +98,7 @@ export default async function AdminDashboard() {
                 </div>
 
                 <div className="grid gap-6">
-                    {ADMIN_SECTIONS.map(section => (
+                    {sections.map(section => (
                         <section key={section.title} className="settings-card" style={{ padding: 18 }}>
                             <h2 className="settings-section-title" style={{ marginBottom: 14 }}>{section.title}</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

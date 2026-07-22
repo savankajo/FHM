@@ -1,100 +1,46 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { formatDate } from '@/lib/utils';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import UsersManager, { AdminUserRow } from './users-manager';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminUsersPage() {
     const session = await getSession();
-    if (!session || session.role !== 'ADMIN') {
-        redirect('/');
-    }
+    if (!session || session.role !== 'ADMIN') redirect('/');
 
     const users = await prisma.user.findMany({
         orderBy: { createdAt: 'desc' },
-        include: {
-            teams: { select: { name: true } }
-        }
+        include: { teams: { select: { name: true } } }
     });
 
+    const rows: AdminUserRow[] = users.map(user => ({
+        id: user.id,
+        name: user.name || 'No name',
+        email: user.email,
+        role: user.role,
+        teams: user.teams.map(team => team.name),
+        permissions: user.permissions && typeof user.permissions === 'object' ? user.permissions : {},
+    }));
+
     return (
-        <div className="p-4 max-w-4xl mx-auto pb-24">
-            <div className="admin-topbar">
-                <div className="flex items-center gap-4">
+        <div className="admin-list-page">
+            <div className="admin-list-topbar">
+                <div className="admin-list-title-row">
                     <Link href="/admin" className="page-back-btn" aria-label="Back to Admin Dashboard">
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M15 18l-6-6 6-6" />
                         </svg>
                     </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
-                        <p className="text-gray-500 text-sm">Total Users: {users.length}</p>
+                    <div className="admin-list-title-copy">
+                        <h1 className="page-title">Manage Users</h1>
+                        <p className="page-kicker">{rows.length} users</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-600 border-b">
-                            <tr>
-                                <th className="p-4 font-semibold">Name</th>
-                                <th className="p-4 font-semibold">Email</th>
-                                <th className="p-4 font-semibold">Role</th>
-                                <th className="p-4 font-semibold">Teams</th>
-                                <th className="p-4 font-semibold">Joined</th>
-                                <th className="p-4 font-semibold text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                            {users.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="p-8 text-center text-gray-500">No users found.</td>
-                                </tr>
-                            ) : (
-                                users.map(user => (
-                                    <tr key={user.id} className="hover:bg-gray-50/50">
-                                        <td className="p-4 font-medium text-gray-900">{user.name}</td>
-                                        <td className="p-4 text-gray-600">{user.email}</td>
-                                        <td className="p-4">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.role === 'ADMIN'
-                                                ? 'bg-purple-100 text-purple-700'
-                                                : 'bg-green-100 text-green-700'
-                                                }`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-gray-600">
-                                            {user.teams.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1">
-                                                    {user.teams.map(t => (
-                                                        <span key={t.name} className="bg-gray-100 px-2 py-0.5 rounded text-xs">
-                                                            {t.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <span className="text-gray-400 italic">None</span>
-                                            )}
-                                        </td>
-                                        <td className="p-4 text-gray-500 whitespace-nowrap">
-                                            {formatDate(user.createdAt)}
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <Link href={`/admin/users/${user.id}`}>
-                                                <Button size="sm" variant="ghost">Edit</Button>
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <UsersManager users={rows} />
         </div>
     );
 }

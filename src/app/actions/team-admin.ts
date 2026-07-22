@@ -3,10 +3,11 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { canManage } from '@/lib/permissions';
 
 export async function addTeamMember(teamId: string, email: string) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') {
+    if (!await canManage(session?.userId, session?.role, 'teams', 'edit')) {
         return { error: 'Unauthorized' };
     }
 
@@ -38,7 +39,7 @@ export async function addTeamMember(teamId: string, email: string) {
 
 export async function removeTeamMember(teamId: string, userId: string) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') {
+    if (!await canManage(session?.userId, session?.role, 'teams', 'edit')) {
         return { error: 'Unauthorized' };
     }
 
@@ -55,7 +56,7 @@ export async function removeTeamMember(teamId: string, userId: string) {
 
 export async function deleteService(serviceId: string, teamId: string) {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') {
+    if (!await canManage(session?.userId, session?.role, 'teams', 'remove')) {
         return { error: 'Unauthorized' };
     }
 

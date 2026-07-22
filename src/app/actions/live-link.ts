@@ -3,10 +3,11 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { canManage } from '@/lib/permissions';
 
 export async function createLiveLink(formData: FormData) {
     const session = await getSession();
-    if (!session || session.role !== 'ADMIN') return { error: 'Unauthorized' };
+    if (!await canManage(session?.userId, session?.role, 'live', 'add')) return { error: 'Unauthorized' };
 
     const url = formData.get('url') as string;
     const expiryHours = parseInt(formData.get('expiryHours') as string);
@@ -36,7 +37,7 @@ export async function createLiveLink(formData: FormData) {
 
 export async function deleteLiveLink() {
     const session = await getSession();
-    if (!session || session.role !== 'ADMIN') return { error: 'Unauthorized' };
+    if (!await canManage(session?.userId, session?.role, 'live', 'remove')) return { error: 'Unauthorized' };
 
     try {
         await prisma.liveLink.deleteMany({});

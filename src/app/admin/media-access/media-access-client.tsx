@@ -11,8 +11,12 @@ export type MediaAccessItem = {
     collectionLabel: string;
     dateLabel: string;
     accessLabel: string;
+    audienceTeamIds: string[];
     editHref: string;
 };
+
+export type TeamOption = { id: string; name: string };
+export type CollectionAccessState = Record<SermonCollection, string[]>;
 
 const COLLECTIONS: Array<{ id: SermonCollection; label: string }> = [
     { id: 'saturday', label: 'Saturday Sermon / عظة السبت' },
@@ -26,13 +30,40 @@ function startsWithSearch(title: string, query: string) {
     return title.trim().toLocaleLowerCase().startsWith(cleanQuery);
 }
 
-export default function MediaAccessClient({ items }: { items: MediaAccessItem[] }) {
+export default function MediaAccessClient({ items, teams, initialAccess }: { items: MediaAccessItem[]; teams: TeamOption[]; initialAccess: CollectionAccessState }) {
     const [collection, setCollection] = useState<SermonCollection>('saturday');
     const [query, setQuery] = useState('');
+    const [access, setAccess] = useState<CollectionAccessState>(initialAccess);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState('');
 
     const filteredItems = useMemo(() => {
         return items.filter(item => item.collection === collection && startsWithSearch(item.title, query));
     }, [collection, items, query]);
+
+    const selectedTeamIds = access[collection] || [];
+
+    const toggleTeam = (teamId: string) => {
+        setAccess(current => {
+            const selected = new Set(current[collection] || []);
+            if (selected.has(teamId)) selected.delete(teamId);
+            else selected.add(teamId);
+            return { ...current, [collection]: Array.from(selected) };
+        });
+    };
+
+    const saveCollectionAccess = async () => {
+        setSaving(true);
+        setMessage('');
+        const response = await fetch('/api/admin/media-access', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ collection, audienceTeamIds: selectedTeamIds }),
+        });
+        const data = await response.json().catch(() => ({}));
+        setSaving(false);
+        setMessage(response.ok ? `Saved access for ${data.updated || 0} items.` : 'Could not save access.');
+    };
 
     return (
         <div className="admin-media-access">
@@ -54,6 +85,32 @@ export default function MediaAccessClient({ items }: { items: MediaAccessItem[] 
                         </button>
                     );
                 })}
+            </div>
+
+            <div className="settings-card" style={{ padding: 16 }}>
+                <h2 className="settings-section-title" style={{ marginBottom: 12 }}>Collection Access</h2>
+                <label style={{ display: 'block', marginBottom: 10 }}>
+                    <input
+                        type="radio"
+                        checked={selectedTeamIds.length === 0}
+                        onChange={() => setAccess(current => ({ ...current, [collection]: [] }))}
+                    /> Everyone
+                </label>
+                <div style={{ display: 'grid', gap: 10 }}>
+                    {teams.map(team => (
+                        <label key={team.id}>
+                            <input
+                                type="checkbox"
+                                checked={selectedTeamIds.includes(team.id)}
+                                onChange={() => toggleTeam(team.id)}
+                            /> {team.name}
+                        </label>
+                    ))}
+                </div>
+                <button type="button" className="btn btn-primary btn-sm" style={{ marginTop: 14 }} onClick={saveCollectionAccess} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Collection Access'}
+                </button>
+                {message && <p className="settings-description" style={{ marginTop: 10 }}>{message}</p>}
             </div>
 
             <div className="media-search-wrap">

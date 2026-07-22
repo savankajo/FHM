@@ -2,12 +2,13 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { canManage } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminTeamsPage() {
     const session = await getSession();
-    if (session?.role !== 'ADMIN') redirect('/');
+    if (!await canManage(session?.userId, session?.role, 'teams', 'edit')) redirect('/');
     const teams = await prisma.team.findMany({
         include: { _count: { select: { members: true } } },
         orderBy: { name: 'asc' },
