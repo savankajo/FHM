@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import AudienceSelector from '@/components/admin/audience-selector';
+import EventLocationsEditor, { EventLocationInput, createBlankEventLocation } from '../../event-locations-editor';
 
 interface EditEventFormProps {
     event: any;
@@ -15,8 +16,29 @@ export default function EditEventForm({ event }: EditEventFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
-    const locations = event.locations as any[];
-    const firstLocation = locations?.[0] || {};
+    const formatDateTimeLocal = (date: any) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const existingLocations = Array.isArray(event.locations) ? event.locations as any[] : [];
+    const [locations, setLocations] = useState<EventLocationInput[]>(
+        existingLocations.length
+            ? existingLocations.map(location => ({
+                name: location.name || '',
+                address: location.address || '',
+                startTime: formatDateTimeLocal(location.startTime),
+                endTime: formatDateTimeLocal(location.endTime),
+                mapUrl: location.mapUrl || ''
+            }))
+            : [createBlankEventLocation()]
+    );
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -26,19 +48,14 @@ export default function EditEventForm({ event }: EditEventFormProps) {
         const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
         if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
-        const location = {
-            name: data.locName,
-            address: data.locAddress,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            mapUrl: data.mapUrl
-        };
-
         const payload = {
             title: data.title,
             description: data.description,
             votingDeadline: data.votingDeadline ? new Date(data.votingDeadline as string) : null,
-            locations: [location],
+            locations: locations.map(location => ({
+                ...location,
+                mapUrl: location.mapUrl.trim()
+            })),
             audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
@@ -56,17 +73,6 @@ export default function EditEventForm({ event }: EditEventFormProps) {
         } else {
             alert('Failed to update event');
         }
-    };
-
-    const formatDateTimeLocal = (date: any) => {
-        if (!date) return '';
-        const d = new Date(date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
     return (
@@ -99,41 +105,7 @@ export default function EditEventForm({ event }: EditEventFormProps) {
                     defaultValue={event.description || ''}
                 />
 
-                <h3 className="font-bold mt-2">Location & Time</h3>
-                <Input
-                    name="locName"
-                    label="Location Name"
-                    required
-                    placeholder="Central Park"
-                    defaultValue={firstLocation.name || ''}
-                />
-                <Input
-                    name="locAddress"
-                    label="Address"
-                    required
-                    placeholder="123 Park Ave"
-                    defaultValue={firstLocation.address || ''}
-                />
-                <Input
-                    name="startTime"
-                    label="Start Time"
-                    type="datetime-local"
-                    required
-                    defaultValue={formatDateTimeLocal(firstLocation.startTime)}
-                />
-                <Input
-                    name="endTime"
-                    label="End Time"
-                    type="datetime-local"
-                    required
-                    defaultValue={formatDateTimeLocal(firstLocation.endTime)}
-                />
-                <Input
-                    name="mapUrl"
-                    label="Map URL"
-                    placeholder="https://maps.google.com/..."
-                    defaultValue={firstLocation.mapUrl || ''}
-                />
+                <EventLocationsEditor locations={locations} onChange={setLocations} />
 
                 <h3 className="font-bold mt-2">Voting</h3>
                 <Input

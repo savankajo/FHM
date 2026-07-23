@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AudienceSelector from '@/components/admin/audience-selector';
+import EventLocationsEditor, { createBlankEventLocation } from '../event-locations-editor';
 
 export default function NewEventPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [locations, setLocations] = useState([createBlankEventLocation()]);
 
-    // Simplified location input for MVP: Single location
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -20,20 +21,14 @@ export default function NewEventPage() {
         const audienceTeamIds = formData.getAll('audienceTeamIds').map(String);
         if (data.audience === 'teams' && audienceTeamIds.length === 0) { alert('Select at least one team or choose Everyone.'); setLoading(false); return; }
 
-        // Construct simplified location object
-        const location = {
-            name: data.locName,
-            address: data.locAddress,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            mapUrl: data.mapUrl
-        };
-
         const payload = {
             title: data.title,
             description: data.description,
             votingDeadline: data.votingDeadline ? new Date(data.votingDeadline as string) : null,
-            locations: [location],
+            locations: locations.map(location => ({
+                ...location,
+                mapUrl: location.mapUrl.trim()
+            })),
             audienceTeamIds: data.audience === 'teams' ? audienceTeamIds : []
         };
 
@@ -66,12 +61,7 @@ export default function NewEventPage() {
                 <Input name="description" label="Description" placeholder="Details..." />
                 <AudienceSelector />
 
-                <h3 className="font-bold mt-2">Location & Time</h3>
-                <Input name="locName" label="Location Name" required placeholder="Central Park" />
-                <Input name="locAddress" label="Address" required placeholder="123 Park Ave" />
-                <Input name="startTime" label="Start Time" type="datetime-local" required />
-                <Input name="endTime" label="End Time" type="datetime-local" required />
-                <Input name="mapUrl" label="Map URL" placeholder="https://maps.google.com/..." />
+                <EventLocationsEditor locations={locations} onChange={setLocations} />
 
                 <h3 className="font-bold mt-2">Voting</h3>
                 <Input name="votingDeadline" label="Voting Deadline" type="datetime-local" />
