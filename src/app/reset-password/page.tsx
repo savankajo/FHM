@@ -1,37 +1,49 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function LoginPage() {
-    const { login } = useAuth();
-    const [email, setEmail] = useState('');
+function ResetPasswordForm() {
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token') || '';
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setMessage('');
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ token, password }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Login failed');
+                throw new Error(data.error || 'Could not reset password');
             }
 
-            login(data.user);
+            setPassword('');
+            setConfirmPassword('');
+            setMessage(data.message);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -42,41 +54,43 @@ export default function LoginPage() {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h1 className="auth-title">Welcome Back</h1>
-                <p className="auth-subtitle">Sign in to FHM Church</p>
+                <h1 className="auth-title">Choose New Password</h1>
+                <p className="auth-subtitle">Enter a new password for your FHM Church account.</p>
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     {error && <div className="error-alert">{error}</div>}
+                    {message && <div className="success-alert">{message}</div>}
+                    {!token && <div className="error-alert">Reset link is missing or invalid.</div>}
 
                     <Input
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="you@example.com"
-                    />
-
-                    <Input
-                        label="Password"
+                        label="New Password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        placeholder="••••••••"
+                        minLength={6}
+                        placeholder="Enter new password"
+                        disabled={!token || Boolean(message)}
                     />
 
-                    <div className="forgot-password-row">
-                        <Link href="/forgot-password">Forgot password?</Link>
-                    </div>
+                    <Input
+                        label="Confirm New Password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        placeholder="Confirm new password"
+                        disabled={!token || Boolean(message)}
+                    />
 
-                    <Button type="submit" disabled={loading} fullWidth>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                    <Button type="submit" disabled={loading || !token || Boolean(message)} fullWidth>
+                        {loading ? 'Resetting...' : 'Reset Password'}
                     </Button>
                 </form>
 
                 <p className="auth-footer">
-                    Don't have an account? <Link href="/register">Sign up</Link>
+                    <Link href="/login">Back to sign in</Link>
                 </p>
             </div>
 
@@ -114,21 +128,17 @@ export default function LoginPage() {
           flex-direction: column;
           gap: 1rem;
         }
-        .forgot-password-row {
-          margin-top: -0.25rem;
-          text-align: right;
-          font-size: 0.875rem;
-        }
-        .forgot-password-row a {
-          color: var(--primary);
-          font-weight: 500;
-        }
-        .forgot-password-row a:hover {
-          text-decoration: underline;
-        }
         .error-alert {
           background-color: #fee2e2;
           color: #ef4444;
+          padding: 0.75rem;
+          border-radius: var(--radius);
+          font-size: 0.875rem;
+          text-align: center;
+        }
+        .success-alert {
+          background-color: #dcfce7;
+          color: #166534;
           padding: 0.75rem;
           border-radius: var(--radius);
           font-size: 0.875rem;
@@ -149,5 +159,13 @@ export default function LoginPage() {
         }
       `}</style>
         </div>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<div className="auth-container"><div className="auth-card">Loading...</div></div>}>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }

@@ -2,36 +2,35 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function LoginPage() {
-    const { login } = useAuth();
+export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setMessage('');
         setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Login failed');
+                throw new Error(data.error || 'Could not send reset link');
             }
 
-            login(data.user);
+            setMessage(data.message);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -42,11 +41,12 @@ export default function LoginPage() {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h1 className="auth-title">Welcome Back</h1>
-                <p className="auth-subtitle">Sign in to FHM Church</p>
+                <h1 className="auth-title">Reset Password</h1>
+                <p className="auth-subtitle">Enter your email and we will send you a reset link.</p>
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     {error && <div className="error-alert">{error}</div>}
+                    {message && <div className="success-alert">{message}</div>}
 
                     <Input
                         label="Email"
@@ -57,26 +57,13 @@ export default function LoginPage() {
                         placeholder="you@example.com"
                     />
 
-                    <Input
-                        label="Password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                    />
-
-                    <div className="forgot-password-row">
-                        <Link href="/forgot-password">Forgot password?</Link>
-                    </div>
-
                     <Button type="submit" disabled={loading} fullWidth>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? 'Sending...' : 'Send Reset Link'}
                     </Button>
                 </form>
 
                 <p className="auth-footer">
-                    Don't have an account? <Link href="/register">Sign up</Link>
+                    Remember your password? <Link href="/login">Sign in</Link>
                 </p>
             </div>
 
@@ -114,21 +101,17 @@ export default function LoginPage() {
           flex-direction: column;
           gap: 1rem;
         }
-        .forgot-password-row {
-          margin-top: -0.25rem;
-          text-align: right;
-          font-size: 0.875rem;
-        }
-        .forgot-password-row a {
-          color: var(--primary);
-          font-weight: 500;
-        }
-        .forgot-password-row a:hover {
-          text-decoration: underline;
-        }
         .error-alert {
           background-color: #fee2e2;
           color: #ef4444;
+          padding: 0.75rem;
+          border-radius: var(--radius);
+          font-size: 0.875rem;
+          text-align: center;
+        }
+        .success-alert {
+          background-color: #dcfce7;
+          color: #166534;
           padding: 0.75rem;
           border-radius: var(--radius);
           font-size: 0.875rem;

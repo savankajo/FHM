@@ -5040,44 +5040,6 @@ button {
   border-color: rgba(199, 81, 31, 0.50);
 }
 
-.home-avatar-prompt {
-  font-size: 9px;
-  font-weight: 700;
-  color: #C7511F;
-  background: rgba(199, 81, 31, 0.12);
-  border-radius: 10px;
-  padding: 1px 6px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* Pulse animation on the avatar circle when prompt is shown */
-.home-avatar-btn:has(.home-avatar-prompt) .home-avatar-circle::after {
-  content: '';
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 9px;
-  height: 9px;
-  background: #C7511F;
-  border-radius: 50%;
-  border: 2px solid white;
-  animation: avatar-pulse 2s ease-in-out infinite;
-}
-
-@keyframes avatar-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.6;
-    transform: scale(1.2);
-  }
-}
 .legal-page { max-width: 720px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 20px calc(100px + env(safe-area-inset-bottom)); line-height: 1.65; }
 .legal-back-btn { margin-bottom: 20px; }
 .legal-page h1 { margin-bottom: 8px; }

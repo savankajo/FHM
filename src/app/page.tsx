@@ -11,7 +11,6 @@ export default async function HomePage() {
   const isAdmin = session?.role === 'ADMIN';
   const { canOpenAdmin } = await getUserPermissions(session?.userId, session?.role);
   // User has no avatarUrl in schema — prompt if logged in
-  const isLoggedIn = !!session;
 
   // Fetch Live Link
   const liveLink = await prisma.liveLink.findFirst({
@@ -66,9 +65,6 @@ export default async function HomePage() {
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
             </div>
-            {isLoggedIn && (
-              <span className="home-avatar-prompt">Add Photo</span>
-            )}
           </Link>
         </div>
       </header>

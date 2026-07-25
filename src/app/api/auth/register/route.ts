@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, createSession } from '@/lib/auth';
+import { hashPassword, createSessionToken, setSessionCookie } from '@/lib/auth';
 
 
 // Manual validation for now to avoid dependency hell if user hasn't installed zod
@@ -46,10 +46,7 @@ export async function POST(request: Request) {
             },
         });
 
-        // Log them in immediately
-        await createSession(user.id, user.role);
-
-        return NextResponse.json({
+        const response = NextResponse.json({
             user: {
                 id: user.id,
                 email: user.email,
@@ -57,6 +54,10 @@ export async function POST(request: Request) {
                 role: user.role,
             },
         });
+
+        // Log them in immediately
+        setSessionCookie(response, createSessionToken(user.id, user.role), request);
+        return response;
     } catch (error) {
         console.error('Registration error:', error);
         return NextResponse.json(
