@@ -22,7 +22,7 @@ export default async function HomePage() {
   const recentSermons = await prisma.sermon.findMany({
     orderBy: { date: 'desc' },
     take: 2,
-    select: { id: true, title: true, speaker: true, videoUrl: true, thumbnailUrl: true }
+    select: { id: true, title: true, speaker: true, date: true, videoUrl: true, thumbnailUrl: true }
   });
 
   const recentPodcasts = await prisma.podcastEpisode.findMany({
@@ -32,9 +32,22 @@ export default async function HomePage() {
   });
 
   const uploads = [
-    ...recentSermons.map(s => ({ ...s, type: 'sermon', url: `/sermons/${s.id}`, thumbnailUrl: s.thumbnailUrl ?? null })),
-    ...recentPodcasts.map(p => ({ ...p, type: 'podcast', url: `/podcasts/${p.id}`, speaker: 'Podcast', thumbnailUrl: p.thumbnailUrl ?? null }))
-  ].sort(() => -1).slice(0, 3);
+    ...recentSermons.map(s => ({
+      ...s,
+      type: 'sermon',
+      url: `/sermons/${s.id}`,
+      thumbnailUrl: s.thumbnailUrl ?? null,
+      uploadedAt: s.date
+    })),
+    ...recentPodcasts.map(p => ({
+      ...p,
+      type: 'podcast',
+      url: `/podcasts/${p.id}`,
+      speaker: 'Podcast',
+      thumbnailUrl: p.thumbnailUrl ?? null,
+      uploadedAt: p.publishedAt
+    }))
+  ].sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()).slice(0, 3);
 
   return (
     <div className="home-page-container">
@@ -145,6 +158,18 @@ export default async function HomePage() {
             </svg>
           </div>
           <span className="action-label">Events</span>
+        </Link>
+
+        <Link href="/bible" className="action-item">
+          <div className="action-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M8 6h8" />
+              <path d="M8 10h6" />
+            </svg>
+          </div>
+          <span className="action-label">Bible</span>
         </Link>
       </div>
 
