@@ -16,7 +16,11 @@ export default async function PrivacyPage() {
     return (
         <div className="profile-page settings-page">
             <header className="page-header settings-header">
-                <Link href="/profile" className="page-back-btn" aria-label="Back to Profile">←</Link>
+                <Link href="/profile" className="page-back-btn" aria-label="Back to Profile">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5M12 5l-7 7 7 7" />
+                    </svg>
+                </Link>
                 <h1 className="page-title">Privacy</h1>
             </header>
             <div className="settings-content">

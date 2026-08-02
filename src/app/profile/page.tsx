@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ProfileActions from './profile-actions';
-import ProfileForm from './profile-form';
 import { getUserPermissions } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
@@ -14,10 +13,6 @@ function ChevronRight() {
             <path d="M9 18l6-6-6-6" />
         </svg>
     );
-}
-
-function ProfileFormWrapper({ user }: { user: { name: string | null; email: string; phone: string | null } }) {
-    return <ProfileForm user={user} />;
 }
 
 export default async function ProfilePage() {
@@ -83,16 +78,6 @@ export default async function ProfilePage() {
                 )}
 
                 <ProfileActions />
-            </div>
-
-            <div style={{ padding: '0 20px 8px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                    Edit Profile
-                </div>
-            </div>
-
-            <div className="profile-form-section">
-                <ProfileFormWrapper user={user} />
             </div>
         </div>
     );
