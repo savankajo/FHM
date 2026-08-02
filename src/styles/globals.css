@@ -540,7 +540,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px var(--page-px) 12px;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) var(--page-px) 12px;
   background: var(--bg-app);
 }
 
@@ -2948,7 +2948,7 @@ button {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px var(--page-px) 14px;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) var(--page-px) 14px;
 }
 
 .page-title {

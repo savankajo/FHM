@@ -1,0 +1,1 @@
+ALTER TABLE "Article" ALTER COLUMN "body" DROP NOT NULL;

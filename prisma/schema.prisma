@@ -125,6 +125,20 @@ model PodcastEpisode {
   audienceTeamIds Json?
 }
 
+model Article {
+  id              String   @id @default(uuid())
+  title           String
+  author          String
+  summary         String?
+  body            String?
+  publishedAt     DateTime
+  imageUrl        String?
+  linkUrl         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  audienceTeamIds Json?
+}
+
 model Event {
   id             String    @id @default(uuid())
   title          String

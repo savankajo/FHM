@@ -37,3 +37,19 @@ export async function updateProfile(formData: FormData) {
         return { error: 'Failed to update profile' };
     }
 }
+
+export async function updatePassword(formData: FormData) {
+    const session = await getSession();
+    if (!session) return { error: 'Unauthorized' };
+
+    const password = String(formData.get('password') || '');
+    const confirmPassword = String(formData.get('confirmPassword') || '');
+    if (password.length < 6) return { error: 'Password must be at least 6 characters' };
+    if (password !== confirmPassword) return { error: 'Passwords do not match' };
+
+    await prisma.user.update({
+        where: { id: session.userId },
+        data: { password: await hash(password, 10) },
+    });
+    return { success: true };
+}

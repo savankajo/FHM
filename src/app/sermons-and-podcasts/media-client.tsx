@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PodcastEpisode, Sermon } from '@prisma/client';
+import { Article, PodcastEpisode, Sermon } from '@prisma/client';
 import { getPodcastSeason, getSermonCollection } from '@/lib/media-metadata';
 
 type Tab = 'sermons' | 'podcasts' | 'articles';
@@ -10,6 +10,7 @@ type Tab = 'sermons' | 'podcasts' | 'articles';
 interface Props {
     sermons: Sermon[];
     podcasts: PodcastEpisode[];
+    articles: Article[];
     isAdmin: boolean;
 }
 
@@ -30,7 +31,7 @@ function ExternalIcon() {
     );
 }
 
-function isRestricted(item: Sermon | PodcastEpisode) {
+function isRestricted(item: Sermon | PodcastEpisode | Article) {
     return Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0;
 }
 
@@ -113,6 +114,29 @@ function EpisodeCard({ item, type }: { item: Sermon | PodcastEpisode; type: 'ser
     );
 }
 
+function ArticleCard({ article }: { article: Article }) {
+    return (
+        <Link href={`/articles/${article.id}`} className="media-list-card">
+            <div
+                className="media-list-thumb"
+                style={article.imageUrl
+                    ? { backgroundImage: `url(${article.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: 'linear-gradient(135deg, #43210f, #9a4f24)' }}
+            />
+            <div className="media-list-info">
+                <div className="media-list-title">{article.title}</div>
+                <div className="media-list-meta">
+                    {mediaDate(article.publishedAt)}
+                    {article.author ? ` - ${article.author}` : ''}
+                    {isRestricted(article) ? ' - Team access' : ''}
+                </div>
+                {article.summary && <div className="media-list-meta">{article.summary}</div>}
+            </div>
+            <div className="media-list-arrow"><ChevronRight /></div>
+        </Link>
+    );
+}
+
 function EmptyState({ title, text }: { title: string; text: string }) {
     return (
         <div className="empty-state media-empty-state">
@@ -123,10 +147,11 @@ function EmptyState({ title, text }: { title: string; text: string }) {
     );
 }
 
-export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
+export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('sermons');
     const [sermonSearch, setSermonSearch] = useState('');
     const [podcastSearch, setPodcastSearch] = useState('');
+    const [articleSearch, setArticleSearch] = useState('');
 
     const saturdaySermons = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'saturday'), [sermons]);
     const tuesdayMeetings = useMemo(() => sermons.filter(sermon => getSermonCollection(sermon.notes) === 'tuesday'), [sermons]);
@@ -139,6 +164,9 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
     const latestPodcasts = seasonOnePodcasts
         .filter(podcast => podcast.title.toLowerCase().includes(podcastSearch.trim().toLowerCase()))
         .slice(0, 3);
+    const latestArticles = articles
+        .filter(article => article.title.toLowerCase().includes(articleSearch.trim().toLowerCase()))
+        .slice(0, 6);
 
     return (
         <>
@@ -252,10 +280,32 @@ export default function MediaPageClient({ sermons, podcasts, isAdmin }: Props) {
             )}
 
             {activeTab === 'articles' && (
-                <EmptyState
-                    title="Articles Coming Soon"
-                    text="No articles have been uploaded yet. This section will replace the old Music category."
-                />
+                <>
+                    {isAdmin && (
+                        <div className="media-admin-row">
+                            <Link href="/admin/articles/new" className="btn btn-outline btn-sm btn-full">Add Article</Link>
+                        </div>
+                    )}
+
+                    <div className="media-section-title">Latest Articles</div>
+                    <div className="media-search-wrap">
+                        <input
+                            className="media-search-input"
+                            type="search"
+                            value={articleSearch}
+                            onChange={(event) => setArticleSearch(event.target.value)}
+                            placeholder="Search latest articles"
+                            aria-label="Search latest articles"
+                        />
+                    </div>
+                    {latestArticles.length > 0 ? (
+                        <div className="media-list">
+                            {latestArticles.map(article => <ArticleCard key={article.id} article={article} />)}
+                        </div>
+                    ) : (
+                        <EmptyState title="No Articles Found" text="Articles will appear here after they are uploaded." />
+                    )}
+                </>
             )}
         </>
     );

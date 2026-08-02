@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Sermon, PodcastEpisode } from '@prisma/client';
+import { Article, Sermon, PodcastEpisode } from '@prisma/client';
 import { canSeeAudience } from '@/lib/audience';
 
 async function getSermons(): Promise<Sermon[]> {
@@ -14,6 +14,13 @@ async function getSermons(): Promise<Sermon[]> {
 
 async function getPodcasts(): Promise<PodcastEpisode[]> {
     return await prisma.podcastEpisode.findMany({
+        orderBy: { publishedAt: 'desc' },
+        take: 300,
+    });
+}
+
+async function getArticles(): Promise<Article[]> {
+    return await prisma.article.findMany({
         orderBy: { publishedAt: 'desc' },
         take: 300,
     });
@@ -219,6 +226,7 @@ export default async function SermonsAndPodcastsPage() {
     const teamIds = teams.map(team => team.id);
     const sermons = (await getSermons()).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin));
     const podcasts = (await getPodcasts()).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin));
+    const articles = (await getArticles()).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin));
 
     return (
         <div className="media-page">
@@ -237,6 +245,7 @@ export default async function SermonsAndPodcastsPage() {
             <MediaPageClient
                 sermons={sermons}
                 podcasts={podcasts}
+                articles={articles}
                 isAdmin={isAdmin}
             />
         </div>

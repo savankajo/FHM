@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
-type MediaEditType = 'all' | 'sermon' | 'podcast';
+type MediaEditType = 'all' | 'sermon' | 'podcast' | 'article';
 
 export type MediaEditItem = {
     id: string;
-    type: 'sermon' | 'podcast';
+    type: 'sermon' | 'podcast' | 'article';
     typeLabel: string;
     title: string;
     accessLabel: string;
@@ -43,9 +43,10 @@ export default function MediaEditClient({ items }: { items: MediaEditItem[] }) {
                     }}
                     aria-label="Choose media type"
                 >
-                    <option value="all">Sermons and Podcasts</option>
+                    <option value="all">Sermons, Podcasts and Articles</option>
                     <option value="sermon">Sermons</option>
                     <option value="podcast">Podcasts</option>
+                    <option value="article">Articles</option>
                 </select>
                 <input
                     className="media-search-input"

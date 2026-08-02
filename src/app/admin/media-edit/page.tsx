@@ -10,9 +10,10 @@ export const dynamic = 'force-dynamic';
 export default async function AdminMediaEditPage() {
     const session = await getSession();
     if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
-    const [sermons, podcasts] = await Promise.all([
+    const [sermons, podcasts, articles] = await Promise.all([
         prisma.sermon.findMany({ orderBy: { date: 'desc' }, take: 600 }),
         prisma.podcastEpisode.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }),
+        prisma.article.findMany({ orderBy: { publishedAt: 'desc' }, take: 300 }),
     ]);
 
     const items: MediaEditItem[] = [
@@ -31,6 +32,14 @@ export default async function AdminMediaEditPage() {
             title: item.title,
             accessLabel: Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0 ? 'Selected teams/groups' : 'Everyone',
             editHref: `/admin/podcasts/edit/${item.id}`,
+        })),
+        ...articles.map(item => ({
+            id: item.id,
+            type: 'article' as const,
+            typeLabel: 'Article',
+            title: item.title,
+            accessLabel: Array.isArray(item.audienceTeamIds) && item.audienceTeamIds.length > 0 ? 'Selected teams/groups' : 'Everyone',
+            editHref: `/admin/articles/edit/${item.id}`,
         })),
     ];
 
