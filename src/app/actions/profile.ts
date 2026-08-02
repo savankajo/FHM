@@ -53,3 +53,14 @@ export async function updatePassword(formData: FormData) {
     });
     return { success: true };
 }
+
+export async function updatePrivacyName(formData: FormData) {
+    const session = await getSession();
+    if (!session) return { error: 'Unauthorized' };
+    const name = String(formData.get('name') || '').trim();
+    if (!name) return { error: 'Name is required' };
+    await prisma.user.update({ where: { id: session.userId }, data: { name } });
+    revalidatePath('/profile');
+    revalidatePath('/profile/privacy');
+    return { success: true };
+}

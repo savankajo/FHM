@@ -40,7 +40,6 @@ export default async function ProfilePage() {
                     </div>
                 </div>
                 <div className="profile-name">{user.name || 'Church Member'}</div>
-                <div className="profile-email">{user.email}</div>
                 <div className="profile-role-badge">{session.role}</div>
             </div>
 

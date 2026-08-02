@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import PrivacyForm from './privacy-form';
+import PrivacyForm, { NameForm } from './privacy-form';
 import AccountControls from '../settings/account-controls';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function PrivacyPage() {
     const session = await getSession();
     if (!session) redirect('/login');
-    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { email: true } });
+    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true, email: true } });
     if (!user) redirect('/login');
 
     return (
@@ -24,6 +24,10 @@ export default async function PrivacyPage() {
                 <h1 className="page-title">Privacy</h1>
             </header>
             <div className="settings-content">
+                <section className="settings-section">
+                    <h2 className="settings-section-title">Your name</h2>
+                    <div className="settings-card"><NameForm name={user.name || ''} /></div>
+                </section>
                 <section className="settings-section">
                     <h2 className="settings-section-title">Account email</h2>
                     <div className="settings-card"><p className="settings-description">Your email is used to sign in and recover your account.</p><div className="input">{user.email}</div></div>
