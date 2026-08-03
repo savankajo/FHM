@@ -129,6 +129,34 @@
   --border-light: #1E2B3E;
 }
 
+.sunset {
+  --bg-app: #FFF1F2; --bg-card: #FFFAFA; --bg-muted: #FFE4E6; --bg-overlay: rgba(255, 241, 242, 0.95);
+  --primary: #E11D48; --primary-dark: #BE123C; --primary-light: #FB7185; --primary-glow: rgba(225, 29, 72, 0.18);
+  --gradient-primary: linear-gradient(135deg, #E11D48 0%, #F97316 60%, #FBBF24 100%);
+  --text-primary: #3B0A18; --text-secondary: #7F1D3D; --text-muted: #A8556F; --border: #FBCFE8; --border-light: #FFE4E6;
+}
+
+.forest {
+  --bg-app: #071A14; --bg-card: #0D261D; --bg-muted: #15382B; --bg-overlay: rgba(7, 26, 20, 0.95);
+  --primary: #4ADE80; --primary-dark: #16A34A; --primary-light: #86EFAC; --primary-glow: rgba(74, 222, 128, 0.18);
+  --gradient-primary: linear-gradient(135deg, #16A34A 0%, #4ADE80 60%, #BBF7D0 100%);
+  --text-primary: #F0FDF4; --text-secondary: #A7C9B2; --text-muted: #6E9B7D; --border: #24513B; --border-light: #193C2D;
+}
+
+.lavender {
+  --bg-app: #F5F3FF; --bg-card: #FFFFFF; --bg-muted: #EDE9FE; --bg-overlay: rgba(245, 243, 255, 0.95);
+  --primary: #7C3AED; --primary-dark: #6D28D9; --primary-light: #A78BFA; --primary-glow: rgba(124, 58, 237, 0.18);
+  --gradient-primary: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 60%, #C4B5FD 100%);
+  --text-primary: #24134D; --text-secondary: #5B4B80; --text-muted: #8175A0; --border: #DDD6FE; --border-light: #EDE9FE;
+}
+
+.contrast {
+  --bg-app: #000000; --bg-card: #111111; --bg-muted: #222222; --bg-overlay: rgba(0, 0, 0, 0.96);
+  --primary: #FFFF00; --primary-dark: #E6E600; --primary-light: #FFFF66; --primary-glow: rgba(255, 255, 0, 0.2);
+  --gradient-primary: linear-gradient(135deg, #FFFF00 0%, #FFFFFF 100%);
+  --text-primary: #FFFFFF; --text-secondary: #FFFF00; --text-muted: #CCCCCC; --text-on-primary: #000000; --border: #FFFFFF; --border-light: #666666;
+}
+
 /* ── Reset & Base ──────────────────────────────────────────── */
 *,
 *::before,
@@ -3471,6 +3499,11 @@ button {
 .theme-choice-swatch.blue {
   background: linear-gradient(135deg, #07111F 0%, #101A2B 55%, #38BDF8 100%);
 }
+
+.theme-choice-swatch.sunset { background: linear-gradient(135deg, #E11D48, #FBBF24); }
+.theme-choice-swatch.forest { background: linear-gradient(135deg, #16A34A, #BBF7D0); }
+.theme-choice-swatch.lavender { background: linear-gradient(135deg, #6D28D9, #C4B5FD); }
+.theme-choice-swatch.contrast { background: linear-gradient(135deg, #FFFF00, #FFFFFF); }
 
 .settings-note {
   margin-top: 22px;

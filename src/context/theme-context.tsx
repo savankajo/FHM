@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-export type Theme = 'dark' | 'light' | 'warm' | 'blue';
+export type Theme = 'dark' | 'light' | 'warm' | 'blue' | 'sunset' | 'forest' | 'lavender' | 'contrast';
 
 interface ThemeContextType {
     theme: Theme;
@@ -10,13 +10,13 @@ interface ThemeContextType {
     toggleTheme: () => void;
 }
 
-const THEMES: Theme[] = ['dark', 'light', 'warm', 'blue'];
+const THEMES: Theme[] = ['dark', 'light', 'warm', 'blue', 'sunset', 'forest', 'lavender', 'contrast'];
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 function applyTheme(theme: Theme) {
     document.documentElement.classList.remove(...THEMES);
     document.documentElement.classList.add(theme);
-    document.documentElement.style.colorScheme = theme === 'light' || theme === 'warm' ? 'light' : 'dark';
+    document.documentElement.style.colorScheme = ['light', 'warm', 'sunset', 'lavender'].includes(theme) ? 'light' : 'dark';
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

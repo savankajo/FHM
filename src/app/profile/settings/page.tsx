@@ -8,6 +8,10 @@ const THEME_OPTIONS = [
     { id: 'light', label: 'Light', description: 'White background for daytime reading' },
     { id: 'warm', label: 'Warm', description: 'Soft cream and amber tones' },
     { id: 'blue', label: 'Blue', description: 'Deep blue with bright accents' },
+    { id: 'sunset', label: 'Sunset', description: 'Coral, rose, and golden evening tones' },
+    { id: 'forest', label: 'Forest', description: 'Deep evergreen with fresh sage accents' },
+    { id: 'lavender', label: 'Lavender', description: 'Soft violet and calm lilac tones' },
+    { id: 'contrast', label: 'High Contrast', description: 'Bold colors for easier reading' },
 ] as const;
 
 export default function SettingsPage() {
