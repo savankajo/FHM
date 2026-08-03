@@ -49,11 +49,9 @@ export default function SettingsPage() {
                 </section>
 
                 <section className="settings-section">
-                    <h2 className="settings-section-title">Privacy & Support</h2>
+                    <h2 className="settings-section-title">Policies & Support</h2>
                     <div className="settings-card" style={{ padding: 16, display: 'grid', gap: 12 }}>
-                        <Link href="/privacy">Privacy Policy</Link>
-                        <Link href="/terms">Terms & Community Standards</Link>
-                        <Link href="/support">Contact Support</Link>
+                        <Link href="/policies">View Policies &amp; Support</Link>
                     </div>
                 </section>
                 <section className="settings-section">

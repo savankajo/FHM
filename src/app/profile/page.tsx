@@ -63,8 +63,8 @@ export default async function ProfilePage() {
                 </Link>
 
                 <Link href="/profile/privacy" className="profile-menu-item">
-                    <div className="profile-menu-icon blue">Pri</div>
-                    <span className="profile-menu-label">Privacy</span>
+                    <div className="profile-menu-icon blue">Sec</div>
+                    <span className="profile-menu-label">Account &amp; Security</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 

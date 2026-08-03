@@ -21,7 +21,7 @@ export default async function PrivacyPage() {
                         <path d="M19 12H5M12 5l-7 7 7 7" />
                     </svg>
                 </Link>
-                <h1 className="page-title">Privacy</h1>
+                <h1 className="page-title">Account &amp; Security</h1>
             </header>
             <div className="settings-content">
                 <section className="settings-section">
@@ -41,7 +41,7 @@ export default async function PrivacyPage() {
                     <p className="settings-description">This permanently removes your profile and associated activity.</p>
                     <AccountControls />
                 </section>
-                <p className="settings-description"><Link href="/privacy">Read the full Privacy Policy</Link></p>
+                <p className="settings-description"><Link href="/policies">View Policies &amp; Support</Link></p>
             </div>
         </div>
     );
