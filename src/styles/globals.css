@@ -415,7 +415,7 @@ button {
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  height: 72px;
+  height: 84px;
   background: rgba(10, 10, 10, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
