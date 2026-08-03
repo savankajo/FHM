@@ -314,6 +314,13 @@ button {
 }
 
 .section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px 7px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: var(--bg-card);
   font-size: 13px;
   font-weight: 600;
   color: var(--primary);
@@ -321,7 +328,17 @@ button {
 }
 
 .section-link:hover {
-  opacity: 0.75;
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  transform: translateX(2px);
+}
+
+.section-link svg {
+  transition: transform var(--transition-fast);
+}
+
+.section-link:hover svg {
+  transform: translateX(2px);
 }
 
 /* ── Inputs ────────────────────────────────────────────────── */

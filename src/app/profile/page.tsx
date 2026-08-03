@@ -68,6 +68,12 @@ export default async function ProfilePage() {
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
+                <Link href="/policies" className="profile-menu-item">
+                    <div className="profile-menu-icon green">Info</div>
+                    <span className="profile-menu-label">Policies &amp; Support</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
                 {canOpenAdmin && (
                     <Link href="/admin" className="profile-menu-item">
                         <div className="profile-menu-icon green">Go</div>

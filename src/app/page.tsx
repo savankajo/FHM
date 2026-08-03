@@ -177,7 +177,12 @@ export default async function HomePage() {
       <section className="recent-section">
         <div className="section-header">
           <span className="section-title">Recently Uploaded</span>
-          <Link href="/sermons-and-podcasts" className="section-link">See all →</Link>
+          <Link href="/sermons-and-podcasts" className="section-link">
+            <span>See all</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </Link>
         </div>
 
         {uploads.length > 0 ? (
