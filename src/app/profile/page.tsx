@@ -58,7 +58,7 @@ export default async function ProfilePage() {
 
                 <Link href="/profile/settings" className="profile-menu-item">
                     <div className="profile-menu-icon purple">Set</div>
-                    <span className="profile-menu-label">Settings</span>
+                    <span className="profile-menu-label">Theme</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
