@@ -173,6 +173,34 @@ export default async function HomePage() {
         </Link>
       </div>
 
+      <section className="visit-strip" aria-label="Plan your visit">
+        <div className="visit-strip-copy">
+          <span className="visit-strip-kicker">Plan your visit</span>
+          <h2 className="visit-strip-title">Join us this Saturday at 4:00 PM</h2>
+          <p className="visit-strip-text">Father's Heart Ministry, Abbotsford</p>
+        </div>
+        <div className="visit-strip-actions">
+          <a
+            href="https://maps.app.goo.gl/CK4iVbRy25KjZS8m9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="visit-strip-link"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Directions
+          </a>
+          <Link href="/support" className="visit-strip-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+            </svg>
+            Ask a question
+          </Link>
+        </div>
+      </section>
+
       {/* ── Recently Uploaded ────────────────────────────── */}
       <section className="recent-section">
         <div className="section-header">
