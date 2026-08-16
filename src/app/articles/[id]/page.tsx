@@ -13,6 +13,7 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
     const article = await prisma.article.findUnique({ where: { id: params.id } });
 
     if (!article || !canSeeAudience(article.audienceTeamIds, teamIds, isAdmin)) notFound();
+    const isPdf = Boolean(article.linkUrl && /\.pdf(?:$|[?#])/i.test(article.linkUrl));
 
     return (
         <div className="page-container">
@@ -29,7 +30,15 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
                 <h1 className="page-title" style={{ marginBottom: 16 }}>{article.title}</h1>
                 {article.summary && <p style={{ color: '#9ca3af', fontSize: 18, lineHeight: 1.5, marginBottom: 20 }}>{article.summary}</p>}
                 {article.body && <div style={{ whiteSpace: 'pre-wrap', color: '#f5f5f5', lineHeight: 1.7 }}>{article.body}</div>}
-                {article.linkUrl && (
+                {article.linkUrl && isPdf && (
+                    <section className="article-document" aria-label={`${article.title} document`}>
+                        <iframe src={article.linkUrl} title={article.title} />
+                        <InAppLink href={article.linkUrl} className="btn btn-secondary btn-full" ariaLabel={`Open full-screen ${article.title}`}>
+                            Open Full Screen
+                        </InAppLink>
+                    </section>
+                )}
+                {article.linkUrl && !isPdf && (
                     <InAppLink href={article.linkUrl} className="btn btn-primary btn-full" ariaLabel={`Read ${article.title} inside the app`}>
                         Read Article
                     </InAppLink>

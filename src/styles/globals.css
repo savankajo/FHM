@@ -5278,6 +5278,8 @@ button {
 .video-overlay { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; justify-content: space-between; align-items: end; text-align: left; gap: 10px; }
 .video-overlay strong { font-size: 15px; }.video-overlay small { opacity: .8; }
 .video-external { display: inline-block; margin: 10px 14px 12px; color: var(--text-secondary); font-size: 12px; text-decoration: underline; }
+.article-document { display: grid; gap: 12px; margin-top: 22px; }
+.article-document iframe { width: 100%; min-height: 68dvh; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-muted); }
 .favorites-header { border-bottom: 1px solid var(--border-light); backdrop-filter: blur(16px); }
 .favorite-verses-empty { display: flex; min-height: 360px; flex-direction: column; align-items: center; justify-content: center; padding: 40px 18px; color: var(--text-secondary); text-align: center; }
 .favorite-verses-empty h2 { margin: 12px 0 5px; color: var(--text-primary); }
