@@ -47,13 +47,7 @@ export default async function ProfilePage() {
                 <Link href="/notifications" className="profile-menu-item"><div className="profile-menu-icon blue">Bell</div><span className="profile-menu-label">Notifications</span><span className="profile-menu-arrow"><ChevronRight /></span></Link>
                 <Link href="/profile/favorites" className="profile-menu-item">
                     <div className="profile-menu-icon orange">Love</div>
-                    <span className="profile-menu-label">My Favorites</span>
-                    <span className="profile-menu-arrow"><ChevronRight /></span>
-                </Link>
-
-                <Link href="/events" className="profile-menu-item">
-                    <div className="profile-menu-icon blue">Cal</div>
-                    <span className="profile-menu-label">Event Registrations</span>
+                    <span className="profile-menu-label">Favorite Verses</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 

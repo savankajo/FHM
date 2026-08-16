@@ -113,18 +113,18 @@ export default function FavoritesPage() {
     return (
         <div className="profile-page min-h-screen pb-20">
             {/* Header */}
-            <header className="page-header sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-gray-100">
+            <header className="page-header favorites-header">
                 <Link href="/profile" className="page-back-btn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
                 </Link>
-                <h1 className="page-title">My Favorites</h1>
+                <h1 className="page-title">Favorite Verses</h1>
             </header>
 
             <div className="px-5 py-6">
                 {likedIndices.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                    <div className="favorite-verses-empty">
                         <span className="text-6xl mb-6">❤️</span>
-                        <h2 className="text-xl font-bold text-gray-900">No liked verses yet</h2>
+                        <h2>No favorite verses yet</h2>
                         <p className="text-sm mt-1">Tap the heart on any Verse of the Day to save it here.</p>
                     </div>
                 ) : (
@@ -133,21 +133,21 @@ export default function FavoritesPage() {
                             const v = VERSES[index % VERSES.length];
                             const url = bibleUrl(NIV_VERSION, v.book, v.chapter, v.verse);
                             return (
-                                <div key={index} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100 p-6 space-y-4">
+                                <article key={index} className="favorite-verse-card">
                                     <div className="space-y-3">
-                                        <blockquote className="text-base font-medium text-gray-800 leading-relaxed italic">
+                                        <blockquote className="favorite-verse-text">
                                             "{v.en.replace(/^"|"$/g, '')}"
                                         </blockquote>
-                                        <div className="text-xs font-bold text-primary uppercase tracking-wider">{v.ref} (NIV)</div>
+                                        <div className="favorite-verse-ref">{v.ref} (NIV)</div>
                                     </div>
 
-                                    <div className="h-px bg-gray-100 w-full" />
+                                    <div className="favorite-verse-divider" />
 
                                     <div className="space-y-3 text-right">
-                                        <blockquote className="text-lg font-bold text-gray-900 leading-relaxed dir-rtl" style={{ direction: 'rtl' }}>
+                                        <blockquote className="favorite-verse-text arabic" style={{ direction: 'rtl' }}>
                                             {v.ar}
                                         </blockquote>
-                                        <div className="text-xs font-bold text-primary uppercase tracking-wider">{v.refAr}</div>
+                                        <div className="favorite-verse-ref">{v.refAr}</div>
                                     </div>
 
                                     <div className="pt-2 flex justify-between items-center gap-3">
@@ -162,7 +162,7 @@ export default function FavoritesPage() {
                                             Read on Bible.com ↗
                                         </a>
                                     </div>
-                                </div>
+                                </article>
                             );
                         })}
                     </div>

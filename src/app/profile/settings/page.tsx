@@ -2,7 +2,6 @@
 
 import { useTheme } from '@/context/theme-context';
 import Link from 'next/link';
-import NotificationPreferences from './notification-preferences';
 
 const THEME_OPTIONS = [
     { id: 'dark', label: 'Dark', description: 'Black background with warm accents' },
@@ -51,8 +50,6 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </section>
-
-                <NotificationPreferences />
 
             </div>
         </div>

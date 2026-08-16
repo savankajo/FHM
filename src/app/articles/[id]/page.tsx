@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canSeeAudience } from '@/lib/audience';
+import InAppLink from '@/components/ui/in-app-link';
 
 export default async function ArticleDetailPage({ params }: { params: { id: string } }) {
     const session = await getSession();
@@ -29,9 +30,9 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
                 {article.summary && <p style={{ color: '#9ca3af', fontSize: 18, lineHeight: 1.5, marginBottom: 20 }}>{article.summary}</p>}
                 {article.body && <div style={{ whiteSpace: 'pre-wrap', color: '#f5f5f5', lineHeight: 1.7 }}>{article.body}</div>}
                 {article.linkUrl && (
-                    <a href={article.linkUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-full" style={{ marginTop: 24 }}>
-                        Open Link
-                    </a>
+                    <InAppLink href={article.linkUrl} className="btn btn-primary btn-full" ariaLabel={`Read ${article.title} inside the app`}>
+                        Read Article
+                    </InAppLink>
                 )}
             </article>
         </div>

@@ -416,7 +416,7 @@ button {
   width: 100%;
   max-width: 480px;
   height: 84px;
-  background: rgba(10, 10, 10, 0.96);
+  background: color-mix(in srgb, var(--bg-card) 94%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-light);
@@ -425,7 +425,7 @@ button {
   align-items: center;
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 -4px 24px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .nav-item {
@@ -3519,6 +3519,7 @@ button {
 
 .theme-choice-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -3534,6 +3535,7 @@ button {
   color: var(--text-primary);
   text-align: left;
   transition: var(--transition-fast);
+  min-width: 0;
 }
 
 .theme-choice.active {
@@ -3785,7 +3787,9 @@ button {
 
 /* ── Team Chat Button ──────────────────────────────────────── */
 .team-chat-btn-wrap {
-  padding: 20px var(--page-px) 0;
+  padding: 16px var(--page-px) 0;
+  display: flex;
+  justify-content: center;
 }
 
 .team-chat-btn {
@@ -3793,13 +3797,14 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 100%;
-  padding: 15px 20px;
+  width: min(100%, 280px);
+  min-height: 44px;
+  padding: 10px 18px;
   background: var(--bg-card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-xl);
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
@@ -5209,6 +5214,21 @@ button {
 .calendar-intro h2 { margin: 0 0 4px; font-size: 17px; }
 .calendar-intro p, .guest-calendar-note p { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.45; }
 .calendar-intro-icon { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border-radius: 12px; background: color-mix(in srgb, var(--primary-color, #2E5E9E) 20%, transparent); color: var(--primary-color, #2E5E9E); }
+.saturday-calendar-actions { margin: 0 20px 16px; padding: 15px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); }
+.saturday-calendar-actions p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; }
+.month-calendar { margin: 0 20px 18px; overflow: hidden; border: 1px solid var(--border); border-radius: 20px; background: var(--bg-card); box-shadow: var(--shadow-sm); }
+.month-calendar-toolbar { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-light); text-align: center; }
+.month-calendar-toolbar h2 { font-size: 18px; }
+.month-calendar-toolbar button { width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: var(--bg-muted); color: var(--text-primary); font-size: 27px; line-height: 1; cursor: pointer; }
+.month-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.month-calendar-weekdays { padding: 9px 7px 5px; color: var(--text-secondary); font-size: 10px; font-weight: 800; text-align: center; text-transform: uppercase; }
+.month-calendar-day, .month-calendar-blank { min-height: 52px; padding: 6px 3px; border-top: 1px solid var(--border-light); border-right: 1px solid var(--border-light); text-align: center; }
+.month-calendar-day:nth-child(7n), .month-calendar-blank:nth-child(7n) { border-right: 0; }
+.month-calendar-number { display: grid; width: 27px; height: 27px; margin: 0 auto; place-items: center; border-radius: 50%; font-size: 12px; font-weight: 700; }
+.month-calendar-day.today .month-calendar-number { background: var(--primary); color: var(--text-on-primary); }
+.month-calendar-dots { display: flex; min-height: 6px; justify-content: center; gap: 2px; margin-top: 3px; }
+.month-calendar-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); }
+.month-calendar-dots i.team { background: #3b82f6; }
 .calendar-event-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--surface, #141414); border: 1px solid var(--border-color); border-radius: 18px; text-decoration: none; color: inherit; }
 .calendar-event-card .event-card-body { padding: 0; flex: 1; min-width: 0; }
 .calendar-date-chip { position: static; flex: 0 0 54px; min-height: 58px; display: flex; flex-direction: column; justify-content: center; text-align: center; border-radius: 13px; background: color-mix(in srgb, var(--primary-color, #2E5E9E) 18%, var(--surface, #141414)); }
@@ -5233,6 +5253,9 @@ button {
 .ministry-assignment-note { padding: 14px; border-radius: 14px; background: rgba(46,94,158,.12); }
 .team-access-notice { margin: 14px 20px 0; padding: 12px 14px; border-radius: 13px; color: #d8bc62; background: rgba(139,105,20,.14); border: 1px solid rgba(139,105,20,.28); font-size: 13px; text-align: center; }
 .notification-list { display: grid; gap: 10px; padding: 0 20px 110px; }
+.notification-preferences-panel { padding: 0 20px 18px; }
+.notification-preferences-panel .settings-section { margin: 0; }
+.notification-preferences-panel .settings-section-title { margin-bottom: 8px; }
 .notification-card { display: flex; gap: 13px; padding: 15px; color: inherit; text-decoration: none; background: var(--surface, #141414); border: 1px solid var(--border-color); border-radius: 16px; }
 .notification-card.unread { border-color: var(--primary-color, #2E5E9E); }
 .notification-card p { margin: 4px 0; color: var(--text-secondary); font-size: 13px; line-height: 1.4; }
@@ -5255,6 +5278,14 @@ button {
 .video-overlay { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; justify-content: space-between; align-items: end; text-align: left; gap: 10px; }
 .video-overlay strong { font-size: 15px; }.video-overlay small { opacity: .8; }
 .video-external { display: inline-block; margin: 10px 14px 12px; color: var(--text-secondary); font-size: 12px; text-decoration: underline; }
+.favorites-header { border-bottom: 1px solid var(--border-light); backdrop-filter: blur(16px); }
+.favorite-verses-empty { display: flex; min-height: 360px; flex-direction: column; align-items: center; justify-content: center; padding: 40px 18px; color: var(--text-secondary); text-align: center; }
+.favorite-verses-empty h2 { margin: 12px 0 5px; color: var(--text-primary); }
+.favorite-verse-card { display: grid; gap: 16px; overflow: hidden; padding: 24px; border: 1px solid var(--border); border-radius: 24px; background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+.favorite-verse-text { color: var(--text-primary); font-size: 16px; font-weight: 500; font-style: italic; line-height: 1.65; }
+.favorite-verse-text.arabic { font-size: 18px; font-weight: 700; font-style: normal; }
+.favorite-verse-ref { color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.favorite-verse-divider { width: 100%; height: 1px; background: var(--border-light); }
 .bible-testament-tabs { display: flex !important; gap: 8px; margin: 0 0 14px; }
 .bible-testament-tabs button { width: auto !important; padding: 8px 12px !important; border-radius: 999px !important; }
 .bible-testament-tabs button.active { background: var(--primary) !important; color: var(--primary-foreground) !important; }

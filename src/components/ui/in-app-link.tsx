@@ -9,5 +9,5 @@ export default function InAppLink({ href, className, children, ariaLabel }: { hr
     event.preventDefault();
     await Browser.open({ url: href, presentationStyle: 'popover', toolbarColor: '#141414' });
   }
-  return <a href={href} className={className} onClick={open} target="_blank" rel="noopener noreferrer" aria-label={ariaLabel}>{children}</a>;
+  return <a href={href} className={className} onClick={open} rel="noopener noreferrer" aria-label={ariaLabel}>{children}</a>;
 }

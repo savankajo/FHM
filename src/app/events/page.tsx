@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { generateGoogleCalendarLink, generateICalendarLink } from '@/lib/calendar';
+import CalendarView, { AppCalendarEvent } from './calendar-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +29,7 @@ export default async function CalendarPage() {
       OR: [
         { visibility: 'PUBLIC' },
         { teamScope: null },
-        ...(session ? [{ teams: { some: { id: { in: teamIds } } } }] : [])
+        ...(session ? [{ teams: { some: { id: { in: teamIds } } } }, { invitations: { some: { userId: session.userId } } }] : [])
       ]
     },
     include: { teams: { select: { id: true, name: true } } },
@@ -42,7 +43,9 @@ export default async function CalendarPage() {
     description: 'Our weekly public church gathering. Everyone is welcome.',
     location: '10167 148 Street, Surrey, BC',
     startTime: saturdayStart,
-    endTime: saturdayEnd
+    endTime: saturdayEnd,
+    recurrenceRule: 'FREQ=WEEKLY;BYDAY=SA',
+    reminderMinutesBefore: 120
   };
 
   return <main className="events-page">
@@ -56,40 +59,19 @@ export default async function CalendarPage() {
       <div><h2 id="upcoming-events">Upcoming meetings</h2><p>Public gatherings are visible to everyone. Sign in to see events for your teams.</p></div>
     </section>
 
-    <div className="events-list">
-      <article className="event-card calendar-event-card">
-        <div className="event-card-date-chip calendar-date-chip"><span className="event-date-month">{saturdayStart.toLocaleString('en-CA', { month: 'short' }).toUpperCase()}</span><span className="event-date-day">{saturdayStart.getDate()}</span></div>
-        <div className="event-card-body">
-          <div className="event-scope-badge public">Public · Weekly</div>
-          <h2 className="event-card-title">Saturday Meeting</h2>
-          <p className="event-card-meta">Every Saturday · 1:00 PM–3:00 PM</p>
-          <p className="event-card-meta">10167 148 Street, Surrey, BC</p>
-          <p className="event-card-desc">Our weekly church gathering. Everyone is welcome—no registration required.</p>
-          <div className="event-card-actions">
-            <a className="btn btn-primary btn-sm" href={generateICalendarLink(saturdayCalendar)} download="fhm-saturday-meeting.ics">Add to Calendar</a>
-            <a className="btn btn-secondary btn-sm" href={generateGoogleCalendarLink(saturdayCalendar)} target="_blank" rel="noreferrer">Google Calendar</a>
-          </div>
-        </div>
-      </article>
-
-      {events.map(event => {
-        const locations = Array.isArray(event.locations) ? event.locations as Array<{name?: string; startTime?: string; endTime?: string}> : [];
-        const start = event.startTime || (locations[0]?.startTime ? new Date(locations[0].startTime) : null);
-        const visibility = event.visibility === 'TEAM' || event.teamScope ? 'TEAM' : 'PUBLIC';
-        return <Link key={event.id} href={`/events/${event.id}`} className="event-card calendar-event-card">
-          <div className="event-card-date-chip calendar-date-chip"><span className="event-date-month">{start ? start.toLocaleString('en-CA', { month: 'short' }).toUpperCase() : 'DATE'}</span><span className="event-date-day">{start ? start.getDate() : '—'}</span></div>
-          <div className="event-card-body">
-            <div className={`event-scope-badge ${visibility === 'PUBLIC' ? 'public' : 'team'}`}>{visibility === 'PUBLIC' ? 'Public' : `Team · ${event.teams.map(team => team.name).join(', ') || 'Members'}`}</div>
-            <h2 className="event-card-title">{event.title}</h2>
-            {start && <p className="event-card-meta">{start.toLocaleString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
-            <p className="event-card-meta">{event.location || locations[0]?.name || 'Location shared in event details'}</p>
-            {event.description && <p className="event-card-desc">{event.description}</p>}
-            <span className="event-card-link">{visibility === 'TEAM' ? 'View & register' : 'View details'} →</span>
-          </div>
-        </Link>;
-      })}
+    <div className="saturday-calendar-actions">
+      <div><strong>Saturday Meeting</strong><p>Every Saturday, 1:00 PM · reminder at 11:00 AM</p></div>
+      <div className="event-card-actions">
+        <a className="btn btn-primary btn-sm" href={generateICalendarLink(saturdayCalendar)} download="fhm-saturday-meeting.ics">Add recurring reminder</a>
+        <a className="btn btn-secondary btn-sm" href={generateGoogleCalendarLink(saturdayCalendar)} target="_blank" rel="noreferrer">Google Calendar</a>
+      </div>
     </div>
-
+    <CalendarView events={events.flatMap(event => {
+      const locations = Array.isArray(event.locations) ? event.locations as Array<{name?: string; startTime?: string}> : [];
+      const start = event.startTime || (locations[0]?.startTime ? new Date(locations[0].startTime) : null);
+      if (!start) return [];
+      return [{ id: event.id, title: event.title, startTime: start.toISOString(), location: event.location || locations[0]?.name || 'Location shared in event details', scope: event.visibility === 'TEAM' || event.teamScope ? 'TEAM' : 'PUBLIC' } satisfies AppCalendarEvent];
+    })} />
     {!session && <section className="guest-calendar-note"><strong>Part of a ministry team?</strong><p>Sign in to see private team invitations and registration.</p><Link href="/login" className="btn btn-secondary btn-sm">Sign in</Link></section>}
   </main>;
 }

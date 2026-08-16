@@ -6,6 +6,8 @@ interface CalendarEvent {
     location?: string;
     startTime: Date;
     endTime: Date;
+    recurrenceRule?: string;
+    reminderMinutesBefore?: number;
 }
 
 export function generateGoogleCalendarLink(event: CalendarEvent): string {
@@ -20,6 +22,8 @@ export function generateGoogleCalendarLink(event: CalendarEvent): string {
         details: event.description || '',
         location: event.location || '',
     });
+
+    if (event.recurrenceRule) params.set('recur', `RRULE:${event.recurrenceRule}`);
 
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -38,6 +42,14 @@ export function generateICalendarLink(event: CalendarEvent): string {
         `SUMMARY:${event.title}`,
         `DESCRIPTION:${event.description || ''}`,
         `LOCATION:${event.location || ''}`,
+        ...(event.recurrenceRule ? [`RRULE:${event.recurrenceRule}`] : []),
+        ...(typeof event.reminderMinutesBefore === 'number' ? [
+            'BEGIN:VALARM',
+            `TRIGGER:-PT${event.reminderMinutesBefore}M`,
+            'ACTION:DISPLAY',
+            `DESCRIPTION:${event.title}`,
+            'END:VALARM',
+        ] : []),
         'END:VEVENT',
         'END:VCALENDAR',
     ].join('\r\n');

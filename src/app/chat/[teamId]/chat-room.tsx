@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const CHAT_PREFIX = '__FHM_CHAT__';
+type Poll = { kind: 'poll'; question: string; options: Array<{ id: string; label: string; voterIds: string[] }> };
+type Voice = { kind: 'voice'; audio: string; duration: number };
+
 interface Message {
     id: string;
     text: string;
@@ -14,7 +18,15 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
+    const [showPoll, setShowPoll] = useState(false);
+    const [pollQuestion, setPollQuestion] = useState('');
+    const [pollOptions, setPollOptions] = useState(['', '']);
+    const [recording, setRecording] = useState(false);
+    const [recordingSeconds, setRecordingSeconds] = useState(0);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const recorderRef = useRef<MediaRecorder | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const durationRef = useRef(0);
     const directionFor = (text: string) => /[\u0600-\u06ff]/.test(text) ? 'rtl' : 'ltr';
 
     const fetchMessages = useCallback(async () => {
@@ -71,6 +83,54 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         }
     };
 
+    const sendPayload = async (payload: Poll | Voice) => {
+        const text = CHAT_PREFIX + JSON.stringify(payload);
+        const response = await fetch(`/api/chat/${teamId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if (!response.ok) alert((await response.json()).error || 'Could not send.');
+        await fetchMessages();
+    };
+
+    const createPoll = async () => {
+        const options = pollOptions.map(label => label.trim()).filter(Boolean);
+        if (!pollQuestion.trim() || options.length < 2) return;
+        await sendPayload({ kind: 'poll', question: pollQuestion.trim(), options: options.map((label, index) => ({ id: `${Date.now()}-${index}`, label, voterIds: [] })) });
+        setPollQuestion(''); setPollOptions(['', '']); setShowPoll(false);
+    };
+
+    const vote = async (messageId: string, optionId: string) => {
+        const response = await fetch(`/api/chat/${teamId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, optionId }) });
+        if (response.ok) fetchMessages();
+    };
+
+    const startRecording = async () => {
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') return alert('Voice recording is not supported on this device.');
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const chunks: Blob[] = [];
+            const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 64000 });
+            recorderRef.current = recorder;
+            durationRef.current = 0; setRecordingSeconds(0); setRecording(true);
+            recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+            recorder.onstop = () => {
+                stream.getTracks().forEach(track => track.stop());
+                if (timerRef.current) clearInterval(timerRef.current);
+                const duration = Math.max(1, durationRef.current);
+                const reader = new FileReader();
+                reader.onloadend = () => sendPayload({ kind: 'voice', audio: String(reader.result), duration });
+                reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+                setRecording(false);
+            };
+            recorder.start();
+            let elapsed = 0;
+            timerRef.current = setInterval(() => { elapsed += 1; durationRef.current = elapsed; setRecordingSeconds(elapsed); if (elapsed >= 30) recorder.stop(); }, 1000);
+        } catch { alert('Microphone permission is required to send a voice message.'); }
+    };
+
+    const parsePayload = (text: string): Poll | Voice | null => {
+        if (!text.startsWith(CHAT_PREFIX)) return null;
+        try { return JSON.parse(text.slice(CHAT_PREFIX.length)); } catch { return null; }
+    };
+
     const moderate = async (action: 'report' | 'block', msg: Message) => {
         const prompt = action === 'report' ? 'Report this message to church administrators?' : `Block ${msg.user.name}? Their messages will be hidden.`;
         if (!confirm(prompt)) return;
@@ -91,11 +151,14 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     const isMine = msg.userId === userId;
                     const showName = index === 0 || messages[index - 1].userId !== msg.userId;
 
+                    const payload = parsePayload(msg.text);
                     return (
                         <div key={msg.id} className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
                             {!isMine && showName && <span className="sender-name"><span className="sender-avatar">{msg.user.name.slice(0, 1).toUpperCase()}</span>{msg.user.name}</span>}
-                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}`} dir={directionFor(msg.text)}>
-                                {msg.text}
+                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}${payload ? ' rich-message' : ''}`} dir={directionFor(msg.text)}>
+                                {!payload && msg.text}
+                                {payload?.kind === 'voice' && <div className="voice-message"><span>Voice message · {payload.duration}s</span><audio src={payload.audio} controls preload="metadata" /></div>}
+                                {payload?.kind === 'poll' && <div className="poll-message"><strong>{payload.question}</strong>{payload.options.map(option => { const total = payload.options.reduce((sum, item) => sum + item.voterIds.length, 0); const selected = option.voterIds.includes(userId); return <button type="button" className={selected ? 'selected' : ''} onClick={() => vote(msg.id, option.id)} key={option.id}><span>{option.label}</span><small>{option.voterIds.length}{total ? ` · ${Math.round(option.voterIds.length / total * 100)}%` : ''}</small></button>; })}<small>{payload.options.reduce((sum, option) => sum + option.voterIds.length, 0)} votes</small></div>}
                             </div>
                             <span className="timestamp">
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{isMine && ' · Sent'}
@@ -107,7 +170,10 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                 <div ref={bottomRef} />
             </div>
 
+            {showPoll && <div className="poll-composer"><div className="poll-composer-head"><strong>New poll</strong><button type="button" onClick={() => setShowPoll(false)}>×</button></div><input value={pollQuestion} maxLength={160} onChange={event => setPollQuestion(event.target.value)} placeholder="Ask a question" />{pollOptions.map((option, index) => <input key={index} value={option} maxLength={80} onChange={event => setPollOptions(items => items.map((item, i) => i === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} />)}<div className="poll-composer-actions">{pollOptions.length < 6 && <button type="button" onClick={() => setPollOptions(items => [...items, ''])}>+ Option</button>}<button type="button" className="create" disabled={!pollQuestion.trim() || pollOptions.filter(value => value.trim()).length < 2} onClick={createPoll}>Send poll</button></div></div>}
+
             <form onSubmit={handleSend} className="input-area">
+                <button type="button" className="chat-tool" onClick={() => setShowPoll(value => !value)} aria-label="Create poll">▥</button>
                 <input
                     className="chat-input"
                     value={input}
@@ -116,6 +182,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     dir={directionFor(input)}
                     aria-label="Message"
                 />
+                <button type="button" className={`chat-tool${recording ? ' recording' : ''}`} onClick={recording ? () => recorderRef.current?.stop() : startRecording} aria-label={recording ? 'Stop recording' : 'Record voice message'}>{recording ? `${recordingSeconds}s` : '🎙'}</button>
                 <button className="chat-send" type="submit" disabled={!input.trim()} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
             </form>
 
@@ -183,6 +250,19 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           margin-top: 2px;
           opacity: 0.7;
         }
+        .rich-message { width: min(300px, 72vw); }
+        .voice-message { display: grid; gap: 7px; font-size: .72rem; }
+        .voice-message audio { width: 100%; height: 38px; }
+        .poll-message { display: grid; gap: 7px; }
+        .poll-message > strong { margin-bottom: 3px; }
+        .poll-message button { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); color: var(--foreground); text-align: left; }
+        .poll-message button.selected { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+        .poll-message small { opacity: .75; }
+        .poll-composer { display: grid; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--background); }
+        .poll-composer-head, .poll-composer-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .poll-composer-head button, .poll-composer-actions button, .chat-tool { border: 0; background: transparent; color: var(--primary); font-weight: 800; }
+        .poll-composer input { min-height: 40px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); color: var(--foreground); }
+        .poll-composer-actions .create { padding: 8px 12px; border-radius: 9px; background: var(--primary); color: var(--primary-foreground); }
         .message-actions { display: flex; gap: .65rem; margin-top: 3px; }
         .message-actions button { border: 0; background: transparent; color: var(--muted-foreground); font-size: .68rem; text-decoration: underline; cursor: pointer; padding: 2px; }
         
@@ -205,6 +285,9 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           outline: none;
           border-color: var(--primary);
         }
+        .chat-tool { min-width: 36px; height: 44px; font-size: 18px; cursor: pointer; }
+        .chat-tool.recording { min-width: 48px; color: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: .45; } }
         .chat-input[dir='rtl'] { text-align: right; }
         .chat-send { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); cursor: pointer; }
         .chat-send:disabled { opacity: .35; cursor: default; }
