@@ -211,7 +211,7 @@ function MusicTab() {
     return (
         <div className="empty-state">
             <div className="empty-state-icon">🎵</div>
-            <p>Music library coming soon!<br />Stay tuned for worship music.</p>
+            <h2>Worship in every season</h2><p>Music shared by the church will be collected here when available.</p>
         </div>
     );
 }

@@ -86,3 +86,12 @@ Capture real app UI with fictional data for each required device size:
 6. Profile — account/settings surface
 
 Avoid screenshots containing real names, email addresses, phone numbers, private messages, empty states, or only the login/splash screen.
+
+## Live URLs (verified 2026-08-14)
+
+- Support: `https://fhmapp.netlify.app/support`
+- Privacy policy: `https://fhmapp.netlify.app/privacy`
+- Marketing: `https://fhmapp.netlify.app/`
+- Health check: `https://fhmapp.netlify.app/api/health`
+
+Use the public Home, Media, Bible, Teams, and Calendar screens for screenshots. Do not use a screenshot of a private team event or chat as if it were available to guests.

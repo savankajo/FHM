@@ -106,7 +106,7 @@ export default async function AdminDashboard() {
                                     <div key={item.label} className="admin-list-card" style={{ opacity: 0.55 }}>
                                         <div className="admin-list-card-main">
                                             <h2>{item.label}</h2>
-                                            <p>Coming soon</p>
+                                            <p>Available when configured</p>
                                         </div>
                                     </div>
                                 ) : (

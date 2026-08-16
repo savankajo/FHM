@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canSeeAudience } from '@/lib/audience';
-import { ensureAbsoluteUrl } from '@/lib/utils';
 import { getSermonCollection, getYoutubePlaylistId, getYoutubePlaylistName } from '@/lib/media-metadata';
 
 export const dynamic = 'force-dynamic';
@@ -51,7 +50,7 @@ export default async function SaturdayPlaylistVideosPage({ params, searchParams 
 
             <div className="media-list">
                 {sermons.map(sermon => (
-                    <a key={sermon.id} href={ensureAbsoluteUrl(sermon.videoUrl || `/sermons/${sermon.id}`)} target="_blank" rel="noopener noreferrer" className="media-list-card">
+                    <Link key={sermon.id} href={`/sermons/${sermon.id}`} className="media-list-card">
                         <div
                             className="media-list-thumb"
                             style={sermon.thumbnailUrl ? { backgroundImage: `url(${sermon.thumbnailUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
@@ -66,7 +65,7 @@ export default async function SaturdayPlaylistVideosPage({ params, searchParams 
                                 <path d="M8 7h9v9" />
                             </svg>
                         </div>
-                    </a>
+                    </Link>
                 ))}
             </div>
             {sermons.length === 0 && (

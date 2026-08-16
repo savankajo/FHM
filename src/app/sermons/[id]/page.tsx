@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/prisma';
-import { formatDate, ensureAbsoluteUrl } from '@/lib/utils';
+import { formatDate, ensureAbsoluteUrl, getYouTubeEmbedUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { canSeeAudience } from '@/lib/audience';
+import VideoPlayer from '@/components/media/video-player';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,9 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
     if (!sermon) notFound();
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
     if (!canSeeAudience(sermon.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN')) notFound();
+    const videoUrl = ensureAbsoluteUrl(sermon.videoUrl);
+    const legacyId = videoUrl?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1];
+    const videoId = sermon.videoId || legacyId;
 
     return (
         <div className="content-shell">
@@ -41,15 +45,15 @@ export default async function SermonDetailPage({ params }: { params: { id: strin
             </div>
 
             {sermon.type === 'VIDEO' && sermon.videoUrl && (
-                <div className="content-panel p-5 flex items-center justify-between gap-4">
-                    <span className="font-semibold text-base text-gray-900 truncate flex-1">
-                        {sermon.title}
-                    </span>
-                    <a href={ensureAbsoluteUrl(sermon.videoUrl)} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                        <span className="inline-flex items-center px-6 py-3 rounded-lg bg-orange-600 hover:bg-orange-700 text-black text-sm font-bold shadow-sm transition-colors cursor-pointer">
-                            Watch on YouTube
-                        </span>
-                    </a>
+                <div className="content-panel overflow-hidden">
+                    {videoId ? (
+                        <VideoPlayer provider={sermon.videoProvider || 'YOUTUBE'} videoId={videoId} title={sermon.title} date={formatDate(sermon.date)} thumbnailUrl={sermon.thumbnailUrl} />
+                    ) : (
+                        <video src={videoUrl} controls playsInline className="w-full" preload="metadata" />
+                    )}
+                    <div className="p-4">
+                        <a href={videoUrl} className="text-sm font-semibold text-orange-700 underline">Open video directly</a>
+                    </div>
                 </div>
             )}
 

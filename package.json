@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "review:preflight": "node scripts/review-preflight.js"
   },
   "dependencies": {
+    "@capacitor/browser": "^8.0.4",
     "@netlify/database": "^1.1.0",
     "@prisma/client": "^5.10.2",
     "@types/bcryptjs": "^2.4.6",

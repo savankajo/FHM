@@ -2,20 +2,20 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import ChatRoom from './chat-room';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ChatPage({ params }: { params: { teamId: string } }) {
     const session = await getSession();
-    if (!session) notFound();
+    if (!session) redirect('/teams?signin=required');
 
     const team = await prisma.team.findFirst({
-        where: { id: params.teamId, members: { some: { id: session.userId } } },
+        where: session.role === 'ADMIN' ? { id: params.teamId } : { id: params.teamId, members: { some: { id: session.userId } } },
         select: { id: true, name: true }
     });
 
-    if (!team) notFound();
+    if (!team) redirect('/teams?notice=not-assigned');
 
     const currentUser = await prisma.user.findUnique({
         where: { id: session.userId },

@@ -54,7 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = (userData: User) => {
         setUser(userData);
-        router.push('/');
+        // Authentication changes what server components are allowed to render.
+        // A full navigation clears any signed-out RSC/prefetch entries (notably
+        // /profile -> /login) that Next may have cached before the cookie existed.
+        window.location.replace('/');
     };
 
     const logout = async () => {

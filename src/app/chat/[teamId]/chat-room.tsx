@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface Message {
     id: string;
@@ -17,6 +15,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const directionFor = (text: string) => /[\u0600-\u06ff]/.test(text) ? 'rtl' : 'ltr';
 
     const fetchMessages = useCallback(async () => {
         try {
@@ -85,7 +84,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
             <div className="messages-area">
                 {loading && <p className="text-center text-muted">Loading...</p>}
                 {!loading && messages.length === 0 && (
-                    <p className="text-center text-muted mt-8">No messages yet. Start the conversation!</p>
+                    <div className="chat-welcome"><div className="chat-welcome-icon" aria-hidden="true">✦</div><h2>Say hello to the team 👋</h2><p>This is a welcoming space to coordinate, encourage one another, and serve together.</p></div>
                 )}
 
                 {messages.map((msg, index) => {
@@ -94,12 +93,12 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
 
                     return (
                         <div key={msg.id} className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
-                            {!isMine && showName && <span className="sender-name">{msg.user.name}</span>}
-                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}`}>
+                            {!isMine && showName && <span className="sender-name"><span className="sender-avatar">{msg.user.name.slice(0, 1).toUpperCase()}</span>{msg.user.name}</span>}
+                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}`} dir={directionFor(msg.text)}>
                                 {msg.text}
                             </div>
                             <span className="timestamp">
-                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{isMine && ' · Sent'}
                             </span>
                             {!isMine && <span className="message-actions"><button onClick={() => moderate('report', msg)}>Report</button><button onClick={() => moderate('block', msg)}>Block user</button></span>}
                         </div>
@@ -114,8 +113,10 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     placeholder="Type a message..."
+                    dir={directionFor(input)}
+                    aria-label="Message"
                 />
-                <Button type="submit" disabled={!input.trim()}>Send</Button>
+                <button className="chat-send" type="submit" disabled={!input.trim()} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
             </form>
 
             <style jsx>{`
@@ -135,6 +136,10 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           flex-direction: column;
           gap: 0.5rem;
         }
+        .chat-welcome { margin: auto; max-width: 310px; padding: 28px 20px; text-align: center; border: 1px solid var(--border); border-radius: 22px; background: var(--background); }
+        .chat-welcome-icon { width: 60px; height: 60px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 20px; font-size: 28px; color: #d8bc62; background: rgba(139,105,20,.18); }
+        .chat-welcome h2 { margin: 0 0 7px; font-size: 20px; }
+        .chat-welcome p { margin: 0; color: var(--muted-foreground); font-size: 13px; line-height: 1.5; }
         .message-row {
           display: flex;
           flex-direction: column;
@@ -154,6 +159,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           margin-bottom: 2px;
           margin-left: 4px;
         }
+        .sender-avatar { width: 22px; height: 22px; display: inline-grid; place-items: center; margin-right: 6px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); font-size: 10px; font-weight: 800; }
         .bubble {
           padding: 0.75rem 1rem;
           border-radius: 1rem;
@@ -199,6 +205,9 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           outline: none;
           border-color: var(--primary);
         }
+        .chat-input[dir='rtl'] { text-align: right; }
+        .chat-send { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); cursor: pointer; }
+        .chat-send:disabled { opacity: .35; cursor: default; }
       `}</style>
         </div>
     );

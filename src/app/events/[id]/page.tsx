@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import VoteButtons from './vote-buttons';
 import { notFound } from 'next/navigation';
+import RsvpButton from './rsvp-button';
+import InAppLink from '@/components/ui/in-app-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,25 +21,26 @@ function BackArrow({ href, label }: { href: string; label: string }) {
 
 export default async function EventDetailsPage({ params }: { params: { id: string } }) {
     const session = await getSession();
-    if (!session) notFound();
-
     const event = await prisma.event.findUnique({
         where: { id: params.id },
         include: {
             teams: { select: { id: true } },
             votes: {
                 include: { user: { select: { id: true, name: true } } }
-            }
+            },
+            rsvps: session ? { where: { userId: session.userId } } : false
         }
     });
 
     if (!event) notFound();
-    if (session.role !== 'ADMIN' && event.teamScope) {
+    const isTeamEvent = event.visibility === 'TEAM' || Boolean(event.teamScope);
+    if (isTeamEvent && !session) notFound();
+    if (session && session.role !== 'ADMIN' && isTeamEvent) {
         const allowed = await prisma.team.findFirst({ where: { id: { in: event.teams.map(team => team.id) }, members: { some: { id: session.userId } } }, select: { id: true } });
         if (!allowed) notFound();
     }
 
-    const myVote = event.votes.find(v => v.userId === session.userId);
+    const myVote = session ? event.votes.find(v => v.userId === session.userId) : undefined;
     const locations = event.locations as any[];
 
     const yesVotes = event.votes.filter(v => v.status === 'YES');
@@ -104,12 +107,12 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
 
                                 {/* View Map */}
                                 {loc.mapUrl && (
-                                    <a href={loc.mapUrl} target="_blank" rel="noopener noreferrer" className="view-map-btn">
+                                    <InAppLink href={loc.mapUrl} className="view-map-btn" ariaLabel={`Open map for ${loc.name}`}>
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <polygon points="3 11 22 2 13 21 11 13 3 11" />
                                         </svg>
                                         View Map
-                                    </a>
+                                    </InAppLink>
                                 )}
                             </div>
                         ))}
@@ -118,7 +121,12 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
             )}
 
             {/* ── Attendance ────────────────────────────────── */}
-            <div className="detail-section">
+            {isTeamEvent && session ? <div className="detail-section">
+                <div className="detail-section-label">Registration</div>
+                <RsvpButton eventId={event.id} initialStatus={event.rsvps?.[0]?.status} />
+            </div> : <div className="detail-section"><div className="detail-card" style={{padding: '18px'}}><strong>Everyone is welcome</strong><p style={{color: 'var(--text-secondary)', marginTop: '6px'}}>This is a public church meeting and registration is not required.</p></div></div>}
+
+            {isTeamEvent && session && <div className="detail-section">
                 <div className="detail-section-label">Will you attend?</div>
                 {event.votingDeadline && new Date() > new Date(event.votingDeadline) ? (
                     <div className="detail-card" style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', padding: '20px' }}>
@@ -134,7 +142,7 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
                         votingDeadline={event.votingDeadline}
                     />
                 )}
-            </div>
+            </div>}
 
             {/* ── Who's Going ───────────────────────────────── */}
             <div className="detail-section">

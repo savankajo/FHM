@@ -39,6 +39,18 @@ const NAV_ITEMS = [
     ),
   },
   {
+    label: 'Bible',
+    href: '/bible',
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="nav-icon">
+        <path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11a3 3 0 0 1 3 3v16a3 3 0 0 0-3-3H7.5A3.5 3.5 0 0 0 4 21.5z" fill={active ? 'currentColor' : 'none'} opacity={active ? 0.14 : 1} />
+        <path d="M20 5.5A3.5 3.5 0 0 0 16.5 2H14v19a3 3 0 0 1 3-3h-.5a3.5 3.5 0 0 1 3.5 3.5z" fill={active ? 'currentColor' : 'none'} opacity={active ? 0.14 : 1} />
+        <path d="M14 5v16" />
+        <path d="M7 7h4M7 10h4M17 7h1" />
+      </svg>
+    ),
+  },
+  {
     label: 'Teams',
     href: '/teams',
     icon: (active: boolean) => (
@@ -53,7 +65,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: 'Events',
+    label: 'Calendar',
     href: '/events',
     icon: (active: boolean) => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="nav-icon">
@@ -82,8 +94,6 @@ const NAV_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
 
-  if (pathname === '/login' || pathname === '/register') return null;
-
   return (
     <nav className="bottom-nav">
       {NAV_ITEMS.map((item) => {
@@ -95,6 +105,7 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
+            prefetch={item.href === '/profile' ? false : undefined}
             className={`nav-item${isActive ? ' active' : ''}`}
           >
             <span className="nav-icon-wrap">

@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import VerseOfTheDayCard from '@/components/home/verse-of-day';
 import { getUserPermissions } from '@/lib/permissions';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,11 @@ export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
   const { canOpenAdmin } = await getUserPermissions(session?.userId, session?.role);
+  const teams = session ? await prisma.team.findMany({
+    where: { members: { some: { id: session.userId } } },
+    select: { id: true }
+  }) : [];
+  const teamIds = teams.map(team => team.id);
   // User has no avatarUrl in schema — prompt if logged in
 
   // Fetch Live Link
@@ -19,17 +25,17 @@ export default async function HomePage() {
   });
 
   // Fetch Recent Sermons & Podcasts for "Recently Uploaded"
-  const recentSermons = await prisma.sermon.findMany({
+  const recentSermons = (await prisma.sermon.findMany({
     orderBy: { date: 'desc' },
-    take: 2,
-    select: { id: true, title: true, speaker: true, date: true, videoUrl: true, thumbnailUrl: true }
-  });
+    take: 20,
+    select: { id: true, title: true, speaker: true, date: true, videoUrl: true, thumbnailUrl: true, audienceTeamIds: true }
+  })).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 2);
 
-  const recentPodcasts = await prisma.podcastEpisode.findMany({
+  const recentPodcasts = (await prisma.podcastEpisode.findMany({
     orderBy: { publishedAt: 'desc' },
-    take: 1,
-    select: { id: true, title: true, publishedAt: true, thumbnailUrl: true }
-  });
+    take: 20,
+    select: { id: true, title: true, publishedAt: true, thumbnailUrl: true, audienceTeamIds: true }
+  })).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 1);
 
   const uploads = [
     ...recentSermons.map(s => ({
@@ -71,7 +77,7 @@ export default async function HomePage() {
             <Link href="/admin" className="admin-badge">{isAdmin ? 'Admin' : 'Manage'}</Link>
           )}
           {/* Profile button — shows "Add Photo" prompt if logged in & no avatar */}
-          <Link href="/profile" className="home-avatar-btn" aria-label="Profile">
+          <Link href="/profile" prefetch={false} className="home-avatar-btn" aria-label="Profile">
             <div className="home-avatar-circle">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="4" />
@@ -94,7 +100,7 @@ export default async function HomePage() {
                 Live Service
               </div>
               <div className="hero-card-title">Live Service</div>
-              <div className="hero-card-subtitle">Saturday 4:00 PM</div>
+              <div className="hero-card-subtitle">Saturday 1:00 PM</div>
             </div>
 
             {liveLink ? (
@@ -176,8 +182,8 @@ export default async function HomePage() {
       <section className="visit-strip" aria-label="Plan your visit">
         <div className="visit-strip-copy">
           <span className="visit-strip-kicker">Plan your visit</span>
-          <h2 className="visit-strip-title">Join us this Saturday at 4:00 PM</h2>
-          <p className="visit-strip-text">Father's Heart Ministry, Abbotsford</p>
+          <h2 className="visit-strip-title">Join us this Saturday at 1:00 PM</h2>
+          <p className="visit-strip-text">10167 148 Street, Surrey, BC</p>
         </div>
         <div className="visit-strip-actions">
           <a

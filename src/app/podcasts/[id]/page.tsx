@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 import { formatDate, getYouTubeEmbedUrl, ensureAbsoluteUrl } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSession } from '@/lib/auth';
@@ -17,6 +16,8 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
     if (!podcast) notFound();
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
     if (!canSeeAudience(podcast.audienceTeamIds, teams.map(team => team.id), session?.role === 'ADMIN')) notFound();
+    const mediaUrl = ensureAbsoluteUrl(podcast.audioUrl);
+    const embedUrl = mediaUrl ? getYouTubeEmbedUrl(mediaUrl) : null;
 
     return (
         <div className="content-shell">
@@ -38,13 +39,21 @@ export default async function PodcastDetailPage({ params }: { params: { id: stri
             </div>
 
             {podcast.audioUrl && (
-                <div className="content-panel mt-8 p-5 flex flex-row items-center justify-between gap-4">
-                    <span className="font-semibold text-lg text-gray-900 flex-1">{podcast.title}</span>
-                    <a href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer">
-                        <Button className="gap-2 bg-orange-600 hover:bg-orange-700 text-black min-w-[160px] font-medium text-base">
-                            {getYouTubeEmbedUrl(podcast.audioUrl) ? 'Watch on YouTube' : 'Listen / Download'}
-                        </Button>
-                    </a>
+                <div className="content-panel mt-8 overflow-hidden">
+                    {embedUrl ? (
+                        <iframe
+                            src={embedUrl}
+                            title={podcast.title}
+                            className="w-full aspect-video border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                        />
+                    ) : (
+                        <div className="p-5"><audio src={mediaUrl} controls preload="metadata" className="w-full" /></div>
+                    )}
+                    <div className="p-4">
+                        <a href={mediaUrl} className="text-sm font-semibold text-orange-700 underline">Open media directly</a>
+                    </div>
                 </div>
             )}
         </div>

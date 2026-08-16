@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canSeeAudience } from '@/lib/audience';
-import { ensureAbsoluteUrl } from '@/lib/utils';
 import { getPodcastSeason, PodcastSeason } from '@/lib/media-metadata';
 
 export const dynamic = 'force-dynamic';
@@ -56,13 +55,13 @@ export default async function PodcastSeasonPage({ params, searchParams }: { para
             {podcasts.length === 0 ? (
                 <div className="empty-state media-empty-state">
                     <div className="empty-state-icon">{allSeasonPodcasts.length === 0 ? 'Soon' : 'Search'}</div>
-                    <h2>{allSeasonPodcasts.length === 0 ? 'Coming Soon' : 'No Episodes Found'}</h2>
-                    <p>{allSeasonPodcasts.length === 0 ? 'No episodes have been uploaded for this season yet.' : 'Try another English or Arabic search term.'}</p>
+                    <h2>{allSeasonPodcasts.length === 0 ? 'A quiet moment' : 'No Episodes Found'}</h2>
+                    <p>{allSeasonPodcasts.length === 0 ? 'New conversations will appear here when they are published.' : 'Try another English or Arabic search term.'}</p>
                 </div>
             ) : (
                 <div className="media-list">
                     {podcasts.map(podcast => (
-                        <a key={podcast.id} href={ensureAbsoluteUrl(podcast.audioUrl)} target="_blank" rel="noopener noreferrer" className="media-list-card">
+                        <Link key={podcast.id} href={`/podcasts/${podcast.id}`} className="media-list-card">
                             <div
                                 className="media-list-thumb"
                                 style={podcast.thumbnailUrl ? { backgroundImage: `url(${podcast.thumbnailUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg, #2b183f, #8a4a21)' }}
@@ -77,7 +76,7 @@ export default async function PodcastSeasonPage({ params, searchParams }: { para
                                     <path d="M8 7h9v9" />
                                 </svg>
                             </div>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             )}

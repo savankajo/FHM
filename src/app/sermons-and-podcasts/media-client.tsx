@@ -41,7 +41,7 @@ function formatCount(count: number, label: string) {
 }
 
 function mediaDate(value: Date) {
-    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
 
 function CollectionCard({
@@ -251,7 +251,7 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                         <CollectionCard
                             title="Season 2"
                             description="A new podcast season is being prepared."
-                            meta={seasonTwoPodcasts.length > 0 ? formatCount(seasonTwoPodcasts.length, 'episode') : 'Coming soon'}
+                            meta={seasonTwoPodcasts.length > 0 ? formatCount(seasonTwoPodcasts.length, 'episode') : 'Browse season'}
                             href={seasonTwoPodcasts.length > 0 ? '/sermons-and-podcasts/podcasts/season-2' : undefined}
                             tone="gray"
                             comingSoon={seasonTwoPodcasts.length === 0}

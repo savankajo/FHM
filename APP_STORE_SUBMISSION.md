@@ -28,3 +28,9 @@ FHM Church is a church community app for public sermons, podcasts, Bible content
 Demo account: `[ADD EMAIL]` / `[ADD PASSWORD]`
 
 To review member features: sign in, open Teams, select `[ADD TEAM]`, and open Team Chat.
+
+## 2026 rejection-cycle verified review notes
+
+FHM Church is intentionally bilingual in English and Arabic; Arabic content uses RTL layout. Guests can access Home, Media, Bible, the public Teams directory, the public Calendar (including the weekly Saturday Meeting), privacy policy, and support without signing in. Members can access assigned team chat, schedules, private team events, RSVP, and notification history. Notifications are limited to event reminders, team invitations, and church messages; each category can be disabled in Profile settings and permission is requested there in context. Sermons play inside the app without autoplay; the small provider link is an optional fallback. Account deletion is available under Profile → Account & Security. There are no purchases, subscriptions, advertising, or cross-app tracking.
+
+Enter the verified demo credentials only in App Store Connect, never in this repository. To test member features: sign in, open Teams, select the assigned App Review Test Team, open Team Chat, then open Calendar and Notifications. The backend health check is `https://fhmapp.netlify.app/api/health`.

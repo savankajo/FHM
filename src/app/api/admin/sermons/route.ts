@@ -8,6 +8,7 @@ export async function POST(request: Request) {
     if (!await canManage(session?.userId, session?.role, 'media', 'add')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
+    const videoId = body.videoUrl?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1] || body.videoId || null;
 
     try {
         const sermon = await prisma.sermon.create({
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
                 date: new Date(body.date),
                 type: body.type,
                 videoUrl: body.videoUrl || null,
+                videoProvider: videoId ? 'YOUTUBE' : null,
+                videoId,
                 fileUrl: body.fileUrl || null,
                 notes: body.notes,
                 thumbnailUrl: body.thumbnailUrl || null,
@@ -52,6 +55,7 @@ export async function PUT(request: Request) {
     if (!await canManage(session?.userId, session?.role, 'media', 'edit')) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
     const body = await request.json();
+    const videoId = body.videoUrl?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1] || body.videoId || null;
     if (!body.id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     try {
@@ -63,6 +67,8 @@ export async function PUT(request: Request) {
                 date: new Date(body.date),
                 type: body.type,
                 videoUrl: body.videoUrl || null,
+                videoProvider: videoId ? 'YOUTUBE' : null,
+                videoId,
                 fileUrl: body.fileUrl || null,
                 notes: body.notes,
                 thumbnailUrl: body.thumbnailUrl || null,

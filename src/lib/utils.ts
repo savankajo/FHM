@@ -19,25 +19,26 @@ export function getYouTubeEmbedUrl(url: string): string | null {
     let embedUrl: string | null = null;
 
     // Handle standard watch?v= format
-    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    const watchMatch = url.match(/[?&]v=([A-Za-z0-9_-]{11})/);
     if (watchMatch) {
         embedUrl = `https://www.youtube.com/embed/${watchMatch[1]}`;
     }
     // Handle short youtu.be/ format
-    else if (url.match(/youtu\.be\/([^?&]+)/)) {
-        const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+    else if (url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/)) {
+        const shortMatch = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
         embedUrl = `https://www.youtube.com/embed/${shortMatch![1]}`;
     }
     // Handle embed/ format
-    else if (url.includes('/embed/')) {
-        embedUrl = url;
+    else {
+        const embedMatch = url.match(/youtube(?:-nocookie)?\.com\/embed\/([A-Za-z0-9_-]{11})/);
+        if (embedMatch) embedUrl = `https://www.youtube-nocookie.com/embed/${embedMatch[1]}`;
     }
 
     if (embedUrl) {
         // Ensure protocol
         if (embedUrl.startsWith('//')) return `https:${embedUrl}`;
         if (!embedUrl.startsWith('http')) return `https://${embedUrl}`;
-        return embedUrl;
+        return `${embedUrl.replace('www.youtube.com', 'www.youtube-nocookie.com')}?playsinline=1&rel=0`;
     }
 
     return null;

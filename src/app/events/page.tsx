@@ -1,179 +1,95 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { generateGoogleCalendarLink, generateICalendarLink } from '@/lib/calendar';
 
 export const dynamic = 'force-dynamic';
 
-// ── Calendar Icon ─────────────────────────────────────────────
+function nextSaturdayAtOne() {
+  const now = new Date();
+  const result = new Date(now);
+  const days = (6 - now.getDay() + 7) % 7;
+  result.setDate(now.getDate() + days);
+  result.setHours(13, 0, 0, 0);
+  if (result <= now) result.setDate(result.getDate() + 7);
+  return result;
+}
+
 function CalendarIcon() {
-    return (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="3" />
-            <path d="M16 2v4M8 2v4M3 10h18" />
-        </svg>
-    );
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
 }
 
-// ── Location Icon ─────────────────────────────────────────────
-function LocationIcon() {
-    return (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-        </svg>
-    );
-}
+export default async function CalendarPage() {
+  const session = await getSession();
+  const userTeams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
+  const teamIds = userTeams.map(team => team.id);
+  const events = await prisma.event.findMany({
+    where: session?.role === 'ADMIN' ? undefined : {
+      OR: [
+        { visibility: 'PUBLIC' },
+        { teamScope: null },
+        ...(session ? [{ teams: { some: { id: { in: teamIds } } } }] : [])
+      ]
+    },
+    include: { teams: { select: { id: true, name: true } } },
+    orderBy: [{ startTime: 'asc' }, { createdAt: 'desc' }]
+  });
 
-// ── Event banner gradients ────────────────────────────────────
-const EVENT_GRADIENTS = [
-    'linear-gradient(135deg, #2a0e04 0%, #7a3010 50%, #C7511F 100%)',
-    'linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #2563eb 100%)',
-    'linear-gradient(135deg, #0a2010 0%, #1a5c30 50%, #16a34a 100%)',
-    'linear-gradient(135deg, #1a0830 0%, #5b21b6 50%, #7c3aed 100%)',
-    'linear-gradient(135deg, #2a1a04 0%, #7a5010 50%, #d97706 100%)',
-];
+  const saturdayStart = nextSaturdayAtOne();
+  const saturdayEnd = new Date(saturdayStart.getTime() + 2 * 60 * 60 * 1000);
+  const saturdayCalendar = {
+    title: 'Saturday Meeting — FHM Church',
+    description: 'Our weekly public church gathering. Everyone is welcome.',
+    location: '10167 148 Street, Surrey, BC',
+    startTime: saturdayStart,
+    endTime: saturdayEnd
+  };
 
-const EVENT_EMOJIS = ['⛪', '🙏', '✝️', '🎵', '📖', '🌟', '❤️'];
+  return <main className="events-page">
+    <div className="page-header">
+      <div><p className="page-kicker">Church life</p><h1 className="page-title">Calendar</h1></div>
+      {session?.role === 'ADMIN' && <Link href="/admin/events/new" className="btn btn-primary btn-sm" aria-label="Create a new calendar event">+ New</Link>}
+    </div>
 
-export default async function EventsPage() {
-    const session = await getSession();
+    <section className="calendar-intro" aria-labelledby="upcoming-events">
+      <div className="calendar-intro-icon"><CalendarIcon /></div>
+      <div><h2 id="upcoming-events">Upcoming meetings</h2><p>Public gatherings are visible to everyone. Sign in to see events for your teams.</p></div>
+    </section>
 
-    if (!session) {
-        return (
-            <div className="events-page">
-                <div className="page-header">
-                    <h1 className="page-title">Events</h1>
-                </div>
-                <div className="empty-state">
-                    <div className="empty-state-icon">📅</div>
-                    <p>Please sign in to view events.</p>
-                    <Link href="/login" style={{ marginTop: '16px', display: 'inline-block' }}>
-                        <button className="btn btn-primary btn-sm">Sign In</button>
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
-    // Fetch events the user can see
-    const userTeams = await prisma.team.findMany({
-        where: { members: { some: { id: session.userId } } },
-        select: { id: true }
-    });
-    const userTeamIds = userTeams.map(t => t.id);
-
-    const events = await prisma.event.findMany({
-        where: session.role === 'ADMIN' ? undefined : {
-            OR: [
-                { teamScope: null },
-                { teams: { some: { id: { in: userTeamIds } } } }
-            ]
-        },
-        orderBy: { createdAt: 'desc' },
-    });
-
-    return (
-        <div className="events-page">
-
-            {/* Page Header */}
-            <div className="page-header">
-                <h1 className="page-title">Events</h1>
-                {session.role === 'ADMIN' && (
-                    <Link href="/admin/events">
-                        <button className="btn btn-primary btn-sm">+ New</button>
-                    </Link>
-                )}
-            </div>
-
-            {/* Upcoming label */}
-            <div style={{ padding: '0 20px 14px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Upcoming Events
-                </span>
-            </div>
-
-            {/* Events List */}
-            {events.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-state-icon">📅</div>
-                    <p>No upcoming events at the moment.<br />Check back soon!</p>
-                </div>
-            ) : (
-                <div className="events-list">
-                    {events.map((event, idx) => {
-                        const locs = event.locations as any[];
-                        const firstDate = locs && locs[0] ? new Date(locs[0].startTime) : null;
-                        const locationName = locs?.length > 1
-                            ? `${locs.length} Locations`
-                            : locs?.[0]?.name || null;
-
-                        const gradient = EVENT_GRADIENTS[idx % EVENT_GRADIENTS.length];
-                        const emoji = EVENT_EMOJIS[idx % EVENT_EMOJIS.length];
-
-                        return (
-                            <Link key={event.id} href={`/events/${event.id}`} className="event-card">
-                                {/* Banner */}
-                                <div className="event-card-banner" style={{ background: gradient }}>
-                                    <span className="event-card-banner-icon">{emoji}</span>
-
-                                    {/* Date chip */}
-                                    {firstDate && (
-                                        <div className="event-card-date-chip">
-                                            <span className="event-date-month">
-                                                {firstDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
-                                            </span>
-                                            <span className="event-date-day">{firstDate.getDate()}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Body */}
-                                <div className="event-card-body">
-                                    <div className="event-card-title">{event.title}</div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        {firstDate && (
-                                            <div className="event-card-meta">
-                                                <CalendarIcon />
-                                                {firstDate.toLocaleDateString('en-US', {
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                })}
-                                                {locs?.[0]?.startTime && (
-                                                    <> · {new Date(locs[0].startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>
-                                                )}
-                                            </div>
-                                        )}
-                                        {locationName && (
-                                            <div className="event-card-meta">
-                                                <LocationIcon />
-                                                {locationName}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {event.description && (
-                                        <div className="event-card-desc">{event.description}</div>
-                                    )}
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* View Calendar CTA */}
-            <div className="events-cta-wrap">
-                <button className="btn btn-primary btn-full">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="3" />
-                        <path d="M16 2v4M8 2v4M3 10h18" />
-                    </svg>
-                    View Calendar
-                </button>
-            </div>
-
+    <div className="events-list">
+      <article className="event-card calendar-event-card">
+        <div className="event-card-date-chip calendar-date-chip"><span className="event-date-month">{saturdayStart.toLocaleString('en-CA', { month: 'short' }).toUpperCase()}</span><span className="event-date-day">{saturdayStart.getDate()}</span></div>
+        <div className="event-card-body">
+          <div className="event-scope-badge public">Public · Weekly</div>
+          <h2 className="event-card-title">Saturday Meeting</h2>
+          <p className="event-card-meta">Every Saturday · 1:00 PM–3:00 PM</p>
+          <p className="event-card-meta">10167 148 Street, Surrey, BC</p>
+          <p className="event-card-desc">Our weekly church gathering. Everyone is welcome—no registration required.</p>
+          <div className="event-card-actions">
+            <a className="btn btn-primary btn-sm" href={generateICalendarLink(saturdayCalendar)} download="fhm-saturday-meeting.ics">Add to Calendar</a>
+            <a className="btn btn-secondary btn-sm" href={generateGoogleCalendarLink(saturdayCalendar)} target="_blank" rel="noreferrer">Google Calendar</a>
+          </div>
         </div>
-    );
+      </article>
+
+      {events.map(event => {
+        const locations = Array.isArray(event.locations) ? event.locations as Array<{name?: string; startTime?: string; endTime?: string}> : [];
+        const start = event.startTime || (locations[0]?.startTime ? new Date(locations[0].startTime) : null);
+        const visibility = event.visibility === 'TEAM' || event.teamScope ? 'TEAM' : 'PUBLIC';
+        return <Link key={event.id} href={`/events/${event.id}`} className="event-card calendar-event-card">
+          <div className="event-card-date-chip calendar-date-chip"><span className="event-date-month">{start ? start.toLocaleString('en-CA', { month: 'short' }).toUpperCase() : 'DATE'}</span><span className="event-date-day">{start ? start.getDate() : '—'}</span></div>
+          <div className="event-card-body">
+            <div className={`event-scope-badge ${visibility === 'PUBLIC' ? 'public' : 'team'}`}>{visibility === 'PUBLIC' ? 'Public' : `Team · ${event.teams.map(team => team.name).join(', ') || 'Members'}`}</div>
+            <h2 className="event-card-title">{event.title}</h2>
+            {start && <p className="event-card-meta">{start.toLocaleString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
+            <p className="event-card-meta">{event.location || locations[0]?.name || 'Location shared in event details'}</p>
+            {event.description && <p className="event-card-desc">{event.description}</p>}
+            <span className="event-card-link">{visibility === 'TEAM' ? 'View & register' : 'View details'} →</span>
+          </div>
+        </Link>;
+      })}
+    </div>
+
+    {!session && <section className="guest-calendar-note"><strong>Part of a ministry team?</strong><p>Sign in to see private team invitations and registration.</p><Link href="/login" className="btn btn-secondary btn-sm">Sign in</Link></section>}
+  </main>;
 }

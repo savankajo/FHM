@@ -24,28 +24,49 @@ enum VoteStatus {
   MAYBE
 }
 
+enum EventVisibility {
+  PUBLIC
+  TEAM
+}
+
+enum RsvpStatus {
+  REGISTERED
+  WAITLISTED
+  CANCELLED
+}
+
+enum NotificationType {
+  REMINDER
+  INVITATION
+  MESSAGE
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String?
-  role      Role     @default(MEMBER)
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String
+  phone       String?
+  role        Role     @default(MEMBER)
   permissions Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  teams           Team[]        @relation("TeamMembers")
-  ledTeams        Team[]        @relation("TeamLeaders")
-  volunteeringFor Service[]
-  eventVotes      EventVote[]
-  chatMessages    ChatMessage[]
-  createdEvents   Event[]       @relation("EventCreator")
-  reports         ChatReport[]  @relation("Reporter")
-  blocksMade      UserBlock[]   @relation("Blocker")
-  blocksReceived  UserBlock[]   @relation("Blocked")
-  passwordResetTokens PasswordResetToken[]
+  teams                   Team[]               @relation("TeamMembers")
+  ledTeams                Team[]               @relation("TeamLeaders")
+  volunteeringFor         Service[]
+  eventVotes              EventVote[]
+  rsvps                   Rsvp[]
+  eventInvitations        Invitation[]         @relation("InvitationUser")
+  notifications           Notification[]
+  notificationPreferences Json?
+  chatMessages            ChatMessage[]
+  createdEvents           Event[]              @relation("EventCreator")
+  reports                 ChatReport[]         @relation("Reporter")
+  blocksMade              UserBlock[]          @relation("Blocker")
+  blocksReceived          UserBlock[]          @relation("Blocked")
+  passwordResetTokens     PasswordResetToken[]
 }
 
 model PasswordResetToken {
@@ -70,11 +91,12 @@ model Team {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  members  User[]        @relation("TeamMembers")
-  leaders  User[]        @relation("TeamLeaders")
-  services Service[]
-  events   Event[]       @relation("TeamEvents")
-  messages ChatMessage[]
+  members     User[]        @relation("TeamMembers")
+  leaders     User[]        @relation("TeamLeaders")
+  services    Service[]
+  events      Event[]       @relation("TeamEvents")
+  messages    ChatMessage[]
+  invitations Invitation[]
 }
 
 model Service {
@@ -97,31 +119,40 @@ enum SermonType {
   PDF
 }
 
+enum VideoProvider {
+  YOUTUBE
+  VIMEO
+}
+
 model Sermon {
-  id              String     @id @default(uuid())
+  id              String         @id @default(uuid())
   title           String
   speaker         String
   date            DateTime
-  type            SermonType @default(VIDEO)
+  type            SermonType     @default(VIDEO)
   videoUrl        String?
+  videoProvider   VideoProvider?
+  videoId         String?
   fileUrl         String?
-  isLive          Boolean    @default(false)
+  isLive          Boolean        @default(false)
   notes           String?
   thumbnailUrl    String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   audienceTeamIds Json?
 }
 
 model PodcastEpisode {
-  id              String   @id @default(uuid())
+  id              String         @id @default(uuid())
   title           String
   description     String?
   publishedAt     DateTime
   audioUrl        String
+  videoProvider   VideoProvider?
+  videoId         String?
   thumbnailUrl    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   audienceTeamIds Json?
 }
 
@@ -140,20 +171,78 @@ model Article {
 }
 
 model Event {
-  id             String    @id @default(uuid())
+  id             String          @id @default(uuid())
   title          String
   description    String?
   teamScope      String? // "ALL" or specific Team ID (handled in app logic if multiple needed, strictly simplfied here to 1 team or null for all)
   votingDeadline DateTime?
   locations      Json // Array of {name, address, mapUrl, startTime, endTime}
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  startTime      DateTime?
+  endTime        DateTime?
+  location       String?
+  visibility     EventVisibility @default(PUBLIC)
+  teamId         String?
+  isRecurring    Boolean         @default(false)
+  recurrenceRule String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   // Relations
   createdByUserId String
-  createdBy       User        @relation("EventCreator", fields: [createdByUserId], references: [id])
-  teams           Team[]      @relation("TeamEvents") // If scoped to specific teams
+  createdBy       User         @relation("EventCreator", fields: [createdByUserId], references: [id])
+  teams           Team[]       @relation("TeamEvents") // If scoped to specific teams
   votes           EventVote[]
+  rsvps           Rsvp[]
+  invitations     Invitation[]
+
+  @@index([visibility, startTime])
+  @@index([teamId])
+}
+
+model Rsvp {
+  id        String     @id @default(uuid())
+  status    RsvpStatus @default(REGISTERED)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  eventId   String
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId, status])
+}
+
+model Invitation {
+  id          String    @id @default(uuid())
+  sentAt      DateTime  @default(now())
+  respondedAt DateTime?
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamId      String?
+  team        Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?     @relation("InvitationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String?
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }
 
 model EventVote {
