@@ -15,7 +15,7 @@ const RECENTS_KEY = 'fhm-bible-recents-v1';
 const COLORS = ['', 'yellow', 'green', 'blue', 'pink'];
 
 export default function BibleReader() {
-  const [version, setVersion] = useState<BibleVersion>('NIV');
+  const [version, setVersion] = useState<BibleVersion>('AVD');
   const [books, setBooks] = useState<Book[]>([]);
   const [book, setBook] = useState<Book | null>(null);
   const [chapterId, setChapterId] = useState('');
@@ -49,7 +49,7 @@ export default function BibleReader() {
   const annotation = annotations[noteKey] || { color: '', note: '' };
   function save(patch: Partial<Annotation>) { const next = { ...annotations, [noteKey]: { ...annotation, ...patch } }; setAnnotations(next); localStorage.setItem(NOTES_KEY, JSON.stringify(next)); }
   function chooseVerse(event: React.MouseEvent<HTMLElement>) { const target = (event.target as HTMLElement).closest('[data-verse-id]') as HTMLElement | null; const id = target?.dataset.verseId; if (id) setSelectedVerse(id.split('.').pop() || ''); }
-  function changeFontSize(value: number) { setFontSize(value); localStorage.setItem(FONT_SIZE_KEY, String(value)); }
+  function changeFontSize(value: number) { const next = Math.min(30, Math.max(15, value)); setFontSize(next); localStorage.setItem(FONT_SIZE_KEY, String(next)); }
   useEffect(() => {
     const root = scriptureRef.current;
     if (!root || !chapterId) return;
@@ -65,11 +65,11 @@ export default function BibleReader() {
   return <div className="bible-live-page">
     <header className="bible-live-header"><Link href="/" aria-label="Close Bible">×</Link><div><strong>Bible</strong><span>{BIBLE_VERSIONS[version].name}</span></div><button onClick={() => { setBook(null); setChapter(null); setChapterId(''); }}>Books</button></header>
     <div className="bible-live-versions">{(Object.keys(BIBLE_VERSIONS) as BibleVersion[]).map(v => <button key={v} className={v === version ? 'active' : ''} onClick={() => setVersion(v)}>{v}</button>)}</div>
-    <div className="bible-reader-tools"><button onClick={() => setShowAppearance(value => !value)} aria-expanded={showAppearance}>Aa <span>Text size</span></button>{showAppearance && <div className="bible-font-control"><span>A</span><input type="range" min="15" max="30" step="1" value={fontSize} onChange={event => changeFontSize(Number(event.target.value))} aria-label="Scripture text size" /><strong>A</strong><output>{fontSize}px</output></div>}</div>
+    <div className="bible-reader-tools"><button onClick={() => setShowAppearance(value => !value)} aria-expanded={showAppearance}>Aa <span>Text size</span></button>{showAppearance && <div className="bible-font-control"><button type="button" onClick={() => changeFontSize(fontSize - 1)} disabled={fontSize <= 15} aria-label="Decrease scripture text size">A−</button><input type="range" min="15" max="30" step="1" value={fontSize} onChange={event => changeFontSize(Number(event.target.value))} aria-label="Scripture text size" /><button type="button" onClick={() => changeFontSize(fontSize + 1)} disabled={fontSize >= 30} aria-label="Increase scripture text size">A+</button><output>{fontSize}px</output></div>}</div>
     {loading && <div className="bible-live-status">Loading Scripture…</div>}
-    {error && <div className="bible-live-error"><strong>Scripture unavailable</strong><span>{error === 'API_BIBLE_KEY is not configured' ? 'The API.Bible key must be added to the server.' : error}</span></div>}
+    {error && <div className="bible-live-error"><strong>{version} is temporarily unavailable</strong><span>{error === 'API_BIBLE_KEY is not configured' ? 'Choose AVD above to continue reading. The English Bible service still needs its server credential.' : error}</span></div>}
     {!book && !loading && !error && <section className="bible-live-books"><h1>Books</h1><div className="bible-testament-tabs">{(['ALL','OT','NT'] as const).map(t=><button className={testament===t?'active':''} key={t} onClick={()=>setTestament(t)}>{t==='ALL'?'All':t==='OT'?'Old Testament':'New Testament'}</button>)}</div><div className="bible-book-grid">{books.filter((_,i)=>testament==='ALL'||(testament==='OT'?i<39:i>=39)).map(item => <button key={item.id} onClick={() => setBook(item)}>{item.nameLong || item.name}</button>)}</div>{recents.length>0&&<div className="bible-recents"><h2>Recents</h2>{recents.map(r=><button key={r.chapterId} onClick={()=>{const recentBook=books.find(b=>b.id===r.bookId);if(recentBook)setBook(recentBook);setChapterId(r.chapterId);setShowVersePicker(false);}}>{r.label}</button>)}</div>}</section>}
-    {book && !chapterId && <section className="bible-live-picker"><button className="bible-inline-back" onClick={() => setBook(null)}><span aria-hidden="true">‹</span> Books</button><h1>{book.nameLong || book.name}</h1><div>{(book.chapters || []).filter(c => c.number !== 'intro').map(c => <button key={c.id} onClick={() => {setChapterId(c.id);setShowVersePicker(true);}}>{c.number}</button>)}</div></section>}
+    {book && !chapterId && <section className="bible-live-picker"><button className="bible-inline-back" onClick={() => setBook(null)}><span aria-hidden="true">‹</span> Books</button><h1>{book.nameLong || book.name}</h1><div className="bible-chapter-list">{(book.chapters || []).filter(c => c.number !== 'intro').map(c => <button key={c.id} onClick={() => {setChapterId(c.id);setShowVersePicker(true);}}><span>Chapter {c.number}</span><span aria-hidden="true">›</span></button>)}</div></section>}
     {chapter && showVersePicker && <section className="bible-live-picker"><button className="bible-inline-back" onClick={()=>{setChapterId('');setChapter(null);setShowVersePicker(false);}}>‹ Chapters</button><h1>Select Verse</h1><div>{Array.from({length:chapter.verseCount},(_,i)=>i+1).map(verse=><button key={verse} onClick={()=>{setSelectedVerse(String(verse));setShowVersePicker(false);setTimeout(()=>scriptureRef.current?.querySelector<HTMLElement>(`[data-verse-id$=\".${verse}\"]`)?.scrollIntoView({behavior:'smooth',block:'center'}),50);}}>{verse}</button>)}</div></section>}
     {chapter && !showVersePicker && <section className="bible-live-reader">
       <button className="bible-inline-back" onClick={() => setShowVersePicker(true)}><span aria-hidden="true">#</span> Select Verse</button><h1>{chapter.reference}</h1>

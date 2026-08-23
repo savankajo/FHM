@@ -72,8 +72,8 @@ export default async function AdminDashboard() {
     if (!sections.length) redirect('/');
 
     return (
-        <div className="min-h-screen bg-white">
-            <div className="max-w-[980px] mx-auto px-7 py-8">
+        <div className="admin-dashboard-page">
+            <div className="admin-dashboard-inner">
                 <div className="admin-topbar">
                     <div className="flex items-center gap-4">
                         <Link href="/" className="page-back-btn" aria-label="Back to Home">
@@ -82,7 +82,7 @@ export default async function AdminDashboard() {
                             </svg>
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{isAdmin ? 'Admin Dashboard' : 'Manage Tools'}</h1>
+                            <h1 className="page-title">{isAdmin ? 'Admin Dashboard' : 'Manage Tools'}</h1>
                             <p className="page-kicker">Manage church content</p>
                         </div>
                     </div>
@@ -91,7 +91,7 @@ export default async function AdminDashboard() {
                         const { logout } = await import('@/app/actions/auth');
                         await logout();
                     }}>
-                        <button className="px-5 py-2.5 rounded-lg border border-red-200 text-red-600 font-semibold text-sm hover:bg-red-50 transition-colors">
+                        <button className="admin-logout-button">
                             Log Out
                         </button>
                     </form>

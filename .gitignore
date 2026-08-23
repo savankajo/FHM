@@ -35,3 +35,6 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+
+# Local source archive used to regenerate the bundled AVD data.
+.tmp-avd/

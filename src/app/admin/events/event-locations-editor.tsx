@@ -54,7 +54,7 @@ export default function EventLocationsEditor({ locations, onChange }: EventLocat
             </div>
 
             {locations.map((location, index) => (
-                <div key={index} className="card bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-3">
+                <div key={index} className="admin-form-card flex flex-col gap-3">
                     <div className="flex items-center justify-between gap-3">
                         <h4 className="font-semibold">Location {index + 1}</h4>
                         {locations.length > 1 && (

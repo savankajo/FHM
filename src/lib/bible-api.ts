@@ -2,6 +2,7 @@ export const BIBLE_VERSIONS = {
   NIV: { id: '78a9f6124f344018-01', name: 'New International Version' },
   AMP: { id: 'a81b73293d3080c9-01', name: 'Amplified Bible' },
   MSG: { id: '6f11a7de016f942e-01', name: 'The Message' },
+  AVD: { id: 'AVD', name: 'Arabic Van Dyck' },
 } as const;
 
 export type BibleVersion = keyof typeof BIBLE_VERSIONS;

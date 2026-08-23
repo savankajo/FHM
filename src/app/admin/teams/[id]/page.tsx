@@ -5,6 +5,8 @@ import MemberManager from './member-manager';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { canManage } from '@/lib/permissions';
+import DeleteTeamButton from './delete-team-button';
+import { audienceIds } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +32,19 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
     });
 
     if (!team) return <div>Team not found</div>;
+
+    const [sermons, podcasts, articles, eventCount] = await Promise.all([
+        prisma.sermon.findMany({ select: { audienceTeamIds: true } }),
+        prisma.podcastEpisode.findMany({ select: { audienceTeamIds: true } }),
+        prisma.article.findMany({ select: { audienceTeamIds: true } }),
+        prisma.event.count({ where: { OR: [{ teamId: team.id }, { teams: { some: { id: team.id } } }] } }),
+    ]);
+    const impact = {
+        sermons: sermons.filter(item => audienceIds(item.audienceTeamIds).includes(team.id)).length,
+        podcasts: podcasts.filter(item => audienceIds(item.audienceTeamIds).includes(team.id)).length,
+        articles: articles.filter(item => audienceIds(item.audienceTeamIds).includes(team.id)).length,
+        events: eventCount,
+    };
 
     return (
         <div className="atm-page">
@@ -102,6 +117,7 @@ export default async function AdminTeamDetailsPage({ params }: { params: { id: s
                     </section>
                 </div>
             </div>
+            <DeleteTeamButton teamId={team.id} teamName={team.name} impact={impact} />
         </div>
     );
 }

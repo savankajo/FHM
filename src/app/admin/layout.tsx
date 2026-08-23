@@ -5,5 +5,5 @@ import { redirect } from 'next/navigation';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!await hasAnyAdminAccess(session?.userId, session?.role)) redirect('/');
-  return children;
+  return <main className="admin-shell">{children}</main>;
 }

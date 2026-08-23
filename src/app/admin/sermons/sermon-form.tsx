@@ -72,7 +72,7 @@ export default function SermonForm({ initialData }: SermonFormProps) {
                 <select
                     value={collection}
                     onChange={(event) => setCollection(event.target.value as typeof collection)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                    className="admin-form-select"
                 >
                     <option value="saturday">Saturday Sermon</option>
                     <option value="tuesday">Tuesday Meeting</option>

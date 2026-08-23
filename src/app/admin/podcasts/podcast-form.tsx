@@ -68,7 +68,7 @@ export default function PodcastForm({ initialData }: PodcastFormProps) {
                 <select
                     value={season}
                     onChange={(event) => setSeason(event.target.value as typeof season)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                    className="admin-form-select"
                 >
                     <option value="season-1">Coffee With the Shepherd</option>
                     <option value="season-2">Season 2</option>

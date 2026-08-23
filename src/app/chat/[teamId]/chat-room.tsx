@@ -23,6 +23,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [pollOptions, setPollOptions] = useState(['', '']);
     const [recording, setRecording] = useState(false);
     const [recordingSeconds, setRecordingSeconds] = useState(0);
+    const [voiceStatus, setVoiceStatus] = useState('');
     const bottomRef = useRef<HTMLDivElement>(null);
     const recorderRef = useRef<MediaRecorder | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -86,15 +87,17 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const sendPayload = async (payload: Poll | Voice) => {
         const text = CHAT_PREFIX + JSON.stringify(payload);
         const response = await fetch(`/api/chat/${teamId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if (!response.ok) alert((await response.json()).error || 'Could not send.');
+        if (!response.ok) throw new Error((await response.json()).error || 'Could not send.');
         await fetchMessages();
     };
 
     const createPoll = async () => {
         const options = pollOptions.map(label => label.trim()).filter(Boolean);
         if (!pollQuestion.trim() || options.length < 2) return;
-        await sendPayload({ kind: 'poll', question: pollQuestion.trim(), options: options.map((label, index) => ({ id: `${Date.now()}-${index}`, label, voterIds: [] })) });
-        setPollQuestion(''); setPollOptions(['', '']); setShowPoll(false);
+        try {
+            await sendPayload({ kind: 'poll', question: pollQuestion.trim(), options: options.map((label, index) => ({ id: `${Date.now()}-${index}`, label, voterIds: [] })) });
+            setPollQuestion(''); setPollOptions(['', '']); setShowPoll(false);
+        } catch (error) { alert(error instanceof Error ? error.message : 'Could not send poll.'); }
     };
 
     const vote = async (messageId: string, optionId: string) => {
@@ -105,25 +108,45 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const startRecording = async () => {
         if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') return alert('Voice recording is not supported on this device.');
         try {
+            setVoiceStatus('');
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const chunks: Blob[] = [];
-            const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 64000 });
+            const preferredTypes = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+            const mimeType = preferredTypes.find(type => MediaRecorder.isTypeSupported(type));
+            const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 64000, ...(mimeType ? { mimeType } : {}) });
             recorderRef.current = recorder;
             durationRef.current = 0; setRecordingSeconds(0); setRecording(true);
             recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-            recorder.onstop = () => {
+            recorder.onerror = () => {
+                setVoiceStatus('Recording failed. Please try again.');
+                setRecording(false);
+                stream.getTracks().forEach(track => track.stop());
+            };
+            recorder.onstop = async () => {
                 stream.getTracks().forEach(track => track.stop());
                 if (timerRef.current) clearInterval(timerRef.current);
                 const duration = Math.max(1, durationRef.current);
+                if (!chunks.length) { setVoiceStatus('No audio was recorded. Please try again.'); setRecording(false); return; }
+                setVoiceStatus('Sending voice message…');
                 const reader = new FileReader();
-                reader.onloadend = () => sendPayload({ kind: 'voice', audio: String(reader.result), duration });
-                reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+                reader.onloadend = async () => {
+                    try {
+                        await sendPayload({ kind: 'voice', audio: String(reader.result), duration });
+                        setVoiceStatus('');
+                    } catch (error) {
+                        setVoiceStatus(error instanceof Error ? error.message : 'Could not send voice message.');
+                    }
+                };
+                reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/mp4' }));
                 setRecording(false);
             };
             recorder.start();
             let elapsed = 0;
             timerRef.current = setInterval(() => { elapsed += 1; durationRef.current = elapsed; setRecordingSeconds(elapsed); if (elapsed >= 30) recorder.stop(); }, 1000);
-        } catch { alert('Microphone permission is required to send a voice message.'); }
+        } catch (error) {
+            const denied = error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+            setVoiceStatus(denied ? 'Microphone access is off. Enable it in your device settings and try again.' : 'Could not start voice recording on this device.');
+        }
     };
 
     const parsePayload = (text: string): Poll | Voice | null => {
@@ -185,6 +208,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                 <button type="button" className={`chat-tool${recording ? ' recording' : ''}`} onClick={recording ? () => recorderRef.current?.stop() : startRecording} aria-label={recording ? 'Stop recording' : 'Record voice message'}>{recording ? `${recordingSeconds}s` : '🎙'}</button>
                 <button className="chat-send" type="submit" disabled={!input.trim()} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
             </form>
+            {voiceStatus && <div className="voice-status" role="status">{voiceStatus}</div>}
 
             <style jsx>{`
         .chat-room {
@@ -198,7 +222,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .messages-area {
           flex: 1;
           overflow-y: auto;
-          padding: 1rem;
+          padding: clamp(10px, 3vw, 16px);
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -210,7 +234,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .message-row {
           display: flex;
           flex-direction: column;
-          max-width: 75%;
+          max-width: min(78%, 520px);
         }
         .message-row.mine {
           align-self: flex-end;
@@ -228,7 +252,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         }
         .sender-avatar { width: 22px; height: 22px; display: inline-grid; place-items: center; margin-right: 6px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); font-size: 10px; font-weight: 800; }
         .bubble {
-          padding: 0.75rem 1rem;
+          padding: 10px 13px;
           border-radius: 1rem;
           font-size: 0.95rem;
           line-height: 1.4;
@@ -250,7 +274,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           margin-top: 2px;
           opacity: 0.7;
         }
-        .rich-message { width: min(300px, 72vw); }
+        .rich-message { width: min(280px, calc(100vw - 76px)); max-width: 100%; }
         .voice-message { display: grid; gap: 7px; font-size: .72rem; }
         .voice-message audio { width: 100%; height: 38px; }
         .poll-message { display: grid; gap: 7px; }
@@ -267,16 +291,18 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .message-actions button { border: 0; background: transparent; color: var(--muted-foreground); font-size: .68rem; text-decoration: underline; cursor: pointer; padding: 2px; }
         
         .input-area {
-          padding: 0.75rem;
+          padding: 10px clamp(8px, 2.5vw, 14px);
           background: var(--background);
           border-top: 1px solid var(--border);
           display: flex;
-          gap: 0.5rem;
-          padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+          gap: clamp(4px, 1.5vw, 8px);
+          padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
         .chat-input {
           flex: 1;
-          padding: 0.5rem 1rem;
+          min-width: 0;
+          height: 44px;
+          padding: 8px 13px;
           border-radius: 20px;
           border: 1px solid var(--border);
           font-size: 1rem;
@@ -285,12 +311,18 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
           outline: none;
           border-color: var(--primary);
         }
-        .chat-tool { min-width: 36px; height: 44px; font-size: 18px; cursor: pointer; }
+        .chat-tool { width: 36px; min-width: 36px; height: 44px; padding: 0; font-size: 18px; cursor: pointer; }
         .chat-tool.recording { min-width: 48px; color: #ef4444; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: .45; } }
         .chat-input[dir='rtl'] { text-align: right; }
         .chat-send { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); cursor: pointer; }
         .chat-send:disabled { opacity: .35; cursor: default; }
+        .voice-status { padding: 7px 14px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--background); color: var(--muted-foreground); font-size: 12px; text-align: center; }
+        @media (max-width: 380px) {
+          .message-row { max-width: 86%; }
+          .chat-tool { width: 32px; min-width: 32px; }
+          .chat-send { width: 42px; height: 42px; flex-basis: 42px; }
+        }
       `}</style>
         </div>
     );
