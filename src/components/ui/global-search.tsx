@@ -21,6 +21,7 @@ export function GlobalSearch() {
                 <input
                     type="text"
                     placeholder="Search sermons, podcasts..."
+                    aria-label="Search sermons and podcasts"
                     className="search-input"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}

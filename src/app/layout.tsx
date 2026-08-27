@@ -15,9 +15,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
     viewportFit: 'cover',
-    themeColor: '#0A0A0A',
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#F8FAFC' },
+        { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' },
+    ],
 }
 
 export default function RootLayout({
@@ -29,7 +31,7 @@ export default function RootLayout({
         <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
             <body className={outfit.className}>
                 <Providers>
-                    <main className="container">
+                    <main className="app-shell">
                         {children}
                     </main>
                     <BottomNav />

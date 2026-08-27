@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AudienceSelector from '@/components/admin/audience-selector';
@@ -121,12 +122,14 @@ export default function SermonForm({ initialData }: SermonFormProps) {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setThumbPreview(e.target.value)}
                 />
                 {thumbPreview && (
-                    <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '200px', aspectRatio: '16/9', background: '#f0ece6' }}>
-                        <img
+                    <div style={{ position: 'relative', marginTop: '8px', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '200px', aspectRatio: '16/9', background: '#f0ece6' }}>
+                        <Image
                             src={thumbPreview}
                             alt="Thumbnail preview"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            fill
+                            sizes="200px"
+                            style={{ objectFit: 'cover' }}
+                            onError={(event) => { event.currentTarget.style.display = 'none'; }}
                         />
                     </div>
                 )}

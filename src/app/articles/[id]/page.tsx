@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -16,20 +17,36 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
     const isPdf = Boolean(article.linkUrl && /\.pdf(?:$|[?#])/i.test(article.linkUrl));
 
     return (
-        <div className="page-container">
-            <Link href="/sermons-and-podcasts" className="page-back-btn" aria-label="Back to Media">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-            </Link>
-            <article className="settings-card" style={{ marginTop: 20, padding: 24 }}>
-                {article.imageUrl && (
-                    <div style={{ borderRadius: 18, overflow: 'hidden', aspectRatio: '16/9', marginBottom: 20, background: '#181818' }}>
-                        <img src={article.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div className="content-shell article-detail-page">
+            <header className="page-header">
+                <Link href="/sermons-and-podcasts?tab=articles" className="page-back-btn" aria-label="Back to Articles">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </Link>
+                <div>
+                    <h1 className="page-title">Article</h1>
+                    <p className="page-kicker">Father’s Heart Journal</p>
+                </div>
+            </header>
+            <article className="settings-card article-detail-card">
+                {article.imageUrl ? (
+                    <div className="article-detail-image">
+                        <Image src={article.imageUrl} alt={`${article.title} featured image`} fill sizes="(max-width: 760px) 100vw, 760px" />
+                    </div>
+                ) : (
+                    <div className="article-detail-image article-detail-fallback" role="img" aria-label="Father’s Heart Journal">
+                        <span>FHM</span><small>Journal</small>
                     </div>
                 )}
-                <p className="page-kicker">{new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - {article.author}</p>
-                <h1 className="page-title" style={{ marginBottom: 16 }}>{article.title}</h1>
-                {article.summary && <p style={{ color: '#9ca3af', fontSize: 18, lineHeight: 1.5, marginBottom: 20 }}>{article.summary}</p>}
-                {article.body && <div style={{ whiteSpace: 'pre-wrap', color: '#f5f5f5', lineHeight: 1.7 }}>{article.body}</div>}
+                <div className="article-detail-meta">
+                    <span>Article</span>
+                    <time dateTime={article.publishedAt.toISOString()}>{new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>
+                    <span>By {article.author}</span>
+                </div>
+                <h1 className="article-detail-title">{article.title}</h1>
+                {article.summary && <p className="article-detail-summary">{article.summary}</p>}
+                {article.body && <div className="article-detail-body">{article.body}</div>}
                 {article.linkUrl && isPdf && (
                     <section className="article-document" aria-label={`${article.title} document`}>
                         <iframe src={article.linkUrl} title={article.title} />

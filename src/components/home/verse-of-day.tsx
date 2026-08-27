@@ -249,6 +249,7 @@ export default function VerseOfTheDayCard() {
     }, []);
 
     const [isLiked, setIsLiked] = useState(false);
+    const [shareStatus, setShareStatus] = useState('');
 
     useEffect(() => {
         const saved = localStorage.getItem('fhm_liked_verses');
@@ -270,6 +271,26 @@ export default function VerseOfTheDayCard() {
 
         localStorage.setItem('fhm_liked_verses', JSON.stringify(liked));
         setIsLiked(!isLiked);
+    };
+
+    const shareVerse = async () => {
+        const verse = VERSES[verseIndex];
+        const text = `${verse.en}\n${verse.ref} (NIV)\n\n${verse.ar}\n${verse.refAr}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: `Verse of the Day — ${verse.ref}`, text });
+                setShareStatus('Share sheet opened.');
+                return;
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            setShareStatus('Verse copied for sharing.');
+        } catch {
+            setShareStatus('Sharing is not available on this device.');
+        }
     };
 
     const verse = VERSES[verseIndex];
@@ -307,6 +328,8 @@ export default function VerseOfTheDayCard() {
                         <button
                             className={`votd-action-link ${isLiked ? 'active' : ''}`}
                             onClick={toggleLike}
+                            aria-pressed={isLiked}
+                            aria-label={isLiked ? `Remove ${verse.ref} from favorite verses` : `Add ${verse.ref} to favorite verses`}
                         >
                             <svg
                                 width="18"
@@ -322,11 +345,13 @@ export default function VerseOfTheDayCard() {
                             </svg>
                             {isLiked ? 'Liked' : 'Like'}
                         </button>
-                        <button className="votd-action-link">
+                        <button className="votd-action-link" onClick={shareVerse} aria-label={`Share ${verse.ref}`}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
                             Share
                         </button>
                     </div>
+
+                    <p className="sr-only" aria-live="polite">{shareStatus}</p>
 
                     <a href={enUrl} target="_blank" rel="noopener noreferrer" className="votd-read-link">
                         Read Full Chapter

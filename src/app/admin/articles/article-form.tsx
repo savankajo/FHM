@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AudienceSelector from '@/components/admin/audience-selector';
@@ -88,12 +89,14 @@ export default function ArticleForm({ initialData }: ArticleFormProps) {
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setImagePreview(event.target.value)}
                 />
                 {imagePreview && (
-                    <div style={{ marginTop: '8px', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '240px', aspectRatio: '16/9', background: '#f0ece6' }}>
-                        <img
+                    <div style={{ position: 'relative', marginTop: '8px', borderRadius: '12px', overflow: 'hidden', width: '100%', maxWidth: '240px', aspectRatio: '16/9', background: '#f0ece6' }}>
+                        <Image
                             src={imagePreview}
                             alt="Article preview"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            onError={(event) => { (event.target as HTMLImageElement).style.display = 'none'; }}
+                            fill
+                            sizes="240px"
+                            style={{ objectFit: 'cover' }}
+                            onError={(event) => { event.currentTarget.style.display = 'none'; }}
                         />
                     </div>
                 )}

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Article, PodcastEpisode, Sermon } from '@prisma/client';
 import { getPodcastSeason, getSermonCollection } from '@/lib/media-metadata';
 
@@ -114,25 +115,29 @@ function EpisodeCard({ item, type }: { item: Sermon | PodcastEpisode; type: 'ser
     );
 }
 
-function ArticleCard({ article }: { article: Article }) {
+function ArticleCard({ article, featured = false }: { article: Article; featured?: boolean }) {
+    const accessLabel = isRestricted(article) ? 'Team article' : 'Article';
+
     return (
-        <Link href={`/articles/${article.id}`} className="media-list-card">
+        <Link href={`/articles/${article.id}`} className={`article-card${featured ? ' featured' : ''}`}>
             <div
-                className="media-list-thumb"
-                style={article.imageUrl
-                    ? { backgroundImage: `url(${article.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                    : { background: 'linear-gradient(135deg, #43210f, #9a4f24)' }}
-            />
-            <div className="media-list-info">
-                <div className="media-list-title">{article.title}</div>
-                <div className="media-list-meta">
-                    {mediaDate(article.publishedAt)}
-                    {article.author ? ` - ${article.author}` : ''}
-                    {isRestricted(article) ? ' - Team access' : ''}
-                </div>
-                {article.summary && <div className="media-list-meta">{article.summary}</div>}
+                className={`article-card-media${article.imageUrl ? '' : ' fallback'}`}
+                style={article.imageUrl ? { backgroundImage: `url(${article.imageUrl})` } : undefined}
+                role="img"
+                aria-label={article.imageUrl ? `${article.title} featured image` : 'Father’s Heart Journal'}
+            >
+                {!article.imageUrl && <><span aria-hidden="true">FHM</span><small>Journal</small></>}
+                <span className="article-type-badge">{accessLabel}</span>
             </div>
-            <div className="media-list-arrow"><ChevronRight /></div>
+            <div className="article-card-content">
+                <div className="article-card-meta">
+                    <time dateTime={new Date(article.publishedAt).toISOString()}>{mediaDate(article.publishedAt)}</time>
+                    {article.author && <><span aria-hidden="true">·</span><span>{article.author}</span></>}
+                </div>
+                <h3>{article.title}</h3>
+                {article.summary && <p>{article.summary}</p>}
+                <span className="article-read-link">Read article <ChevronRight /></span>
+            </div>
         </Link>
     );
 }
@@ -148,7 +153,9 @@ function EmptyState({ title, text }: { title: string; text: string }) {
 }
 
 export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }: Props) {
-    const [activeTab, setActiveTab] = useState<Tab>('sermons');
+    const searchParams = useSearchParams();
+    const requestedTab = searchParams.get('tab');
+    const [activeTab, setActiveTab] = useState<Tab>(requestedTab === 'articles' || requestedTab === 'podcasts' ? requestedTab : 'sermons');
     const [sermonSearch, setSermonSearch] = useState('');
     const [podcastSearch, setPodcastSearch] = useState('');
     const [articleSearch, setArticleSearch] = useState('');
@@ -164,9 +171,11 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
     const latestPodcasts = seasonOnePodcasts
         .filter(podcast => podcast.title.toLowerCase().includes(podcastSearch.trim().toLowerCase()))
         .slice(0, 3);
+    const articleQuery = articleSearch.trim().toLowerCase();
     const latestArticles = articles
-        .filter(article => article.title.toLowerCase().includes(articleSearch.trim().toLowerCase()))
+        .filter(article => !articleQuery || [article.title, article.author, article.summary || ''].some(value => value.toLowerCase().includes(articleQuery)))
         .slice(0, 6);
+    const [featuredArticle, ...remainingArticles] = latestArticles;
 
     return (
         <>
@@ -174,10 +183,12 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                 {(['sermons', 'podcasts', 'articles'] as Tab[]).map(tab => (
                     <button
                         key={tab}
+                        id={`media-tab-${tab}`}
                         className={`tab-btn${activeTab === tab ? ' active' : ''}`}
                         onClick={() => setActiveTab(tab)}
                         role="tab"
                         aria-selected={activeTab === tab}
+                        aria-controls={`media-panel-${tab}`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
@@ -185,7 +196,7 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
             </div>
 
             {activeTab === 'sermons' && (
-                <>
+                <div id="media-panel-sermons" role="tabpanel" aria-labelledby="media-tab-sermons">
                     {isAdmin && (
                         <div className="media-admin-row">
                             <Link href="/admin/sermons/new" className="btn btn-outline btn-sm btn-full">Add Sermon</Link>
@@ -234,11 +245,11 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                     ) : (
                         <EmptyState title="No Sermons Found" text="Try another search or open Saturday Sermon for all playlists." />
                     )}
-                </>
+                </div>
             )}
 
             {activeTab === 'podcasts' && (
-                <>
+                <div id="media-panel-podcasts" role="tabpanel" aria-labelledby="media-tab-podcasts">
                     <div className="media-section-title">Podcast Seasons</div>
                     <div className="media-list">
                         <CollectionCard
@@ -276,18 +287,22 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                     ) : (
                         <EmptyState title="No Podcasts Found" text="Try another search or open Coffee With the Shepherd for all episodes." />
                     )}
-                </>
+                </div>
             )}
 
             {activeTab === 'articles' && (
-                <>
+                <section id="media-panel-articles" className="articles-experience" role="tabpanel" aria-labelledby="media-tab-articles">
                     {isAdmin && (
                         <div className="media-admin-row">
                             <Link href="/admin/articles/new" className="btn btn-outline btn-sm btn-full">Add Article</Link>
                         </div>
                     )}
 
-                    <div className="media-section-title">Latest Articles</div>
+                    <div className="articles-intro">
+                        <p className="page-kicker">Father’s Heart Journal</p>
+                        <h2>Stories for a growing faith</h2>
+                        <p>Thoughtful teaching and encouragement from our church community.</p>
+                    </div>
                     <div className="media-search-wrap">
                         <input
                             className="media-search-input"
@@ -298,14 +313,22 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                             aria-label="Search latest articles"
                         />
                     </div>
-                    {latestArticles.length > 0 ? (
-                        <div className="media-list">
-                            {latestArticles.map(article => <ArticleCard key={article.id} article={article} />)}
+                    {featuredArticle ? (
+                        <div className="articles-layout">
+                            <ArticleCard article={featuredArticle} featured={!articleQuery} />
+                            {remainingArticles.length > 0 && (
+                                <div className="article-grid" aria-label="More articles">
+                                    {remainingArticles.map(article => <ArticleCard key={article.id} article={article} />)}
+                                </div>
+                            )}
                         </div>
                     ) : (
-                        <EmptyState title="No Articles Found" text="Articles will appear here after they are uploaded." />
+                        <EmptyState
+                            title={articleQuery ? 'No Articles Found' : 'Stories Are Coming Soon'}
+                            text={articleQuery ? 'Try a different title, author, or keyword.' : 'Articles will appear here after they are published.'}
+                        />
                     )}
-                </>
+                </section>
             )}
         </>
     );

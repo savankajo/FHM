@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import VerseOfTheDayCard from '@/components/home/verse-of-day';
@@ -61,10 +62,13 @@ export default async function HomePage() {
       {/* ── Header ──────────────────────────────────────── */}
       <header className="home-header">
         <div className="home-logo-area">
-          <img
+          <Image
             src="/logo.png"
             alt="Father's Heart Church Logo"
             className="home-logo-img"
+            width={48}
+            height={48}
+            priority
           />
           <div>
             <div className="home-church-name">Father's Heart</div>

@@ -107,6 +107,7 @@ export function BottomNav() {
             href={item.href}
             prefetch={item.href === '/profile' ? false : undefined}
             className={`nav-item${isActive ? ' active' : ''}`}
+            aria-current={isActive ? 'page' : undefined}
           >
             <span className="nav-icon-wrap">
               {item.icon(isActive)}
