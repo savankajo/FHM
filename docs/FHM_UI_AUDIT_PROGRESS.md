@@ -55,8 +55,8 @@ The backend must remain unchanged. Do not change database schemas or data, Prism
 8. **Complete iPhone and iPad verification** — complete within Windows/browser capabilities; Xcode-only matrix documented
 9. **Backend-change verification** — complete
 10. **Release build** — web release build and Capacitor sync complete; native Xcode archive blocked on Windows
-11. **Commit and push** — pending
-12. **Build upload and final App Review report** — pending
+11. **Commit and push** — complete
+12. **Build upload and final App Review report** — complete within available deployment paths; native upload blocked precisely on Windows
 
 ## Completed milestones
 
@@ -134,9 +134,23 @@ The backend must remain unchanged. Do not change database schemas or data, Prism
 - `npx cap sync ios` passes and synchronizes the existing Capacitor Browser plugin. No plugin/config output changed beyond the intended Xcode build number.
 - Native Xcode archive/validation cannot be created on Windows and no remote Apple build workflow exists in the repository.
 
+### 11. Commit and push
+
+- Committed the validated frontend, build-number, tests, and documentation as `81fcf87` (`feat: optimize FHM UI for iPhone and iPad`).
+- Pushed `63a7c83..81fcf87` successfully to `origin/agent/account-security-policies`.
+- Left `.tmp-app-store-screenshots/` and `.tmp-fhm-ui-audit/` untracked and uncommitted.
+
+### 12. Build upload and final App Review report
+
+- Netlify draft deploy `6a9077e95eedac6fe67422c8` completed and passed a remote Articles smoke test.
+- Netlify production deploy `6a90786da673aa86d0f7b0d1` completed at `https://fhmapp.netlify.app`; the production Articles route loaded current data and the redesign without an application error.
+- The durable final report, exact macOS/Xcode test procedure, remaining risks, screenshot inventory, and concise App Review notes are in `docs/FHM_UI_AUDIT_REPORT.md`.
+- Native `.xcarchive` creation, App Store validation, and TestFlight upload are blocked because this host is Windows and the repository contains no configured remote Apple workflow. This is the only remaining publishing action and requires a macOS host with Xcode, signing access, and App Store Connect permissions.
+- App Review submission was not attempted because automatic submission was not authorized.
+
 ## Current milestone
 
-Milestone 11: Commit and push. Run the final clean validation/diff audit, commit only the intended frontend/native-build-number/docs files, push the existing branch, then perform the linked Netlify preview and production deploy. Native upload remains a precisely documented external blocker.
+All twelve milestones are complete within the available environment. Web production is published. The only external continuation is creating/validating/uploading native build 17 on macOS/Xcode; no automated Apple upload path exists on this host.
 
 ## Files changed by this task
 
@@ -221,22 +235,20 @@ Pre-existing worktree changes remain unattributed until inspected and will not b
 
 ## Remaining tasks
 
-- Run final clean validation after stopping the development server.
-- Commit and push intended files only; leave pre-existing/untracked screenshot artifacts uncommitted.
-- Run Netlify preview, inspect it, then publish production if successful.
-- Report native Xcode/TestFlight upload as blocked on this Windows host unless an external configured path appears.
-- Update this checkpoint and the final report with commit, push, deploy URLs/status, and final diff state.
+- External/manual only: on macOS, sync/open the iOS project, run the documented real simulator/device accessibility matrix, archive version 1.0 build 17, validate it, and upload to App Store Connect/TestFlight with the configured signing team.
+- Rotate the credentials in the pre-existing tracked deployment helper and remove that helper from version control as a separate, explicitly authorized backend/security change.
 
 ## Exact next action
 
-Stop the local dev server, run the final lint/test/build/diff checks, stage only intended files, commit, push `agent/account-security-policies`, then use the authenticated linked Netlify project for preview and production deploys.
+On a macOS host with the required signing access, run `npx cap sync ios` and `npx cap open ios` (project: `ios/App/App.xcodeproj`), execute the manual test matrix in `docs/FHM_UI_AUDIT_REPORT.md`, then archive and upload version 1.0 build 17 to TestFlight. Do not submit to App Review automatically.
 
 ## Publishing status
 
-- Commit: pending final validation.
-- Push: pending final validation.
+- Implementation commit: `81fcf87` (`feat: optimize FHM UI for iPhone and iPad`).
+- Push: confirmed to `origin/agent/account-security-policies`.
 - Web release build: PASS.
 - Capacitor sync: PASS; Xcode build number 17.
-- Netlify authentication/link: confirmed for project `fhmapp`; deploy pending final validation.
+- Netlify draft: PASS, deploy `6a9077e95eedac6fe67422c8`.
+- Netlify production: PASS, deploy `6a90786da673aa86d0f7b0d1`, `https://fhmapp.netlify.app`.
 - iOS archive/TestFlight upload: blocked on Windows because Xcode/codesigning/Transporter and a remote Apple workflow are unavailable.
 - App Review submission: not authorized and not attempted.

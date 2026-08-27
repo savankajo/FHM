@@ -131,8 +131,9 @@ Version 1.0 build 17 replaces the fixed-width phone shell with adaptive layouts 
 
 ## Release status
 
-- Commit: pending final validation.
-- Push: pending final validation.
-- Netlify publish: pending final validation.
+- Implementation commit: `81fcf87` (`feat: optimize FHM UI for iPhone and iPad`).
+- Push: confirmed to `origin/agent/account-security-policies`.
+- Netlify draft: deployed and remotely smoke-tested at `https://6a9077e95eedac6fe67422c8--fhmapp.netlify.app`.
+- Netlify production: deployed successfully as deploy `6a90786da673aa86d0f7b0d1` at `https://fhmapp.netlify.app`; the production Articles route passed a post-deploy smoke test.
 - iOS build upload: blocked on this Windows host pending macOS/Xcode archive and signing.
 - App Review submission: not attempted; not authorized for automatic submission.
