@@ -8,6 +8,16 @@ import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
+function formatEventDate(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date);
+}
+
 export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
@@ -23,6 +33,24 @@ export default async function HomePage() {
   const liveLink = await prisma.liveLink.findFirst({
     where: { expiresAt: { gt: new Date() } },
     orderBy: { createdAt: 'desc' }
+  });
+
+  const nextEvent = await prisma.event.findFirst({
+    where: {
+      startTime: { gte: new Date() },
+      ...(isAdmin ? {} : {
+        OR: [
+          { visibility: 'PUBLIC' },
+          { teamScope: null },
+          ...(session ? [
+            { teams: { some: { id: { in: teamIds } } } },
+            { invitations: { some: { userId: session.userId } } }
+          ] : [])
+        ]
+      })
+    },
+    orderBy: { startTime: 'asc' },
+    select: { id: true, title: true, startTime: true, location: true }
   });
 
   // Fetch Recent Sermons & Podcasts for "Recently Uploaded"
@@ -210,6 +238,29 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {nextEvent && nextEvent.startTime && (
+        <section className="next-event-strip" aria-labelledby="next-event-title">
+          <div className="next-event-date">
+            <span>{new Intl.DateTimeFormat('en-US', { month: 'short' }).format(nextEvent.startTime)}</span>
+            <strong>{new Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(nextEvent.startTime)}</strong>
+          </div>
+          <div className="next-event-copy">
+            <span className="visit-strip-kicker">Next up</span>
+            <h2 id="next-event-title" className="next-event-title">{nextEvent.title}</h2>
+            <p className="next-event-meta">
+              {formatEventDate(nextEvent.startTime)}
+              {nextEvent.location ? ` · ${nextEvent.location}` : ''}
+            </p>
+          </div>
+          <Link href={`/events/${nextEvent.id}`} className="next-event-link" aria-label={`View ${nextEvent.title}`}>
+            <span>Details</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </Link>
+        </section>
+      )}
 
       {/* ── Recently Uploaded ────────────────────────────── */}
       <section className="recent-section">
