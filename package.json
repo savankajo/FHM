@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:verse-selection": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/app/bible/verse-selection.test.ts",
+    "test:safety": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/moderation.test.ts",
+    "test": "npm run test:verse-selection && npm run test:safety",
     "postinstall": "prisma generate",
     "review:preflight": "node scripts/review-preflight.js"
   },
@@ -20,7 +22,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.3.1",
     "jsonwebtoken": "^9.0.2",
-    "next": "14.1.0",
+    "next": "^15.5.25",
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.18.0",
@@ -29,18 +31,24 @@
     "use-debounce": "^10.1.0",
     "youtubei.js": "^17.2.0"
   },
+  "overrides": {
+    "nanoid": "3.3.18",
+    "postcss": "8.5.26",
+    "sharp": "0.35.4"
+  },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
+    "@netlify/functions": "^6.0.0",
     "@netlify/plugin-nextjs": "^5.15.8",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.1.0",
+    "eslint-config-next": "^15.5.25",
     "prisma": "^5.10.2",
     "typescript": "^5"
   }

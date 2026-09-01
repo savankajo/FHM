@@ -28,7 +28,9 @@ Features include:
 - Member-only team communication
 - Bible content and saved favorites
 - Account privacy and deletion controls
-- Message reporting and member blocking tools
+- Pre-publication chat safety filtering
+- Message reporting and immediate member blocking tools
+- Human review before voice messages are shared with a team
 
 Some team and volunteer features require an account assigned by church administrators.
 
@@ -40,11 +42,11 @@ church,sermons,podcasts,events,bible,worship,ministry,volunteer,community,teams
 
 Welcome to FHM Church. Connect with sermons, podcasts, events, ministry teams, volunteer opportunities, Bible content, and member communication.
 
-## URLs to enter after deployment
+## URLs to enter in App Store Connect
 
-- **Support URL:** `https://[YOUR-DOMAIN]/support`
-- **Privacy Policy URL:** `https://[YOUR-DOMAIN]/privacy`
-- **Marketing URL:** `https://[YOUR-DOMAIN]/` (optional)
+- **Support URL:** `https://fhmapp.netlify.app/support`
+- **Privacy Policy URL:** `https://fhmapp.netlify.app/privacy`
+- **Marketing URL:** `https://fhmapp.netlify.app/` (optional)
 
 ## App Privacy answers to verify in App Store Connect
 
@@ -70,9 +72,9 @@ Confirm hosting/database logs and every embedded media provider before submittin
 
 ### Notes for Review
 
-FHM Church is a church community app providing public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary team chat. Chat messages expire after 48 hours. Beneath each incoming message, reviewers can report the message or block its sender. Administrators review reports through the Safety Reports area. Account deletion is available at Profile → Settings → Delete Account and permanently removes the member record and associated data. The app contains no purchases, subscriptions, advertising, or cross-app tracking.
+FHM Church is a church community app providing public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary team chat. Chat messages expire after 48 hours. Text and poll content is filtered by the server before publication, while voice messages remain hidden from other members until administrator approval. On each incoming message, the three-dot safety menu lets members report the message or immediately block its sender; blocking also creates a safety report. Administrators use a deadline-ordered Safety Reports area and can remove content, warn, suspend, ban, or restore with an audit record. Account deletion is available in Profile settings. The app contains no purchases, subscriptions, advertising, or cross-app tracking.
 
-To review member features: sign in with the demo credentials, open Teams, select the assigned sample team, then open Team Chat.
+To review member features: accept the current Terms and Community Guidelines, sign in with the demo credentials, open Teams, select the assigned sample team, then open Team Chat. Open the three-dot menu on an incoming message to inspect Report and Block. Manage blocks at Profile → Blocked Users.
 
 ## Screenshot set
 

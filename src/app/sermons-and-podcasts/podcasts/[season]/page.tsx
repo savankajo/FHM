@@ -12,10 +12,11 @@ const seasonTitles: Record<PodcastSeason, string> = {
     'season-2': 'Season 2',
 };
 
-export default async function PodcastSeasonPage({ params, searchParams }: { params: { season: string }; searchParams?: { q?: string } }) {
-    if (params.season !== 'season-1' && params.season !== 'season-2') notFound();
-    const season = params.season as PodcastSeason;
-    const query = (searchParams?.q || '').trim().toLowerCase();
+export default async function PodcastSeasonPage({ params, searchParams }: { params: Promise<{ season: string }>; searchParams?: Promise<{ q?: string }> }) {
+    const [{ season: seasonParam }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+    if (seasonParam !== 'season-1' && seasonParam !== 'season-2') notFound();
+    const season = seasonParam as PodcastSeason;
+    const query = (resolvedSearchParams?.q || '').trim().toLowerCase();
     const session = await getSession();
     const isAdmin = session?.role === 'ADMIN';
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
@@ -46,7 +47,7 @@ export default async function PodcastSeasonPage({ params, searchParams }: { para
                     className="media-search-input"
                     type="search"
                     name="q"
-                    defaultValue={searchParams?.q || ''}
+                    defaultValue={resolvedSearchParams?.q || ''}
                     placeholder="Search episodes"
                     aria-label={`Search ${seasonTitles[season]} episodes`}
                 />

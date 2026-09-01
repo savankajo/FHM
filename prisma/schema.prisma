@@ -41,6 +41,48 @@ enum NotificationType {
   MESSAGE
 }
 
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ChatContentType {
+  TEXT
+  VOICE
+  POLL
+}
+
+enum ModerationStatus {
+  PENDING
+  PUBLISHED
+  REMOVED
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  DISMISSED
+  ACTIONED
+}
+
+enum ReportSource {
+  USER_REPORT
+  USER_BLOCK
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum ModerationOutcome {
+  ALLOWED
+  REJECTED
+  MANUAL_REVIEW
+}
+
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -61,12 +103,29 @@ model User {
   eventInvitations        Invitation[]         @relation("InvitationUser")
   notifications           Notification[]
   notificationPreferences Json?
+  accountStatus           AccountStatus        @default(ACTIVE)
+  suspendedUntil          DateTime?
+  termsAcceptedVersion    String?
+  termsAcceptedAt         DateTime?
   chatMessages            ChatMessage[]
   createdEvents           Event[]              @relation("EventCreator")
   reports                 ChatReport[]         @relation("Reporter")
   blocksMade              UserBlock[]          @relation("Blocker")
   blocksReceived          UserBlock[]          @relation("Blocked")
+  termsAcceptances        TermsAcceptance[]
   passwordResetTokens     PasswordResetToken[]
+}
+
+model TermsAcceptance {
+  id         String   @id @default(uuid())
+  version    String
+  acceptedAt DateTime @default(now())
+  method     String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, version])
+  @@index([acceptedAt])
 }
 
 model PasswordResetToken {
@@ -261,10 +320,15 @@ model EventVote {
 }
 
 model ChatMessage {
-  id        String   @id @default(uuid())
-  text      String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id               String           @id @default(uuid())
+  text             String
+  contentType      ChatContentType  @default(TEXT)
+  moderationStatus ModerationStatus @default(PUBLISHED)
+  moderationReason String?
+  moderatedAt      DateTime?
+  removedAt        DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime         @default(now())
 
   // Relations
   teamId  String
@@ -272,30 +336,85 @@ model ChatMessage {
   userId  String
   user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports ChatReport[]
+
+  @@index([teamId, moderationStatus, createdAt])
 }
 
 model ChatReport {
-  id         String      @id @default(uuid())
-  reason     String
-  createdAt  DateTime    @default(now())
-  resolvedAt DateTime?
-  reporterId String
-  reporter   User        @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  messageId  String
-  message    ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  id                   String                     @id @default(uuid())
+  reason               String
+  details              String?
+  source               ReportSource               @default(USER_REPORT)
+  status               ReportStatus               @default(OPEN)
+  contentType          ChatContentType
+  createdAt            DateTime                   @default(now())
+  deadlineAt           DateTime
+  reviewStartedAt      DateTime?
+  resolvedAt           DateTime?
+  moderatorId          String?
+  moderatorAction      String?
+  resolutionNote       String?
+  reportedUserId       String
+  teamId               String
+  notificationStatus   NotificationDeliveryStatus @default(PENDING)
+  notificationAttempts Int                        @default(0)
+  notificationLastAt   DateTime?
+  notificationError    String?
+  notifiedAt           DateTime?
+  escalatedAt          DateTime?
+  reporterId           String
+  reporter             User                       @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  messageId            String
+  message              ChatMessage                @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
-  @@unique([reporterId, messageId])
+  @@unique([reporterId, messageId, source])
+  @@index([status, deadlineAt])
+  @@index([reportedUserId, createdAt])
+  @@index([notificationStatus])
 }
 
 model UserBlock {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  blockerId String
-  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
-  blockedId String
-  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid())
+  reason          String
+  sourceMessageId String?
+  createdAt       DateTime @default(now())
+  blockerId       String
+  blocker         User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId       String
+  blocked         User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
 
   @@unique([blockerId, blockedId])
+  @@index([blockerId, createdAt])
+}
+
+model ModerationAudit {
+  id            String   @id @default(uuid())
+  reportId      String?
+  messageId     String?
+  moderatorId   String
+  subjectUserId String?
+  action        String
+  note          String
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  @@index([reportId, createdAt])
+  @@index([subjectUserId, createdAt])
+  @@index([moderatorId, createdAt])
+}
+
+model ContentModerationEvent {
+  id          String            @id @default(uuid())
+  userId      String?
+  messageId   String?
+  surface     String
+  outcome     ModerationOutcome
+  categories  Json?
+  contentHash String
+  createdAt   DateTime          @default(now())
+
+  @@index([userId, createdAt])
+  @@index([outcome, createdAt])
 }
 
 model LiveLink {

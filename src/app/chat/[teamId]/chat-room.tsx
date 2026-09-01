@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { REPORT_REASONS } from '@/lib/safety-constants';
 
 const CHAT_PREFIX = '__FHM_CHAT__';
 type Poll = { kind: 'poll'; question: string; options: Array<{ id: string; label: string; voterIds: string[] }> };
@@ -12,6 +13,8 @@ interface Message {
     userId: string;
     createdAt: string;
     user: { name: string };
+    moderationStatus: 'PENDING' | 'PUBLISHED' | 'REMOVED';
+    contentType: 'TEXT' | 'VOICE' | 'POLL';
 }
 
 export default function ChatRoom({ teamId, userId, userName }: { teamId: string, userId: string, userName: string }) {
@@ -24,6 +27,14 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [recording, setRecording] = useState(false);
     const [recordingSeconds, setRecordingSeconds] = useState(0);
     const [voiceStatus, setVoiceStatus] = useState('');
+    const [sending, setSending] = useState(false);
+    const [composerError, setComposerError] = useState('');
+    const [safetyNotice, setSafetyNotice] = useState('');
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [moderationTarget, setModerationTarget] = useState<{ action: 'report' | 'block'; message: Message } | null>(null);
+    const [moderationReason, setModerationReason] = useState<string>(REPORT_REASONS[0]);
+    const [moderationDetails, setModerationDetails] = useState('');
+    const [moderationBusy, setModerationBusy] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
     const recorderRef = useRef<MediaRecorder | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -57,38 +68,32 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim()) return;
-
-        const optimisticMsg: Message = {
-            id: Date.now().toString(),
-            text: input,
-            userId,
-            createdAt: new Date().toISOString(),
-            user: { name: userName }
-        };
-
-        setMessages(prev => [...prev, optimisticMsg]);
-        setInput('');
-        // Scroll immediately for UX
-        setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
-
+        const text = input.trim();
+        if (!text || sending) return;
+        setSending(true); setComposerError(''); setSafetyNotice('');
         try {
-            await fetch(`/api/chat/${teamId}`, {
+            const response = await fetch(`/api/chat/${teamId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: optimisticMsg.text })
+                body: JSON.stringify({ text })
             });
-            fetchMessages(); // Sync real ID
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not send this message.');
+            setInput('');
+            setMessages(previous => [...previous, data.message]);
+            setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
         } catch (e) {
-            console.error('Failed to send', e);
-        }
+            setComposerError(e instanceof Error ? e.message : 'Could not send this message.');
+        } finally { setSending(false); }
     };
 
     const sendPayload = async (payload: Poll | Voice) => {
         const text = CHAT_PREFIX + JSON.stringify(payload);
         const response = await fetch(`/api/chat/${teamId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if (!response.ok) throw new Error((await response.json()).error || 'Could not send.');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not send.');
         await fetchMessages();
+        return data as { pendingModeration?: boolean };
     };
 
     const createPoll = async () => {
@@ -131,8 +136,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                 const reader = new FileReader();
                 reader.onloadend = async () => {
                     try {
-                        await sendPayload({ kind: 'voice', audio: String(reader.result), duration });
-                        setVoiceStatus('');
+                        const result = await sendPayload({ kind: 'voice', audio: String(reader.result), duration });
+                        setVoiceStatus(result.pendingModeration ? 'Voice message submitted for safety review. It will appear to the team after approval.' : '');
                     } catch (error) {
                         setVoiceStatus(error instanceof Error ? error.message : 'Could not send voice message.');
                     }
@@ -154,12 +159,33 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         try { return JSON.parse(text.slice(CHAT_PREFIX.length)); } catch { return null; }
     };
 
-    const moderate = async (action: 'report' | 'block', msg: Message) => {
-        const prompt = action === 'report' ? 'Report this message to church administrators?' : `Block ${msg.user.name}? Their messages will be hidden.`;
-        if (!confirm(prompt)) return;
-        const res = await fetch('/api/chat/moderation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, messageId: msg.id, userId: msg.userId }) });
-        if (res.ok) { alert(action === 'report' ? 'Message reported. Thank you.' : 'User blocked.'); fetchMessages(); }
-        else alert('Unable to complete that action.');
+    const openModeration = (action: 'report' | 'block', message: Message) => {
+        setOpenMenuId(null);
+        setModerationReason(REPORT_REASONS[0]);
+        setModerationDetails('');
+        setModerationTarget({ action, message });
+    };
+
+    const submitModeration = async () => {
+        if (!moderationTarget || moderationBusy) return;
+        setModerationBusy(true); setSafetyNotice('');
+        try {
+            const response = await fetch('/api/chat/moderation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: moderationTarget.action, messageId: moderationTarget.message.id, userId: moderationTarget.message.userId, reason: moderationReason, details: moderationDetails }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Unable to complete that safety action.');
+            if (moderationTarget.action === 'block') {
+                setMessages(current => current.filter(message => message.userId !== moderationTarget.message.userId));
+            }
+            setSafetyNotice(data.message);
+            setModerationTarget(null);
+            await fetchMessages();
+        } catch (error) {
+            setSafetyNotice(error instanceof Error ? error.message : 'Unable to complete that safety action.');
+        } finally { setModerationBusy(false); }
     };
 
     return (
@@ -178,15 +204,16 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     return (
                         <div key={msg.id} className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
                             {!isMine && showName && <span className="sender-name"><span className="sender-avatar">{msg.user.name.slice(0, 1).toUpperCase()}</span>{msg.user.name}</span>}
-                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}${payload ? ' rich-message' : ''}`} dir={directionFor(msg.text)}>
+                            <div className={`bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}${payload ? ' rich-message' : ''}${msg.moderationStatus === 'PENDING' ? ' pending-review' : ''}`} dir={directionFor(msg.text)}>
                                 {!payload && msg.text}
                                 {payload?.kind === 'voice' && <div className="voice-message"><span>Voice message · {payload.duration}s</span><audio src={payload.audio} controls preload="metadata" /></div>}
                                 {payload?.kind === 'poll' && <div className="poll-message"><strong>{payload.question}</strong>{payload.options.map(option => { const total = payload.options.reduce((sum, item) => sum + item.voterIds.length, 0); const selected = option.voterIds.includes(userId); return <button type="button" className={selected ? 'selected' : ''} onClick={() => vote(msg.id, option.id)} key={option.id}><span>{option.label}</span><small>{option.voterIds.length}{total ? ` · ${Math.round(option.voterIds.length / total * 100)}%` : ''}</small></button>; })}<small>{payload.options.reduce((sum, option) => sum + option.voterIds.length, 0)} votes</small></div>}
+                                {msg.moderationStatus === 'PENDING' && <span className="pending-label">Pending safety review · only you can see this</span>}
                             </div>
                             <span className="timestamp">
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{isMine && ' · Sent'}
                             </span>
-                            {!isMine && <span className="message-actions"><button onClick={() => moderate('report', msg)}>Report</button><button onClick={() => moderate('block', msg)}>Block user</button></span>}
+                            {!isMine && <div className="message-actions"><button type="button" aria-label={`Safety options for ${msg.user.name}'s message`} aria-expanded={openMenuId === msg.id} onClick={() => setOpenMenuId(current => current === msg.id ? null : msg.id)}>•••</button>{openMenuId === msg.id && <div className="message-action-menu"><button type="button" onClick={() => openModeration('report', msg)}>Report message</button><button type="button" onClick={() => openModeration('block', msg)}>Block user</button></div>}</div>}
                         </div>
                     );
                 })}
@@ -195,6 +222,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
 
             {showPoll && <div className="poll-composer"><div className="poll-composer-head"><strong>New poll</strong><button type="button" onClick={() => setShowPoll(false)} aria-label="Close poll composer">×</button></div><input value={pollQuestion} maxLength={160} onChange={event => setPollQuestion(event.target.value)} placeholder="Ask a question" aria-label="Poll question" />{pollOptions.map((option, index) => <input key={index} value={option} maxLength={80} onChange={event => setPollOptions(items => items.map((item, i) => i === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} aria-label={`Poll option ${index + 1}`} />)}<div className="poll-composer-actions">{pollOptions.length < 6 && <button type="button" onClick={() => setPollOptions(items => [...items, ''])}>+ Option</button>}<button type="button" className="create" disabled={!pollQuestion.trim() || pollOptions.filter(value => value.trim()).length < 2} onClick={createPoll}>Send poll</button></div></div>}
 
+            {safetyNotice && <div className="safety-notice" role="status">{safetyNotice}</div>}
+            {composerError && <div className="composer-error" role="alert">{composerError}</div>}
             <form onSubmit={handleSend} className="input-area">
                 <button type="button" className="chat-tool" onClick={() => setShowPoll(value => !value)} aria-label="Create poll">▥</button>
                 <input
@@ -204,11 +233,15 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     placeholder="Type a message..."
                     dir={directionFor(input)}
                     aria-label="Message"
+                    maxLength={1000}
+                    disabled={sending}
                 />
                 <button type="button" className={`chat-tool${recording ? ' recording' : ''}`} onClick={recording ? () => recorderRef.current?.stop() : startRecording} aria-label={recording ? 'Stop recording' : 'Record voice message'}>{recording ? `${recordingSeconds}s` : '🎙'}</button>
-                <button className="chat-send" type="submit" disabled={!input.trim()} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+                <button className="chat-send" type="submit" disabled={!input.trim() || sending} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
             </form>
             {voiceStatus && <div className="voice-status" role="status">{voiceStatus}</div>}
+
+            {moderationTarget && <div className="moderation-dialog-backdrop" role="dialog" aria-modal="true" aria-labelledby="moderation-dialog-title"><div className="moderation-dialog"><h2 id="moderation-dialog-title">{moderationTarget.action === 'report' ? 'Report message' : `Block ${moderationTarget.message.user.name}`}</h2><p>{moderationTarget.action === 'report' ? 'Your identity is protected from the reported user.' : 'Their content will disappear immediately. Blocking also creates a safety report for moderator review.'}</p><label>Reason<select value={moderationReason} onChange={event => setModerationReason(event.target.value)}>{REPORT_REASONS.map(reason => <option value={reason} key={reason}>{reason}</option>)}</select></label><label>Additional details (optional)<textarea value={moderationDetails} maxLength={1000} onChange={event => setModerationDetails(event.target.value)} placeholder="Share any context that will help the moderation team." /></label><div className="moderation-dialog-actions"><button type="button" className="btn btn-primary" disabled={moderationBusy} onClick={submitModeration}>{moderationBusy ? 'Submitting…' : moderationTarget.action === 'report' ? 'Submit report' : 'Block and report'}</button><button type="button" className="btn" disabled={moderationBusy} onClick={() => setModerationTarget(null)}>Cancel</button></div></div></div>}
 
             <style jsx>{`
         .chat-room {
@@ -277,6 +310,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .rich-message { width: min(280px, calc(100vw - 76px)); max-width: 100%; }
         .voice-message { display: grid; gap: 7px; font-size: .72rem; }
         .voice-message audio { width: 100%; height: 38px; }
+        .pending-review { border-style: dashed; opacity: .82; }
+        .pending-label { display: block; margin-top: 8px; font-size: .68rem; font-weight: 700; opacity: .78; }
         .poll-message { display: grid; gap: 7px; }
         .poll-message > strong { margin-bottom: 3px; }
         .poll-message button { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); color: var(--foreground); text-align: left; }
@@ -287,8 +322,22 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .poll-composer-head button, .poll-composer-actions button, .chat-tool { border: 0; background: transparent; color: var(--primary); font-weight: 800; }
         .poll-composer input { min-height: 40px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); color: var(--foreground); }
         .poll-composer-actions .create { padding: 8px 12px; border-radius: 9px; background: var(--primary); color: var(--primary-foreground); }
-        .message-actions { display: flex; gap: .65rem; margin-top: 3px; }
-        .message-actions button { border: 0; background: transparent; color: var(--muted-foreground); font-size: .68rem; text-decoration: underline; cursor: pointer; padding: 2px; }
+        .message-actions { position: relative; display: flex; gap: .65rem; margin-top: 3px; }
+        .message-actions > button { min-width: 44px; min-height: 30px; border: 0; background: transparent; color: var(--muted-foreground); font-size: .85rem; cursor: pointer; }
+        .message-action-menu { position: absolute; left: 0; bottom: 30px; z-index: 4; width: 180px; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--background); box-shadow: var(--shadow-lg); }
+        .message-action-menu button { width: 100%; min-height: 44px; padding: 9px 12px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--foreground); text-align: left; cursor: pointer; }
+        .message-action-menu button:last-child { border-bottom: 0; color: #dc2626; }
+        .safety-notice, .composer-error { padding: 9px 14px; border-top: 1px solid var(--border); font-size: .78rem; text-align: center; }
+        .safety-notice { background: color-mix(in srgb, #16a34a 10%, var(--background)); color: var(--foreground); }
+        .composer-error { background: color-mix(in srgb, #dc2626 10%, var(--background)); color: #ef4444; }
+        .moderation-dialog-backdrop { position: fixed; inset: 0; z-index: 1001; display: grid; place-items: center; padding: 18px; background: rgba(0,0,0,.72); backdrop-filter: blur(8px); }
+        .moderation-dialog { width: min(100%, 480px); max-height: calc(100dvh - 36px); overflow-y: auto; display: grid; gap: 14px; padding: 22px; border: 1px solid var(--border); border-radius: 20px; background: var(--background); color: var(--foreground); box-shadow: var(--shadow-xl); }
+        .moderation-dialog h2, .moderation-dialog p { margin: 0; }
+        .moderation-dialog p { color: var(--muted-foreground); line-height: 1.5; }
+        .moderation-dialog label { display: grid; gap: 6px; font-size: .82rem; font-weight: 700; }
+        .moderation-dialog select, .moderation-dialog textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); font: inherit; }
+        .moderation-dialog textarea { min-height: 96px; resize: vertical; }
+        .moderation-dialog-actions { display: flex; flex-wrap: wrap; gap: 9px; }
         
         .input-area {
           padding: 10px clamp(8px, 2.5vw, 14px);

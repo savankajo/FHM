@@ -10,11 +10,12 @@ import { audienceIds } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminTeamDetailsPage({ params }: { params: { id: string } }) {
+export default async function AdminTeamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     if (!await canManage(session?.userId, session?.role, 'teams', 'edit')) redirect('/');
     const team = await prisma.team.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             services: {
                 orderBy: { date: 'asc' },

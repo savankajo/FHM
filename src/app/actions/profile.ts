@@ -4,18 +4,24 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { getUgcAccess, moderateAndRecordText } from '@/lib/safety-service';
 
 export async function updateProfile(formData: FormData) {
     const session = await getSession();
     if (!session) return { error: 'Unauthorized' };
+    const access = await getUgcAccess(session.userId);
+    if (!access.allowed) return { error: access.error };
 
-    const name = formData.get('name') as string;
+    const name = String(formData.get('name') || '').trim();
     const email = (formData.get('email') as string)?.toLowerCase();
     const phone = formData.get('phone') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
     if (!email) return { error: 'Email is required' };
+    if (!name || name.length > 100) return { error: 'Name must be between 1 and 100 characters' };
+    const nameModeration = await moderateAndRecordText({ text: name, surface: 'profile_name', userId: session.userId });
+    if (!nameModeration.allowed) return { error: 'That profile name does not meet our Community Guidelines.' };
 
     const data: any = { name, email, phone };
 
@@ -57,8 +63,12 @@ export async function updatePassword(formData: FormData) {
 export async function updatePrivacyName(formData: FormData) {
     const session = await getSession();
     if (!session) return { error: 'Unauthorized' };
+    const access = await getUgcAccess(session.userId);
+    if (!access.allowed) return { error: access.error };
     const name = String(formData.get('name') || '').trim();
-    if (!name) return { error: 'Name is required' };
+    if (!name || name.length > 100) return { error: 'Name must be between 1 and 100 characters' };
+    const nameModeration = await moderateAndRecordText({ text: name, surface: 'profile_name', userId: session.userId });
+    if (!nameModeration.allowed) return { error: 'That profile name does not meet our Community Guidelines.' };
     await prisma.user.update({ where: { id: session.userId }, data: { name } });
     revalidatePath('/profile');
     revalidatePath('/profile/privacy');

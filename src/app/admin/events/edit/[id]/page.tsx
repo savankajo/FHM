@@ -7,7 +7,8 @@ import { canManage } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditEventPage({ params }: { params: { id: string } }) {
+export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
 
     if (!await canManage(session?.userId, session?.role, 'events', 'edit')) {
@@ -15,7 +16,7 @@ export default async function EditEventPage({ params }: { params: { id: string }
     }
 
     const event = await prisma.event.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: { teams: { select: { id: true } } }
     });
 

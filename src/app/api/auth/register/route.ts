@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, createSessionToken, setSessionCookie } from '@/lib/auth';
+import { CURRENT_TERMS_VERSION } from '@/lib/terms';
+import { moderateAndRecordText } from '@/lib/safety-service';
 
 
 // Manual validation for now to avoid dependency hell if user hasn't installed zod
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        let { email, password, name, phone } = body;
+        let { email, password, name, phone, termsAccepted, termsVersion } = body;
         if (email) email = email.toLowerCase();
 
         if (!email || !password || !name) {
@@ -15,6 +17,15 @@ export async function POST(request: Request) {
                 { error: 'Missing required fields' },
                 { status: 400 }
             );
+        }
+        if (termsAccepted !== true || termsVersion !== CURRENT_TERMS_VERSION) {
+            return NextResponse.json({ error: 'You must explicitly accept the current Terms of Use before creating an account.' }, { status: 428 });
+        }
+        name = String(name).trim();
+        if (name.length > 100) return NextResponse.json({ error: 'Name must be 100 characters or fewer.' }, { status: 400 });
+        const nameModeration = await moderateAndRecordText({ text: name, surface: 'registration_profile_name' });
+        if (!nameModeration.allowed) {
+            return NextResponse.json({ error: 'That profile name does not meet our Community Guidelines. Please choose another name.' }, { status: 422 });
         }
 
         // Check if user exists
@@ -43,6 +54,9 @@ export async function POST(request: Request) {
                 name,
                 phone,
                 role,
+                termsAcceptedVersion: CURRENT_TERMS_VERSION,
+                termsAcceptedAt: new Date(),
+                termsAcceptances: { create: { version: CURRENT_TERMS_VERSION, method: 'pre_auth_registration' } },
             },
         });
 
@@ -52,6 +66,8 @@ export async function POST(request: Request) {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                termsAccepted: true,
+                termsVersion: CURRENT_TERMS_VERSION,
             },
         });
 

@@ -6,12 +6,13 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ChatPage({ params }: { params: { teamId: string } }) {
+export default async function ChatPage({ params }: { params: Promise<{ teamId: string }> }) {
+    const { teamId } = await params;
     const session = await getSession();
     if (!session) redirect('/teams?signin=required');
 
     const team = await prisma.team.findFirst({
-        where: session.role === 'ADMIN' ? { id: params.teamId } : { id: params.teamId, members: { some: { id: session.userId } } },
+        where: session.role === 'ADMIN' ? { id: teamId } : { id: teamId, members: { some: { id: session.userId } } },
         select: { id: true, name: true }
     });
 

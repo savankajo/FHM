@@ -6,11 +6,12 @@ import { canManage } from '@/lib/permissions';
 import ArticleForm from '../../article-form';
 import DeleteArticleButton from '../../delete-button';
 
-export default async function EditArticlePage({ params }: { params: { id: string } }) {
+export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
 
-    const article = await prisma.article.findUnique({ where: { id: params.id } });
+    const article = await prisma.article.findUnique({ where: { id } });
     if (!article) notFound();
 
     return (

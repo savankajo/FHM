@@ -1,26 +1,6 @@
 import Link from 'next/link';
+import { SUPPORT_EMAIL } from '@/lib/support';
 
 export default function PrivacyPage() {
-    return (
-        <article className="legal-page">
-            <Link href="/" className="page-back-btn legal-back-btn" aria-label="Back to Home">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 18l-6-6 6-6" />
-                </svg>
-            </Link>
-            <h1>Privacy Policy</h1>
-            <p>Last updated: July 10, 2026</p>
-            <h2>Information we collect</h2>
-            <p>FHM Church collects the name, email address, optional phone number, team memberships, event responses, volunteer activity, and messages you provide to operate the app.</p>
-            <h2>How we use information</h2>
-            <p>We use this information only to authenticate members, provide church communications and team features, maintain safety, and support the service. We do not sell personal information or use it for cross-app tracking.</p>
-            <h2>Retention and deletion</h2>
-            <p>Team chat messages expire after 48 hours. Safety reports may be retained as needed to address abuse. You can permanently delete your account and associated data in Profile &gt; Settings.</p>
-            <h2>Service providers</h2>
-            <p>Hosting and database providers process data solely to operate the service. Linked media and maps may be provided by third parties under their own privacy policies.</p>
-            <h2>Contact</h2>
-            <p>Privacy questions or requests: <a href="mailto:privacy@fhmchurch.ca">privacy@fhmchurch.ca</a>.</p>
-            <p><Link href="/support">Contact support</Link> | <Link href="/">Return home</Link></p>
-        </article>
-    );
+  return <main className="legal-page"><h1>Privacy Policy</h1><p><strong>Draft for final legal review. This wording is not legal advice.</strong></p><p>FHM Church collects the name, email address, optional phone number, team memberships, event responses, volunteer activity, and messages you provide to authenticate members and operate church, team, and safety features.</p><h2>Community content and moderation</h2><p>Team-chat text, poll wording, and profile names are checked by FHM’s server-side safety rules before publication. Rejected text is not published; ordinary moderation logs retain a one-way content hash and outcome category rather than the rejected content.</p><p>Voice messages use supported audio formats and are held from other users until an authorized FHM moderator approves them. FHM does not send voice recordings to a third-party AI or transcription provider. Reports preserve the reported content, reporter, reason, timestamps, and moderation actions in a protected queue. Reporter identity is not shown to the reported user.</p><p>Team chat messages normally expire after 48 hours. Safety evidence and audit records may be retained longer when reasonably needed to investigate abuse, enforce the rules, meet legal obligations, or protect users.</p><h2>Sharing and security</h2><p>FHM does not sell personal information or use it for cross-app tracking. Access to reports and moderation evidence is limited to authorized administrators. Developer alerts contain a report identifier and deadline, not message content or reporter identity.</p><h2>Your choices</h2><p>You can manage blocked users in Profile, update account details, and permanently delete your account from Profile &gt; Account &amp; Security. Contact <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> for privacy or safety requests.</p><p><Link href="/terms">Terms of Use</Link> · <Link href="/community-guidelines">Community Guidelines</Link> · <Link href="/support">Support</Link> · <Link href="/">Return home</Link></p></main>;
 }

@@ -9,12 +9,13 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditSermonPage({ params }: { params: { id: string } }) {
+export default async function EditSermonPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     if (!await canManage(session?.userId, session?.role, 'media', 'edit')) redirect('/admin');
 
     const sermon = await prisma.sermon.findUnique({
-        where: { id: params.id }
+        where: { id }
     });
 
     if (!sermon) notFound();

@@ -5,6 +5,8 @@
             "dom.iterable",
             "esnext"
         ],
+        "target": "ES2017",
+        "allowImportingTsExtensions": true,
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,

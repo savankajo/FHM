@@ -7,10 +7,11 @@ import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PodcastDetailPage({ params }: { params: { id: string } }) {
+export default async function PodcastDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     const podcast = await prisma.podcastEpisode.findUnique({
-        where: { id: params.id },
+        where: { id },
     });
 
     if (!podcast) notFound();

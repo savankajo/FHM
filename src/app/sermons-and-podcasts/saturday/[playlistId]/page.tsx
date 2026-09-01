@@ -7,9 +7,10 @@ import { getSermonCollection, getYoutubePlaylistId, getYoutubePlaylistName } fro
 
 export const dynamic = 'force-dynamic';
 
-export default async function SaturdayPlaylistVideosPage({ params, searchParams }: { params: { playlistId: string }; searchParams?: { q?: string } }) {
-    const playlistId = decodeURIComponent(params.playlistId);
-    const query = (searchParams?.q || '').trim().toLowerCase();
+export default async function SaturdayPlaylistVideosPage({ params, searchParams }: { params: Promise<{ playlistId: string }>; searchParams?: Promise<{ q?: string }> }) {
+    const [{ playlistId: playlistParam }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+    const playlistId = decodeURIComponent(playlistParam);
+    const query = (resolvedSearchParams?.q || '').trim().toLowerCase();
     const session = await getSession();
     const isAdmin = session?.role === 'ADMIN';
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
@@ -42,7 +43,7 @@ export default async function SaturdayPlaylistVideosPage({ params, searchParams 
                     className="media-search-input"
                     type="search"
                     name="q"
-                    defaultValue={searchParams?.q || ''}
+                    defaultValue={resolvedSearchParams?.q || ''}
                     placeholder="Search videos"
                     aria-label="Search videos in this playlist"
                 />

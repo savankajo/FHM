@@ -63,9 +63,21 @@ export default async function ProfilePage() {
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
+                <Link href="/profile/blocked-users" className="profile-menu-item">
+                    <div className="profile-menu-icon orange">Safe</div>
+                    <span className="profile-menu-label">Blocked Users</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
                 <Link href="/policies" className="profile-menu-item">
                     <div className="profile-menu-icon green">Info</div>
                     <span className="profile-menu-label">Policies &amp; Support</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
+                <Link href="/terms" className="profile-menu-item">
+                    <div className="profile-menu-icon green">Legal</div>
+                    <span className="profile-menu-label">Terms &amp; Community Guidelines</span>
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 

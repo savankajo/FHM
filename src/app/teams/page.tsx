@@ -25,14 +25,15 @@ function MinistryIntroduction({ signedIn }: { signedIn: boolean }) {
   </section>;
 }
 
-export default async function TeamsPage({ searchParams }: { searchParams?: { notice?: string; signin?: string } }) {
+export default async function TeamsPage({ searchParams }: { searchParams?: Promise<{ notice?: string; signin?: string }> }) {
+  const resolvedSearchParams = await searchParams;
   const session = await getSession();
   const teams = session ? await prisma.team.findMany({
     where: session.role === 'ADMIN' ? undefined : { members: { some: { id: session.userId } } },
     include: { _count: { select: { members: true } } },
     orderBy: { name: 'asc' }
   }) : [];
-  const notice = searchParams?.notice === 'not-assigned' ? 'This team is not assigned to your account.' : searchParams?.signin === 'required' ? 'Sign in to view the teams assigned to you.' : '';
+  const notice = resolvedSearchParams?.notice === 'not-assigned' ? 'This team is not assigned to your account.' : resolvedSearchParams?.signin === 'required' ? 'Sign in to view the teams assigned to you.' : '';
 
   return <main className="teams-page">
     <div className="teams-hero"><div className="teams-hero-overlay"/><div className="teams-hero-content"><div className="teams-hero-title">Ministry Teams</div><div className="teams-hero-sub">Connected in faith, purpose, and service</div></div></div>

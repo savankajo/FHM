@@ -8,13 +8,15 @@ interface User {
     email: string;
     name: string;
     role: 'ADMIN' | 'LEADER' | 'MEMBER';
+    termsAccepted: boolean;
+    termsVersion: string;
 }
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (userData: User) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
 
@@ -22,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
     login: () => { },
-    logout: () => { },
+    logout: async () => { },
     refreshUser: async () => { },
 });
 

@@ -11,9 +11,10 @@ export const dynamic = 'force-dynamic';
 export default async function SermonsPage({
     searchParams,
 }: {
-    searchParams?: { query?: string };
+    searchParams?: Promise<{ query?: string }>;
 }) {
-    const query = searchParams?.query || '';
+    const resolvedSearchParams = await searchParams;
+    const query = resolvedSearchParams?.query || '';
     const session = await getSession();
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
 

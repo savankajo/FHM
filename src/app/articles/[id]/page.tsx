@@ -6,12 +6,13 @@ import { getSession } from '@/lib/auth';
 import { canSeeAudience } from '@/lib/audience';
 import InAppLink from '@/components/ui/in-app-link';
 
-export default async function ArticleDetailPage({ params }: { params: { id: string } }) {
+export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     const isAdmin = session?.role === 'ADMIN';
     const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
     const teamIds = teams.map(team => team.id);
-    const article = await prisma.article.findUnique({ where: { id: params.id } });
+    const article = await prisma.article.findUnique({ where: { id } });
 
     if (!article || !canSeeAudience(article.audienceTeamIds, teamIds, isAdmin)) notFound();
     const isPdf = Boolean(article.linkUrl && /\.pdf(?:$|[?#])/i.test(article.linkUrl));

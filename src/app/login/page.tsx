@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PreAuthTermsGate } from '@/components/auth/terms-gate';
+import { CURRENT_TERMS_VERSION } from '@/lib/terms';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -12,6 +14,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,7 +26,7 @@ export default function LoginPage() {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, termsAccepted, termsVersion: CURRENT_TERMS_VERSION }),
             });
 
             const data = await res.json();
@@ -39,6 +42,8 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
+
+    if (!termsAccepted) return <PreAuthTermsGate actionLabel="Sign In" onAccepted={() => setTermsAccepted(true)} />;
 
     return (
         <div className="auth-container">

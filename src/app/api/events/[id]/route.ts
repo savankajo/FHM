@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canManage } from '@/lib/permissions';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     try {
         const session = await getSession();
         if (!await canManage(session?.userId, session?.role, 'events', 'edit')) {
@@ -14,7 +15,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         const { title, description, votingDeadline, locations, audienceTeamIds = [] } = body;
 
         const updatedEvent = await prisma.event.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 title,
                 description,
@@ -32,15 +33,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     try {
         const session = await getSession();
         if (!await canManage(session?.userId, session?.role, 'events', 'remove')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        await prisma.eventVote.deleteMany({ where: { eventId: params.id } });
-        await prisma.event.delete({ where: { id: params.id } });
+        await prisma.eventVote.deleteMany({ where: { eventId: id } });
+        await prisma.event.delete({ where: { id } });
 
         return NextResponse.json({ success: true });
     } catch (error) {

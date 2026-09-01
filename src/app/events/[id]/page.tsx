@@ -19,10 +19,11 @@ function BackArrow({ href, label }: { href: string; label: string }) {
     );
 }
 
-export default async function EventDetailsPage({ params }: { params: { id: string } }) {
+export default async function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     const event = await prisma.event.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             teams: { select: { id: true } },
             votes: {

@@ -8,10 +8,11 @@ import VideoPlayer from '@/components/media/video-player';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SermonDetailPage({ params }: { params: { id: string } }) {
+export default async function SermonDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await getSession();
     const sermon = await prisma.sermon.findUnique({
-        where: { id: params.id },
+        where: { id },
     });
 
     if (!sermon) notFound();

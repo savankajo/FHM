@@ -6,11 +6,12 @@ import VolunteerButton from './volunteer-button';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TeamDetailsPage({ params }: { params: { id: string } }) {
+export default async function TeamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getSession();
   if (!session) redirect('/teams?signin=required');
   const team = await prisma.team.findFirst({
-    where: session.role === 'ADMIN' ? { id: params.id } : { id: params.id, members: { some: { id: session.userId } } },
+    where: session.role === 'ADMIN' ? { id } : { id, members: { some: { id: session.userId } } },
     include: { services: { where: { date: { gte: new Date(new Date().setHours(0,0,0,0)) } }, orderBy: { date: 'asc' }, include: { volunteers: true } } }
   });
   if (!team) redirect('/teams?notice=not-assigned');
