@@ -3146,6 +3146,7 @@ button {
   width: 52px;
   height: 52px;
   min-width: 52px;
+  flex: 0 0 52px;
   border-radius: 16px;
   background: var(--bg-card);
   border: 1.5px solid rgba(199, 81, 31, 0.22);
@@ -5289,7 +5290,7 @@ button {
 }
 
 .legal-page { max-width: 720px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 20px calc(100px + env(safe-area-inset-bottom)); line-height: 1.65; }
-.legal-back-btn { margin-bottom: 20px; }
+.legal-page .legal-back-btn { margin-bottom: 20px; text-decoration: none; }
 .legal-page h1 { margin-bottom: 8px; }
 .legal-page h2 { margin-top: 28px; }
 .legal-page a { color: var(--primary); text-decoration: underline; }
@@ -5458,7 +5459,6 @@ button {
 .admin-shell .admin-list-page { width: 100%; padding-top: 20px; }
 .admin-shell .admin-list-topbar,
 .admin-shell .admin-topbar { min-height: 52px; align-items: center; }
-.admin-shell .page-back-btn { flex: 0 0 46px; width: 46px; height: 46px; }
 .admin-shell form:not(.admin-inline-form) { max-width: 760px; }
 .admin-shell .input,
 .admin-shell textarea,

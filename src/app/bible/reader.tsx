@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BIBLE_VERSIONS, BibleVersion } from '@/lib/bible-api';
+import { BIBLE_READING_MEMORY_KEY, parseBibleReadingMemory, serializeBibleReadingMemory } from '@/lib/bible-reading-memory';
 import { buildVerseSelectionText, formatVerseRanges, normalizeVerseNumbers, toggleVerseNumber } from './verse-selection';
 
 type Book = { id: string; name: string; nameLong?: string; chapters?: Array<{ id: string; number: string }> };
@@ -11,6 +12,7 @@ type LegacyAnnotation = { color: string; note: string };
 type SavedHighlight = { id: string; version: string; bookId: string; chapterId: string; chapterReference: string; verse: number; color: string };
 type SavedNote = { id: string; version: string; bookId: string; chapterId: string; chapterReference: string; verseKey: string; verses: number[]; note: string; updatedAt: string };
 type BibleReaderProps = { signedIn: boolean; initialVersion?: BibleVersion; initialChapterId?: string; initialVerses?: number[]; returnTo?: string };
+type BibleDeepLink = { version: BibleVersion; bookId?: string; chapterId: string; verses: number[]; focusVerse?: number };
 declare global { interface Window { fums?: (...args: unknown[]) => void; fumsData?: unknown[] } }
 
 const NOTES_KEY = 'fhm-bible-notes-v2';
@@ -43,12 +45,18 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
   const [testament, setTestament] = useState<'ALL'|'OT'|'NT'>('ALL');
   const [recents, setRecents] = useState<Array<{bookId:string;chapterId:string;label:string}>>([]);
   const [showVersePicker, setShowVersePicker] = useState(false);
+  const [restoreVerse, setRestoreVerse] = useState(0);
   const scriptureRef = useRef<HTMLDivElement>(null);
   const booksRef = useRef<Book[]>([]);
-  const deepLinkRef = useRef(initialChapterId ? { version: initialVersion, chapterId: initialChapterId, verses: normalizeVerseNumbers(initialVerses) } : null);
+  const deepLinkRef = useRef<BibleDeepLink | null>(initialChapterId ? { version: initialVersion, chapterId: initialChapterId, verses: normalizeVerseNumbers(initialVerses) } : null);
   const orderedSelection = useMemo(() => normalizeVerseNumbers(selectedVerses), [selectedVerses]);
   const selectedRange = formatVerseRanges(orderedSelection);
   const verseKey = orderedSelection.join(',');
+
+  const rememberReading = useCallback((verse: number) => {
+    if (!book?.id || !chapterId || !Number.isInteger(verse) || verse < 1) return;
+    localStorage.setItem(BIBLE_READING_MEMORY_KEY, serializeBibleReadingMemory({ version, bookId: book.id, chapterId, verse }));
+  }, [book?.id, chapterId, version]);
 
   useEffect(() => { booksRef.current = books; }, [books]);
 
@@ -93,6 +101,13 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
       setLegacyAnnotations(legacy);
       setFontSize(Number(localStorage.getItem(FONT_SIZE_KEY)) || 19);
       setRecents(JSON.parse(localStorage.getItem(RECENTS_KEY) || '[]'));
+      if (!initialChapterId) {
+        const savedReading = parseBibleReadingMemory(localStorage.getItem(BIBLE_READING_MEMORY_KEY));
+        if (savedReading) {
+          deepLinkRef.current = { ...savedReading, verses: [], focusVerse: savedReading.verse };
+          if (savedReading.version !== initialVersion) setVersion(savedReading.version);
+        }
+      }
     } catch {}
     void (async () => {
       try {
@@ -106,9 +121,10 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
         await loadAnnotations();
       } catch (reason) { setSelectionStatus(reason instanceof Error ? reason.message : 'Could not load private Bible notes.'); }
     })();
-  }, [loadAnnotations, signedIn]);
+  }, [initialChapterId, initialVersion, loadAnnotations, signedIn]);
 
   useEffect(() => {
+    let cancelled = false;
     window.history.replaceState({ ...window.history.state, fhmBibleStage: 'bible' }, '');
     setLoading(true);
     setError('');
@@ -119,14 +135,17 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
     fetch(`/api/bible/books?version=${version}`)
       .then(async response => { const json = await response.json(); if (!response.ok) throw new Error(json.error); return json; })
       .then(json => {
+        if (cancelled) return;
         const nextBooks: Book[] = json.data || [];
         setBooks(nextBooks);
         const deepLink = deepLinkRef.current;
         if (deepLink && deepLink.version === version) {
-          const matchingBook = nextBooks.find(item => item.chapters?.some(candidate => candidate.id === deepLink.chapterId)) || nextBooks.find(item => deepLink.chapterId.startsWith(`${item.id}.`));
-          if (matchingBook) setBook(matchingBook);
+          const matchingBook = nextBooks.find(item => item.id === deepLink.bookId) || nextBooks.find(item => item.chapters?.some(candidate => candidate.id === deepLink.chapterId)) || nextBooks.find(item => deepLink.chapterId.startsWith(`${item.id}.`));
+          if (!matchingBook) return;
+          setBook(matchingBook);
           setChapterId(deepLink.chapterId);
           setSelectedVerses(deepLink.verses);
+          setRestoreVerse(deepLink.focusVerse || deepLink.verses[0] || 0);
           setShowVersePicker(false);
           window.history.replaceState({ ...window.history.state, fhmBibleStage: 'bible' }, '');
           window.history.pushState({ ...window.history.state, fhmBibleStage: 'book', bookId: matchingBook?.id }, '');
@@ -135,17 +154,20 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
           deepLinkRef.current = null;
         }
       })
-      .catch(reason => setError(reason.message))
-      .finally(() => setLoading(false));
+      .catch(reason => { if (!cancelled) setError(reason.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [version]);
 
   useEffect(() => {
     if (!chapterId) return;
+    let cancelled = false;
     setLoading(true);
     setError('');
     fetch(`/api/bible/chapter?version=${version}&chapter=${encodeURIComponent(chapterId)}`)
       .then(async response => { const json = await response.json(); if (!response.ok) throw new Error(json.error); return json; })
       .then(json => {
+        if (cancelled) return;
         setChapter(json.data);
         setRecents(previous => {
           const recent = { bookId: book?.id || '', chapterId, label: json.data.reference };
@@ -157,16 +179,63 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
         window.fums = window.fums || ((...args) => window.fumsData!.push(args));
         if (json.meta?.fumsToken) window.fums('trackView', json.meta.fumsToken);
       })
-      .catch(reason => setError(reason.message))
-      .finally(() => setLoading(false));
+      .catch(reason => { if (!cancelled) setError(reason.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [book?.id, chapterId, version]);
 
   useEffect(() => {
-    if (!chapter || showVersePicker || orderedSelection.length === 0) return;
-    const verse = orderedSelection[0];
-    const timeout = setTimeout(() => scriptureRef.current?.querySelector<HTMLElement>(`[data-verse-id$=".${verse}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    const verse = restoreVerse || orderedSelection[0];
+    if (!chapter || showVersePicker || !verse) return;
+    const timeout = setTimeout(() => {
+      scriptureRef.current?.querySelector<HTMLElement>(`[data-verse-id$=".${verse}"]`)?.scrollIntoView({ behavior: restoreVerse ? 'auto' : 'smooth', block: 'center' });
+      if (restoreVerse) setRestoreVerse(0);
+    }, 80);
     return () => clearTimeout(timeout);
-  }, [chapter, orderedSelection, showVersePicker]);
+  }, [chapter, orderedSelection, restoreVerse, showVersePicker]);
+
+  useEffect(() => {
+    const root = scriptureRef.current;
+    if (!root || !chapter || showVersePicker || typeof IntersectionObserver === 'undefined') return;
+    const elements = [...root.querySelectorAll<HTMLElement>('[data-verse-id]')];
+    if (!elements.length) return;
+
+    const verseFromElement = (element: HTMLElement) => Number(element.dataset.verseId?.split('.').pop());
+    const rememberClosestVerse = () => {
+      const readingLine = window.innerHeight * 0.38;
+      let closest: { verse: number; distance: number } | null = null;
+      for (const element of elements) {
+        const verse = verseFromElement(element);
+        if (!Number.isInteger(verse) || verse < 1) continue;
+        const rect = element.getBoundingClientRect();
+        const distance = Math.abs(Math.max(rect.top, Math.min(readingLine, rect.bottom)) - readingLine);
+        if (!closest || distance < closest.distance) closest = { verse, distance };
+      }
+      if (closest) rememberReading(closest.verse);
+    };
+
+    const visible = new Map<HTMLElement, IntersectionObserverEntry>();
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visible.set(entry.target as HTMLElement, entry);
+        else visible.delete(entry.target as HTMLElement);
+      }
+      const readingLine = window.innerHeight * 0.38;
+      const closest = [...visible.values()].sort((left, right) => Math.abs(left.boundingClientRect.top - readingLine) - Math.abs(right.boundingClientRect.top - readingLine))[0];
+      if (closest) rememberReading(verseFromElement(closest.target as HTMLElement));
+    }, { rootMargin: '-20% 0px -55% 0px' });
+
+    elements.forEach(element => observer.observe(element));
+    const handleVisibility = () => { if (document.visibilityState === 'hidden') rememberClosestVerse(); };
+    window.addEventListener('pagehide', rememberClosestVerse);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      rememberClosestVerse();
+      observer.disconnect();
+      window.removeEventListener('pagehide', rememberClosestVerse);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [chapter, rememberReading, showVersePicker]);
 
   function clearSelection(message = '') {
     setSelectedVerses([]);
@@ -188,6 +257,7 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
 
   function openVerse(verse: number) {
     setSelectedVerses([verse]); setSelectionStatus(`Verse ${verse} selected.`); setShowVersePicker(false);
+    rememberReading(verse);
     window.history.pushState({ ...window.history.state, fhmBibleStage: 'verse', bookId: book?.id, chapterId, verses: [verse] }, '');
   }
 
@@ -209,6 +279,7 @@ export default function BibleReader({ signedIn, initialVersion = 'AVD', initialC
   function toggleVerse(verse: number) {
     setEditingVerses(null);
     setShowHighlightColors(false);
+    rememberReading(verse);
     setSelectedVerses(previous => {
       const wasSelected = previous.includes(verse);
       const next = toggleVerseNumber(previous, verse);

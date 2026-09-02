@@ -126,10 +126,10 @@ export function validateVoiceDataUrl(audio: unknown): VoiceValidationResult {
   const commaIndex = audio.indexOf(',');
   if (!audio.startsWith('data:') || commaIndex < 0) return { valid: false, error: 'This audio format is not supported.' };
 
-  const metadata = audio.slice(5, commaIndex).split(';');
+  const metadata = audio.slice(5, commaIndex).split(';').map(part => part.trim());
   const mimeType = (metadata.shift() || '').toLowerCase();
   const encoding = (metadata.pop() || '').toLowerCase();
-  const validParameters = metadata.every(parameter => /^codecs=(?:"[a-z0-9][a-z0-9._,+-]*"|[a-z0-9][a-z0-9._,+-]*)$/i.test(parameter));
+  const validParameters = metadata.every(parameter => /^codecs\s*=\s*(?:"[a-z0-9][a-z0-9._,+-]*"|[a-z0-9][a-z0-9._,+-]*)$/i.test(parameter));
   const encoded = audio.slice(commaIndex + 1);
   const validBase64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded) && encoded.length > 0;
   if (encoding !== 'base64' || !validParameters || !validBase64 || !ALLOWED_AUDIO_MIME_TYPES.has(mimeType)) {

@@ -114,7 +114,7 @@ export default function FavoritesPage() {
         <div className="profile-page min-h-screen pb-20">
             {/* Header */}
             <header className="page-header favorites-header">
-                <Link href="/profile" className="page-back-btn">
+                <Link href="/profile" className="page-back-btn" aria-label="Back to Profile">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
                 </Link>
                 <h1 className="page-title">Favorite Verses</h1>

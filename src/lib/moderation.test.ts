@@ -43,6 +43,7 @@ test('validates declared audio type against file signature and size', () => {
   assert.equal(validateVoiceDataUrl(`data:audio/mp4;base64,${mp4.toString('base64')}`).valid, true);
   assert.equal(validateVoiceDataUrl(`data:audio/mp4;codecs=mp4a.40.2;base64,${mp4.toString('base64')}`).valid, true);
   assert.equal(validateVoiceDataUrl(`data:audio/x-m4a;codecs="mp4a.40.2";base64,${mp4.toString('base64')}`).valid, true);
+  assert.equal(validateVoiceDataUrl(`data:audio/mp4; codecs = "mp4a.40.2"; base64,${mp4.toString('base64')}`).valid, true);
   const webm = Buffer.alloc(32);
   webm[0] = 0x1a; webm[1] = 0x45; webm[2] = 0xdf; webm[3] = 0xa3;
   assert.equal(validateVoiceDataUrl(`data:audio/webm;codecs=opus;base64,${webm.toString('base64')}`).valid, true);

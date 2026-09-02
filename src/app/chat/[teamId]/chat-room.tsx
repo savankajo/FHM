@@ -126,7 +126,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
             setVoiceStatus('');
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const chunks: Blob[] = [];
-            const preferredTypes = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
+            const preferredTypes = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'];
             const mimeType = preferredTypes.find(type => MediaRecorder.isTypeSupported(type));
             const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 64000, ...(mimeType ? { mimeType } : {}) });
             recorderRef.current = recorder;
@@ -147,7 +147,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     setRecordedVoice({ kind: 'voice', audio: String(reader.result), duration });
                     setVoiceStatus('Recording ready. Preview it, then send or cancel.');
                 };
-                reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/mp4' }));
+                const recordedMimeType = (recorder.mimeType || mimeType || chunks[0]?.type || 'audio/mp4').split(';', 1)[0].trim().toLowerCase();
+                reader.readAsDataURL(new Blob(chunks, { type: recordedMimeType }));
                 setRecording(false);
             };
             recorder.start();
