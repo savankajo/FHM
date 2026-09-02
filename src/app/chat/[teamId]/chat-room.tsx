@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { REPORT_REASONS } from '@/lib/safety-constants';
-
-const CHAT_PREFIX = '__FHM_CHAT__';
-type Poll = { kind: 'poll'; question: string; options: Array<{ id: string; label: string; voterIds: string[] }> };
-type Voice = { kind: 'voice'; audio: string; duration: number };
+import { ChatPoll, ChatVoice, mergeChatMessages, parseChatPayload } from '@/lib/chat-message';
 
 interface Message {
     id: string;
@@ -21,12 +18,15 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [showPoll, setShowPoll] = useState(false);
     const [pollQuestion, setPollQuestion] = useState('');
     const [pollOptions, setPollOptions] = useState(['', '']);
     const [recording, setRecording] = useState(false);
     const [recordingSeconds, setRecordingSeconds] = useState(0);
+    const [recordedVoice, setRecordedVoice] = useState<ChatVoice | null>(null);
     const [voiceStatus, setVoiceStatus] = useState('');
+    const [voiceSending, setVoiceSending] = useState(false);
     const [sending, setSending] = useState(false);
     const [composerError, setComposerError] = useState('');
     const [safetyNotice, setSafetyNotice] = useState('');
@@ -37,27 +37,30 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const [moderationBusy, setModerationBusy] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
     const recorderRef = useRef<MediaRecorder | null>(null);
+    const textSendLockRef = useRef(false);
+    const payloadSendLockRef = useRef(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const durationRef = useRef(0);
     const directionFor = (text: string) => /[\u0600-\u06ff]/.test(text) ? 'rtl' : 'ltr';
 
-    const fetchMessages = useCallback(async () => {
+    const fetchMessages = useCallback(async (showError = false) => {
         try {
             const res = await fetch(`/api/chat/${teamId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setMessages(data.messages);
-            }
-        } catch (e) {
-            console.error(e);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Could not load team messages.');
+            setMessages(data.messages);
+            setLoadError('');
+        } catch (error) {
+            console.error(error);
+            if (showError) setLoadError(error instanceof Error ? error.message : 'Could not load team messages.');
         } finally {
             setLoading(false);
         }
     }, [teamId]);
 
     useEffect(() => {
-        fetchMessages();
-        const interval = setInterval(fetchMessages, 3000); // Poll every 3s
+        void fetchMessages(true);
+        const interval = setInterval(() => void fetchMessages(false), 3000);
         return () => clearInterval(interval);
     }, [fetchMessages]);
 
@@ -69,7 +72,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         const text = input.trim();
-        if (!text || sending) return;
+        if (!text || textSendLockRef.current) return;
+        textSendLockRef.current = true;
         setSending(true); setComposerError(''); setSafetyNotice('');
         try {
             const response = await fetch(`/api/chat/${teamId}`, {
@@ -80,20 +84,26 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Could not send this message.');
             setInput('');
-            setMessages(previous => [...previous, data.message]);
+            setMessages(previous => mergeChatMessages(previous, [data.message]));
             setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
         } catch (e) {
             setComposerError(e instanceof Error ? e.message : 'Could not send this message.');
-        } finally { setSending(false); }
+        } finally { textSendLockRef.current = false; setSending(false); }
     };
 
-    const sendPayload = async (payload: Poll | Voice) => {
-        const text = CHAT_PREFIX + JSON.stringify(payload);
-        const response = await fetch(`/api/chat/${teamId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Could not send.');
-        await fetchMessages();
-        return data as { pendingModeration?: boolean };
+    const sendPayload = async (payload: ChatPoll | ChatVoice) => {
+        if (payloadSendLockRef.current) throw new Error('This message is already sending.');
+        payloadSendLockRef.current = true;
+        try {
+            const response = await fetch(`/api/chat/${teamId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload }) });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not send.');
+            setMessages(previous => mergeChatMessages(previous, [data.message]));
+            setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
+            return data as { message: Message; pendingModeration?: boolean };
+        } finally {
+            payloadSendLockRef.current = false;
+        }
     };
 
     const createPoll = async () => {
@@ -132,15 +142,10 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                 if (timerRef.current) clearInterval(timerRef.current);
                 const duration = Math.max(1, durationRef.current);
                 if (!chunks.length) { setVoiceStatus('No audio was recorded. Please try again.'); setRecording(false); return; }
-                setVoiceStatus('Sending voice message…');
                 const reader = new FileReader();
-                reader.onloadend = async () => {
-                    try {
-                        const result = await sendPayload({ kind: 'voice', audio: String(reader.result), duration });
-                        setVoiceStatus(result.pendingModeration ? 'Voice message submitted for safety review. It will appear to the team after approval.' : '');
-                    } catch (error) {
-                        setVoiceStatus(error instanceof Error ? error.message : 'Could not send voice message.');
-                    }
+                reader.onloadend = () => {
+                    setRecordedVoice({ kind: 'voice', audio: String(reader.result), duration });
+                    setVoiceStatus('Recording ready. Preview it, then send or cancel.');
                 };
                 reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/mp4' }));
                 setRecording(false);
@@ -154,9 +159,21 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         }
     };
 
-    const parsePayload = (text: string): Poll | Voice | null => {
-        if (!text.startsWith(CHAT_PREFIX)) return null;
-        try { return JSON.parse(text.slice(CHAT_PREFIX.length)); } catch { return null; }
+    const sendRecordedVoice = async () => {
+        if (!recordedVoice || voiceSending) return;
+        setVoiceSending(true);
+        setComposerError('');
+        setVoiceStatus('Sending voice message…');
+        try {
+            const result = await sendPayload(recordedVoice);
+            setRecordedVoice(null);
+            setVoiceStatus(result.pendingModeration ? 'Voice message submitted for safety review. It will appear to the team after approval.' : 'Voice message sent.');
+        } catch (error) {
+            setComposerError(error instanceof Error ? error.message : 'Could not send voice message.');
+            setVoiceStatus('Voice message was not sent. Your recording is still here so you can retry.');
+        } finally {
+            setVoiceSending(false);
+        }
     };
 
     const openModeration = (action: 'report' | 'block', message: Message) => {
@@ -192,7 +209,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         <div className="chat-room">
             <div className="messages-area">
                 {loading && <p className="text-center text-muted">Loading...</p>}
-                {!loading && messages.length === 0 && (
+                {loadError && <div className="chat-load-error" role="alert"><span>{loadError}</span><button type="button" onClick={() => void fetchMessages(true)}>Try again</button></div>}
+                {!loading && !loadError && messages.length === 0 && (
                     <div className="chat-welcome"><div className="chat-welcome-icon" aria-hidden="true">✦</div><h2>Say hello to the team 👋</h2><p>This is a welcoming space to coordinate, encourage one another, and serve together.</p></div>
                 )}
 
@@ -200,7 +218,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     const isMine = msg.userId === userId;
                     const showName = index === 0 || messages[index - 1].userId !== msg.userId;
 
-                    const payload = parsePayload(msg.text);
+                    const payload = parseChatPayload(msg.text);
                     return (
                         <div key={msg.id} className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
                             {!isMine && showName && <span className="sender-name"><span className="sender-avatar">{msg.user.name.slice(0, 1).toUpperCase()}</span>{msg.user.name}</span>}
@@ -224,6 +242,14 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
 
             {safetyNotice && <div className="safety-notice" role="status">{safetyNotice}</div>}
             {composerError && <div className="composer-error" role="alert">{composerError}</div>}
+            {recordedVoice && <div className="voice-preview" aria-label="Voice recording preview">
+                <div className="voice-preview-copy"><strong>Voice recording · {recordedVoice.duration}s</strong><span>Listen before sending. A failed send keeps this recording available.</span></div>
+                <audio src={recordedVoice.audio} controls preload="metadata" />
+                <div className="voice-preview-actions">
+                    <button type="button" disabled={voiceSending} onClick={() => { setRecordedVoice(null); setVoiceStatus('Recording cancelled.'); }}>Cancel</button>
+                    <button type="button" className="voice-send" disabled={voiceSending} onClick={sendRecordedVoice}>{voiceSending ? 'Sending…' : composerError ? 'Retry voice' : 'Send voice'}</button>
+                </div>
+            </div>}
             <form onSubmit={handleSend} className="input-area">
                 <button type="button" className="chat-tool" onClick={() => setShowPoll(value => !value)} aria-label="Create poll">▥</button>
                 <input
@@ -234,10 +260,10 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
                     dir={directionFor(input)}
                     aria-label="Message"
                     maxLength={1000}
-                    disabled={sending}
+                    disabled={sending || recording}
                 />
-                <button type="button" className={`chat-tool${recording ? ' recording' : ''}`} onClick={recording ? () => recorderRef.current?.stop() : startRecording} aria-label={recording ? 'Stop recording' : 'Record voice message'}>{recording ? `${recordingSeconds}s` : '🎙'}</button>
-                <button className="chat-send" type="submit" disabled={!input.trim() || sending} aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+                <button type="button" className={`chat-tool${recording ? ' recording' : ''}`} disabled={voiceSending} onClick={recording ? () => recorderRef.current?.stop() : startRecording} aria-label={recording ? 'Stop recording' : recordedVoice ? 'Record a new voice message' : 'Record voice message'}>{recording ? `${recordingSeconds}s` : '🎙'}</button>
+                <button className="chat-send" type="submit" disabled={!input.trim() || sending} aria-label={sending ? 'Sending message' : 'Send message'}>{sending ? <span className="chat-send-progress" aria-hidden="true">…</span> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>}</button>
             </form>
             {voiceStatus && <div className="voice-status" role="status">{voiceStatus}</div>}
 
@@ -246,6 +272,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
             <style jsx>{`
         .chat-room {
           flex: 1;
+          min-height: 0;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -254,6 +281,7 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         }
         .messages-area {
           flex: 1;
+          min-height: 0;
           overflow-y: auto;
           padding: clamp(10px, 3vw, 16px);
           display: flex;
@@ -264,6 +292,8 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .chat-welcome-icon { width: 60px; height: 60px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 20px; font-size: 28px; color: #d8bc62; background: rgba(139,105,20,.18); }
         .chat-welcome h2 { margin: 0 0 7px; font-size: 20px; }
         .chat-welcome p { margin: 0; color: var(--muted-foreground); font-size: 13px; line-height: 1.5; }
+        .chat-load-error { margin: auto; max-width: 340px; display: grid; gap: 12px; padding: 18px; border: 1px solid color-mix(in srgb, #dc2626 40%, var(--border)); border-radius: 16px; background: var(--background); text-align: center; }
+        .chat-load-error button { min-height: 44px; border: 0; border-radius: 12px; background: var(--primary); color: var(--primary-foreground); font-weight: 800; }
         .message-row {
           display: flex;
           flex-direction: column;
@@ -338,8 +368,17 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .moderation-dialog select, .moderation-dialog textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); font: inherit; }
         .moderation-dialog textarea { min-height: 96px; resize: vertical; }
         .moderation-dialog-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+        .voice-preview { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 14px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--primary) 6%, var(--background)); }
+        .voice-preview-copy { min-width: 0; display: grid; gap: 3px; }
+        .voice-preview-copy span { color: var(--muted-foreground); font-size: .72rem; line-height: 1.4; }
+        .voice-preview audio { grid-column: 1 / -1; width: 100%; height: 40px; }
+        .voice-preview-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+        .voice-preview-actions button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); font-weight: 800; }
+        .voice-preview-actions .voice-send { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
+        .voice-preview-actions button:disabled { opacity: .55; }
         
         .input-area {
+          flex: 0 0 auto;
           padding: 10px clamp(8px, 2.5vw, 14px);
           background: var(--background);
           border-top: 1px solid var(--border);
@@ -366,11 +405,14 @@ export default function ChatRoom({ teamId, userId, userName }: { teamId: string,
         .chat-input[dir='rtl'] { text-align: right; }
         .chat-send { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); cursor: pointer; }
         .chat-send:disabled { opacity: .35; cursor: default; }
+        .chat-send-progress { font-size: 1.15rem; font-weight: 900; animation: sendPulse .8s ease-in-out infinite alternate; }
+        @keyframes sendPulse { to { transform: translateY(-2px); opacity: .55; } }
         .voice-status { padding: 7px 14px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--background); color: var(--muted-foreground); font-size: 12px; text-align: center; }
         @media (max-width: 380px) {
           .message-row { max-width: 86%; }
           .chat-tool { width: 32px; min-width: 32px; }
           .chat-send { width: 42px; height: 42px; flex-basis: 42px; }
+          .voice-preview { padding-inline: 10px; }
         }
       `}</style>
         </div>

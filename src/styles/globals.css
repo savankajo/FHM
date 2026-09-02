@@ -5608,6 +5608,42 @@ textarea {
   color: #991b1b !important;
 }
 
+/* Team chat is a bounded application view: the message list scrolls while the
+   team identity and composer remain reachable above the platform navigation. */
+.chat-room-page {
+  width: 100%;
+  max-width: var(--content-max);
+  height: calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom, 0px));
+  min-height: 0;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+.chat-header {
+  position: relative;
+  z-index: 5;
+  flex: 0 0 auto;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: max(10px, env(safe-area-inset-top, 0px)) var(--page-px) 10px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-card) 94%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.chat-header > div { min-width: 0; }
+.chat-header h1 { margin: 0; font-size: clamp(1.15rem, 4.8vw, 1.55rem); line-height: 1.2; }
+.chat-header .page-kicker { margin: 3px 0 0; }
+
+@media (min-width: 960px) {
+  .chat-room-page { height: 100dvh; }
+}
+
 .success-alert {
   border: 1px solid #bbf7d0;
   background-color: #f0fdf4 !important;
@@ -6711,6 +6747,30 @@ textarea {
   color: var(--text-secondary);
 }
 
+.bible-toolbar-colors {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+.bible-toolbar-colors button {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--bg-card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.bible-toolbar-colors .color-none { background: linear-gradient(135deg, var(--bg-muted) 43%, #dc2626 44%, #dc2626 56%, var(--bg-muted) 57%); }
+.bible-toolbar-colors .color-yellow { background: #f2c94c; }
+.bible-toolbar-colors .color-green { background: #67c587; }
+.bible-toolbar-colors .color-blue { background: #65a9e8; }
+.bible-toolbar-colors .color-pink { background: #e889ad; }
+
 .bible-scripture {
   max-width: 74ch;
   margin-inline: auto;
@@ -6816,6 +6876,55 @@ textarea {
 .bible-note-sheet small {
   color: var(--text-muted);
 }
+
+.bible-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bible-note-actions button {
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.bible-note-actions button:first-child {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--text-on-primary);
+}
+
+.bible-note-actions button:disabled,
+.bible-toolbar-colors button:disabled {
+  opacity: .5;
+}
+
+.bible-note-discard {
+  position: absolute;
+  inset: 12px;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-card) 97%, transparent);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.bible-note-discard p { margin: 0; color: var(--text-secondary); }
+.bible-note-discard > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bible-note-discard button { min-height: 44px; padding: 9px 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--bg-muted); color: var(--text-primary); font-weight: 800; }
+.bible-note-discard button:first-child { border-color: var(--primary); background: var(--primary); color: var(--text-on-primary); }
+.bible-note-discard button:nth-child(2) { color: #ef4444; }
 
 @media (max-width: 430px) {
   .bible-selection-toolbar {

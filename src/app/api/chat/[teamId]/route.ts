@@ -4,20 +4,18 @@ import { getSession } from '@/lib/auth';
 import { validateVoiceDataUrl, hashModeratedContent } from '@/lib/moderation';
 import { getUgcAccess, moderateAndRecordText } from '@/lib/safety-service';
 import { Prisma } from '@prisma/client';
-
-const CHAT_PREFIX = '__FHM_CHAT__';
-type PollPayload = { kind: 'poll'; question: string; options: Array<{ id: string; label: string; voterIds: string[] }> };
-type VoicePayload = { kind: 'voice'; audio: string; duration: number };
+import { CHAT_PREFIX, ChatPoll, resolveChatInput, serializeChatPayload } from '@/lib/chat-message';
 
 async function canAccessTeam(teamId: string, userId: string, role: string) {
   if (role === 'ADMIN') return true;
   return Boolean(await prisma.team.findFirst({ where: { id: teamId, members: { some: { id: userId } } }, select: { id: true } }));
 }
 
-async function validateAndModerateMessage(text: unknown, userId: string) {
-  if (typeof text !== 'string' || !text.trim()) return { valid: false as const, error: 'Message required.' };
-  if (!text.startsWith(CHAT_PREFIX)) {
-    const cleanText = text.trim();
+async function validateAndModerateMessage(input: { text?: unknown; payload?: unknown }, userId: string) {
+  const resolved = resolveChatInput(input);
+  if (resolved.kind === 'empty') return { valid: false as const, error: 'Type a message or add a voice recording.' };
+  if (resolved.kind === 'text') {
+    const cleanText = resolved.text;
     if (cleanText.length > 1000) return { valid: false as const, error: 'Messages must be 1,000 characters or fewer.' };
     const result = await moderateAndRecordText({ text: cleanText, surface: 'team_chat_text', userId });
     if (!result.allowed) return { valid: false as const, error: 'This message does not meet our Community Guidelines. Please revise it before posting.' };
@@ -25,13 +23,13 @@ async function validateAndModerateMessage(text: unknown, userId: string) {
   }
 
   try {
-    const payload = JSON.parse(text.slice(CHAT_PREFIX.length)) as PollPayload | VoicePayload;
+    const payload = resolved.payload;
     if (payload.kind === 'voice') {
       const duration = Number(payload.duration);
       if (!Number.isFinite(duration) || duration <= 0 || duration > 30) return { valid: false as const, error: 'Voice messages must be 30 seconds or shorter.' };
       const audio = validateVoiceDataUrl(payload.audio);
       if (!audio.valid) return { valid: false as const, error: audio.error };
-      return { valid: true as const, text, contentType: 'VOICE' as const, moderationStatus: 'PENDING' as const };
+      return { valid: true as const, text: resolved.serialized, contentType: 'VOICE' as const, moderationStatus: 'PENDING' as const };
     }
     if (payload.kind !== 'poll' || typeof payload.question !== 'string' || !Array.isArray(payload.options)) throw new Error('Invalid rich message');
     const question = payload.question.trim();
@@ -42,7 +40,7 @@ async function validateAndModerateMessage(text: unknown, userId: string) {
       const result = await moderateAndRecordText({ text: value, surface: 'team_chat_poll', userId });
       if (!result.allowed) return { valid: false as const, error: 'This poll does not meet our Community Guidelines. Please revise it before posting.' };
     }
-    return { valid: true as const, text: CHAT_PREFIX + JSON.stringify({ kind: 'poll', question, options }), contentType: 'POLL' as const, moderationStatus: 'PUBLISHED' as const };
+    return { valid: true as const, text: serializeChatPayload({ kind: 'poll', question, options }), contentType: 'POLL' as const, moderationStatus: 'PUBLISHED' as const };
   } catch {
     return { valid: false as const, error: 'This message format is not supported.' };
   }
@@ -80,8 +78,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
   if (!await canAccessTeam(teamId, session.userId, session.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   try {
-    const { text } = await request.json();
-    const validated = await validateAndModerateMessage(text, session.userId);
+    const body = await request.json();
+    const validated = await validateAndModerateMessage(body, session.userId);
     if (!validated.valid) return NextResponse.json({ error: validated.error }, { status: 422 });
     if (validated.moderationStatus === 'PENDING') {
       const alreadyPending = await prisma.chatMessage.findFirst({ where: { userId: session.userId, contentType: 'VOICE', moderationStatus: 'PENDING' }, select: { id: true } });
@@ -127,11 +125,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
   const message = await prisma.chatMessage.findFirst({ where: { id: messageId, teamId, expiresAt: { gt: new Date() }, moderationStatus: 'PUBLISHED', contentType: 'POLL' } });
   if (!message?.text.startsWith(CHAT_PREFIX)) return NextResponse.json({ error: 'Poll not found' }, { status: 404 });
   try {
-    const poll = JSON.parse(message.text.slice(CHAT_PREFIX.length)) as PollPayload;
+    const poll = JSON.parse(message.text.slice(CHAT_PREFIX.length)) as ChatPoll;
     if (poll.kind !== 'poll' || !poll.options.some(option => option.id === optionId)) throw new Error('Invalid poll');
     poll.options = poll.options.map(option => ({ ...option, voterIds: option.voterIds.filter(id => id !== session.userId) }));
     poll.options.find(option => option.id === optionId)!.voterIds.push(session.userId);
-    const updated = await prisma.chatMessage.update({ where: { id: message.id }, data: { text: CHAT_PREFIX + JSON.stringify(poll) }, include: { user: { select: { id: true, name: true } } } });
+    const updated = await prisma.chatMessage.update({ where: { id: message.id }, data: { text: serializeChatPayload(poll) }, include: { user: { select: { id: true, name: true } } } });
     return NextResponse.json({ message: updated });
   } catch {
     return NextResponse.json({ error: 'Invalid poll' }, { status: 400 });

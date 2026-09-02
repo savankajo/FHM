@@ -114,6 +114,45 @@ model User {
   blocksReceived          UserBlock[]          @relation("Blocked")
   termsAcceptances        TermsAcceptance[]
   passwordResetTokens     PasswordResetToken[]
+  bibleHighlights         BibleHighlight[]
+  bibleNotes              BibleNote[]
+}
+
+model BibleHighlight {
+  id               String   @id @default(uuid())
+  version          String
+  bookId           String
+  chapterId        String
+  chapterReference String
+  verse            Int
+  color            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, version, chapterId, verse])
+  @@index([userId, updatedAt])
+}
+
+model BibleNote {
+  id               String   @id @default(uuid())
+  version          String
+  bookId           String
+  chapterId        String
+  chapterReference String
+  verseKey         String
+  verses           Int[]
+  note             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, version, chapterId, verseKey])
+  @@index([userId, updatedAt])
 }
 
 model TermsAcceptance {

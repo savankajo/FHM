@@ -51,6 +51,12 @@ export default async function ProfilePage() {
                     <span className="profile-menu-arrow"><ChevronRight /></span>
                 </Link>
 
+                <Link href="/profile/bible-notes" className="profile-menu-item">
+                    <div className="profile-menu-icon green">Note</div>
+                    <span className="profile-menu-label">Bible Notes</span>
+                    <span className="profile-menu-arrow"><ChevronRight /></span>
+                </Link>
+
                 <Link href="/profile/settings" className="profile-menu-item">
                     <div className="profile-menu-icon purple">Set</div>
                     <span className="profile-menu-label">Theme</span>

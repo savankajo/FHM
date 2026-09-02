@@ -26,14 +26,14 @@ export default async function ChatPage({ params }: { params: Promise<{ teamId: s
     return (
         <div className="chat-room-page">
             <div className="chat-header">
-                <Link href="/chat" className="page-back-btn" aria-label="Back to Chat">
+                <Link href="/teams" className="page-back-btn" aria-label="Back to Teams">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </Link>
                 <div>
                     <h1>{team.name}</h1>
-                    <p className="page-kicker">Team chat</p>
+                    <p className="page-kicker">Team chat · Back to Teams</p>
                 </div>
             </div>
 
