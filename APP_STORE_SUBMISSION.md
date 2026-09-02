@@ -5,10 +5,10 @@
 - In-app account deletion: Profile → Settings → Delete Account.
 - Public Privacy Policy, Terms, Community Guidelines, Policies, and Support pages with the monitored contact `Media@fathersheartministry.ca`.
 - Explicit zero-tolerance Terms/Community Guidelines agreement before registration or sign-in, with versioned acceptance records.
-- Server-side text and poll filtering before publication, and human approval before voice messages become visible to other members.
+- Server-side text and poll filtering before publication. Voice messaging is not offered in this release.
 - Team-chat reporting and immediate user blocking, with automatic safety reports on block and blocked messages filtered server-side.
 - A deadline-ordered administrator queue with remove, warn, suspend, ban, restore, notification retry, and audit controls.
-- Production deploy `6a96864f7a368e13914d0306` is live at `https://fhmapp.netlify.app`; its scheduled moderation-escalation function is deployed.
+- Production is live at `https://fhmapp.netlify.app`; its scheduled moderation-escalation function is deployed.
 - Chat membership authorization, 48-hour message expiry, safe-area layout, app icon and launch assets.
 - iOS bundle ID: `com.savankajo.fhm`; display name: `FHMChurch`.
 
@@ -21,13 +21,13 @@
 5. In App Store Connect, complete the privacy nutrition label from the actual production data flow. Expected declared data includes contact info (name, email, optional phone), user content (chat), identifiers (account ID), and product interaction (team/event/volunteer activity); mark data as linked to identity. Confirm against every production provider/SDK.
 6. Provide screenshots showing real Home, Sermons/Podcasts, Events, Teams, Chat, and Profile screens—not only login or splash screens. Use fictional demo data.
 7. Set the honest age rating based on all administrator-posted sermons, podcasts, linked videos, and chat content. Do not select the Kids Category without a separate children-privacy review.
-8. Archive and test on physical iPhone and iPad: policy consent/decline, registration, sign-in/out, account deletion, every external link/media URL, calendar export, text/poll rejection, chat report/block/unblock, pending voice review, admin sanctions, microphone denial/interruption, offline/error states, rotation, safe areas, Dynamic Type, VoiceOver, and dark-mode contrast. Record results in `docs/APP_STORE_GUIDELINE_1_2.md`.
+8. Archive and test on physical iPhone and iPad: policy consent/decline, registration, sign-in/out, account deletion, every external link/media URL, calendar export, text/poll rejection, chat report/block/unblock, admin sanctions, offline/error states, rotation, safe areas, Dynamic Type, VoiceOver, and dark-mode contrast. Record results in `docs/APP_STORE_GUIDELINE_1_2.md`.
 9. Confirm ownership/licenses for the logo, Unsplash imagery, sermon/podcast media, Bible translation text, and all screenshots.
 10. Configure signing, version/build numbers, App Store category, description, keywords, copyright, Support URL, Privacy Policy URL, and review contact in App Store Connect.
 
 ## Suggested Review Notes
 
-FHM Church is a church community app for public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary team chat. Chat messages expire after 48 hours. Text and polls are filtered by the server before publication; voice messages remain hidden from other members until administrator review. Reviewers can report a message or block its sender from the three-dot safety menu on any incoming message. Blocks are immediate and automatically create a safety report. Administrators review the deadline-ordered Safety Reports queue and can remove content, warn, suspend, ban, or restore with an audit record. Account deletion is available in Profile settings. No purchases, subscriptions, advertising, or cross-app tracking are included.
+FHM Church is a church community app for public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary text-and-poll team chat. Chat messages expire after 48 hours, and text and polls are filtered by the server before publication. Reviewers can report a message or block its sender from the three-dot safety menu on any incoming message. Blocks are immediate and automatically create a safety report. Administrators review the deadline-ordered Safety Reports queue and can remove content, warn, suspend, ban, or restore with an audit record. Account deletion is available in Profile settings. No purchases, subscriptions, advertising, or cross-app tracking are included.
 
 Demo account: `[ADD EMAIL]` / `[ADD PASSWORD]`
 

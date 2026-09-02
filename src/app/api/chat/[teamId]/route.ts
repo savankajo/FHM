@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import { validateVoiceDataUrl, hashModeratedContent } from '@/lib/moderation';
 import { getUgcAccess, moderateAndRecordText } from '@/lib/safety-service';
-import { Prisma } from '@prisma/client';
 import { CHAT_PREFIX, ChatPoll, resolveChatInput, serializeChatPayload } from '@/lib/chat-message';
 
 async function canAccessTeam(teamId: string, userId: string, role: string) {
@@ -13,7 +11,7 @@ async function canAccessTeam(teamId: string, userId: string, role: string) {
 
 async function validateAndModerateMessage(input: { text?: unknown; payload?: unknown }, userId: string) {
   const resolved = resolveChatInput(input);
-  if (resolved.kind === 'empty') return { valid: false as const, error: 'Type a message or add a voice recording.' };
+  if (resolved.kind === 'empty') return { valid: false as const, error: 'Type a message or create a poll.' };
   if (resolved.kind === 'text') {
     const cleanText = resolved.text;
     if (cleanText.length > 1000) return { valid: false as const, error: 'Messages must be 1,000 characters or fewer.' };
@@ -24,13 +22,7 @@ async function validateAndModerateMessage(input: { text?: unknown; payload?: unk
 
   try {
     const payload = resolved.payload;
-    if (payload.kind === 'voice') {
-      const duration = Number(payload.duration);
-      if (!Number.isFinite(duration) || duration <= 0 || duration > 30) return { valid: false as const, error: 'Voice messages must be 30 seconds or shorter.' };
-      const audio = validateVoiceDataUrl(payload.audio);
-      if (!audio.valid) return { valid: false as const, error: audio.error };
-      return { valid: true as const, text: resolved.serialized, contentType: 'VOICE' as const, moderationStatus: 'PENDING' as const };
-    }
+    if (payload.kind === 'voice') return { valid: false as const, error: 'Voice messages are not available.' };
     if (payload.kind !== 'poll' || typeof payload.question !== 'string' || !Array.isArray(payload.options)) throw new Error('Invalid rich message');
     const question = payload.question.trim();
     if (!question || question.length > 160 || payload.options.length < 2 || payload.options.length > 6) throw new Error('Invalid poll');
@@ -59,6 +51,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tea
     where: {
       teamId,
       expiresAt: { gt: new Date() },
+      contentType: { not: 'VOICE' },
       userId: { notIn: blocks.map(block => block.blockedId) },
       OR: [{ moderationStatus: 'PUBLISHED' }, { moderationStatus: 'PENDING', userId: session.userId }],
     },
@@ -81,11 +74,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
     const body = await request.json();
     const validated = await validateAndModerateMessage(body, session.userId);
     if (!validated.valid) return NextResponse.json({ error: validated.error }, { status: 422 });
-    if (validated.moderationStatus === 'PENDING') {
-      const alreadyPending = await prisma.chatMessage.findFirst({ where: { userId: session.userId, contentType: 'VOICE', moderationStatus: 'PENDING' }, select: { id: true } });
-      if (alreadyPending) return NextResponse.json({ error: 'Your previous voice message is still being reviewed. Please wait before submitting another.' }, { status: 409 });
-    }
-
     const message = await prisma.$transaction(async tx => {
       const created = await tx.chatMessage.create({
         data: {
@@ -94,21 +82,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
           userId: session.userId,
           contentType: validated.contentType,
           moderationStatus: validated.moderationStatus,
-          moderationReason: validated.moderationStatus === 'PENDING' ? 'Awaiting authorized moderator review before publication.' : null,
+          moderationReason: null,
           expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
         },
         include: { user: { select: { id: true, name: true } } },
       });
-      if (validated.moderationStatus === 'PENDING') {
-        await tx.contentModerationEvent.create({ data: { userId: session.userId, messageId: created.id, surface: 'team_chat_voice', outcome: 'MANUAL_REVIEW', categories: [], contentHash: hashModeratedContent(created.id) } });
-      }
       return created;
     });
-    return NextResponse.json({ message, pendingModeration: validated.moderationStatus === 'PENDING' }, { status: 201 });
+    return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'Your previous voice message is still being reviewed. Please wait before submitting another.' }, { status: 409 });
-    }
     console.error('Chat moderation failed closed:', error instanceof Error ? error.message : 'unknown error');
     return NextResponse.json({ error: 'Safety review is temporarily unavailable. Your message was not posted. Please try again later.' }, { status: 503 });
   }

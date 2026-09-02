@@ -30,7 +30,6 @@ Features include:
 - Account privacy and deletion controls
 - Pre-publication chat safety filtering
 - Message reporting and immediate member blocking tools
-- Human review before voice messages are shared with a team
 
 Some team and volunteer features require an account assigned by church administrators.
 
@@ -72,7 +71,7 @@ Confirm hosting/database logs and every embedded media provider before submittin
 
 ### Notes for Review
 
-FHM Church is a church community app providing public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary team chat. Chat messages expire after 48 hours. Text and poll content is filtered by the server before publication, while voice messages remain hidden from other members until administrator approval. On each incoming message, the three-dot safety menu lets members report the message or immediately block its sender; blocking also creates a safety report. Administrators use a deadline-ordered Safety Reports area and can remove content, warn, suspend, ban, or restore with an audit record. Account deletion is available in Profile settings. The app contains no purchases, subscriptions, advertising, or cross-app tracking.
+FHM Church is a church community app providing public sermons, podcasts, Bible content, and events. Registered members can access assigned teams, volunteer schedules, event voting, and temporary text-and-poll team chat. Chat messages expire after 48 hours, and text and poll content is filtered by the server before publication. On each incoming message, the three-dot safety menu lets members report the message or immediately block its sender; blocking also creates a safety report. Administrators use a deadline-ordered Safety Reports area and can remove content, warn, suspend, ban, or restore with an audit record. Account deletion is available in Profile settings. The app contains no purchases, subscriptions, advertising, or cross-app tracking.
 
 To review member features: accept the current Terms and Community Guidelines, sign in with the demo credentials, open Teams, select the assigned sample team, then open Team Chat. Open the three-dot menu on an incoming message to inspect Report and Block. Manage blocks at Profile → Blocked Users.
 

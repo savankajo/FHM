@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mergeChatMessages, parseChatPayload, resolveChatInput, serializeChatPayload } from './chat-message.ts';
 
-test('accepts either non-empty text or a voice-only payload', () => {
+test('accepts non-empty text and recognizes legacy voice payloads for preserved evidence', () => {
     assert.deepEqual(resolveChatInput({ text: '  Hello team  ' }), { kind: 'text', text: 'Hello team' });
     assert.equal(resolveChatInput({ text: '   ' }).kind, 'empty');
 

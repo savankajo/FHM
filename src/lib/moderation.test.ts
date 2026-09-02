@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { moderateText, validateVoiceDataUrl } from './moderation.ts';
+import { moderateText } from './moderation.ts';
 import { CURRENT_TERMS_VERSION, hasAcceptedCurrentTerms } from './terms.ts';
 
 test('allows ordinary church-team conversation', () => {
@@ -35,23 +35,6 @@ test('does not return private content in moderation result', () => {
   assert.equal('text' in result, false);
   assert.equal(result.contentHash.length, 64);
   assert.notEqual(result.contentHash, input);
-});
-
-test('validates declared audio type against file signature and size', () => {
-  const mp4 = Buffer.alloc(32);
-  mp4.write('ftyp', 4, 'ascii');
-  assert.equal(validateVoiceDataUrl(`data:audio/mp4;base64,${mp4.toString('base64')}`).valid, true);
-  assert.equal(validateVoiceDataUrl(`data:audio/mp4;codecs=mp4a.40.2;base64,${mp4.toString('base64')}`).valid, true);
-  assert.equal(validateVoiceDataUrl(`data:audio/x-m4a;codecs="mp4a.40.2";base64,${mp4.toString('base64')}`).valid, true);
-  assert.equal(validateVoiceDataUrl(`data:audio/mp4; codecs = "mp4a.40.2"; base64,${mp4.toString('base64')}`).valid, true);
-  const webm = Buffer.alloc(32);
-  webm[0] = 0x1a; webm[1] = 0x45; webm[2] = 0xdf; webm[3] = 0xa3;
-  assert.equal(validateVoiceDataUrl(`data:audio/webm;codecs=opus;base64,${webm.toString('base64')}`).valid, true);
-  const disguised = Buffer.from('not an audio file but long enough');
-  assert.equal(validateVoiceDataUrl(`data:audio/mp4;base64,${disguised.toString('base64')}`).valid, false);
-  assert.equal(validateVoiceDataUrl('data:application/javascript;base64,YWxlcnQoMSk=').valid, false);
-  assert.equal(validateVoiceDataUrl(`data:audio/webm;charset=utf-8;base64,${webm.toString('base64')}`).valid, false);
-  assert.equal(validateVoiceDataUrl('data:audio/webm;codecs=opus;base64,%%%').valid, false);
 });
 
 test('requires the exact current terms version', () => {

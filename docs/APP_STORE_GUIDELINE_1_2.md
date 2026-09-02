@@ -7,7 +7,7 @@ Implementation date: 2026-08-31
 
 ## Decision summary
 
-The app’s member-only team chat is user-generated content. It now has all four controls explicitly required by App Review Guideline 1.2: pre-publication filtering, member reporting with timely response, member blocking, and published developer contact information. The implementation also adds explicit zero-tolerance consent, account sanctions, evidence preservation, administrator audit trails, and voice-message review.
+The app’s member-only text-and-poll team chat is user-generated content. It now has all four controls explicitly required by App Review Guideline 1.2: pre-publication filtering, member reporting with timely response, member blocking, and published developer contact information. The implementation also adds explicit zero-tolerance consent, account sanctions, evidence preservation, and administrator audit trails. Voice messaging is not offered in this release.
 
 This document is engineering/compliance evidence, not legal advice. Final policy language and App Store privacy answers require owner/legal approval.
 
@@ -22,14 +22,13 @@ This document is engineering/compliance evidence, not legal advice. Final policy
 | Published contact | Community Guidelines, Policies, Privacy, Terms, and Support publish `Media@fathersheartministry.ca`. | `/community-guidelines`, `/policies`, `/privacy`, `/terms`, `/support` | Implemented; confirm monitored inbox |
 | Developer removes violators | Moderators can dismiss, remove content, warn, suspend seven days, ban, or restore. Suspension/ban is enforced during session validation. | `src/app/admin/reports/page.tsx`, `src/lib/safety-service.ts`, `src/lib/auth.ts` | Implemented |
 | Explicit consent | Registration and sign-in require an unchecked agreement to the current Terms and Community Guidelines. Decline stops authentication; existing accounts must accept the current version before UGC access. | `src/components/auth/terms-gate.tsx`, `src/lib/terms.ts`, auth API routes | Implemented |
-| Voice moderation | Voice files are limited to 30 seconds and 500 KB, MIME/codec parameters and signatures are checked, held as pending, and published only after human approval. A database partial unique index authoritatively prevents concurrent pending submissions. | `src/lib/moderation.ts`, chat API, Safety Reports queue, `20260901010000_harden_moderation_security_and_pending_voice` migration | Implemented; requires physical-device validation |
 | Preserve evidence/audit | Soft removal preserves content; reports remain reviewable after blocking; filter events store hashes rather than rejected text; moderator actions are auditable. | Prisma models/migration, `src/lib/safety-service.ts` | Implemented |
 
 ## Filter approach and limitations
 
 The filter is deliberately server-authoritative: a modified client cannot bypass it. It evaluates the complete text message and every poll question/option after Unicode and evasion normalization. It blocks defined severe-safety categories before publication and returns a neutral revision message. Rejected text is never written to the database or logs; a SHA-256 hash supports incident correlation without preserving the text.
 
-No finite word/rule filter understands all context, dialects, coded language, images, or audio. The safeguards therefore operate as layers: terms consent, pre-publication checks, per-message reporting, blocking, automatic report creation on block, human review, sanctions, escalation, and published contact. Voice is conservatively held for human review because no third-party audio-classification service is used.
+No finite word/rule filter understands all context, dialects, or coded language. The safeguards therefore operate as layers: terms consent, pre-publication checks, per-message reporting, blocking, automatic report creation on block, human review, sanctions, escalation, and published contact.
 
 ## UGC surface audit
 
@@ -37,7 +36,6 @@ No finite word/rule filter understands all context, dialects, coded language, im
 |---|---:|---|
 | Team chat text | Yes | Server filter before publication |
 | Team chat polls | Yes | Question and each option filtered before publication |
-| Team chat voice | Yes | Validated then pending human approval |
 | Profile name/phone | Yes | Length/control validation; not a public feed |
 | Event votes/RSVP/volunteering | Yes, structured | Authenticated, authorized, fixed-value actions; no free-form public content |
 | Sermons, podcasts, articles, events | Administrator supplied | Role/permission controlled; administrator remains responsible for content |
@@ -50,26 +48,24 @@ No other public free-form UGC surface was found in the current repository.
 - **1.2 User-Generated Content:** filter, report, timely response, block, contact, and developer removal controls are implemented.
 - **1.6 Data Security:** production JWT configuration fails closed; secrets were removed from tracked deployment files; moderation evidence is access-controlled.
 - **2.1 App Completeness:** production backend, sample team, current demo credentials, and physical-device flows must be available during review.
-- **2.3 Accurate Metadata:** review notes must describe member-only chat, reports, blocks, voice review, and navigation accurately.
+- **2.3 Accurate Metadata:** review notes must describe member-only text-and-poll chat, reports, blocks, and navigation accurately.
 - **2.4.1 Hardware Compatibility:** validate iPhone and iPad layout/orientation on actual supported devices.
-- **2.5.14 Recording:** microphone permission is requested in context and the recording UI supplies visible state; permission denial/interruption still needs a physical-device pass.
 - **5.1.1 Privacy and Data Collection:** privacy policy covers collection, use, retention, deletion, safety processing, contact, and in-app account deletion.
-- **5.1.2 Data Use and Sharing:** confirm every production provider and the final App Store privacy nutrition label; the implementation states that no third-party voice AI is used.
+- **5.1.2 Data Use and Sharing:** confirm every production provider and the final App Store privacy nutrition label.
 
 Authoritative source: Apple App Review Guidelines, <https://developer.apple.com/app-store/review/guidelines/>.
 
 ## Verification completed
 
 - Prisma schema formatted and client generated.
-- Production migrations `20260831230000_app_store_guideline_1_2` and `20260901010000_harden_moderation_security_and_pending_voice` applied additively; existing chat messages were preserved.
+- Production migrations `20260831230000_app_store_guideline_1_2` and `20260901010000_harden_moderation_security_and_pending_voice` applied additively; existing chat records were preserved. The voice composer and microphone permission were subsequently removed, new voice submissions are rejected server-side, and legacy voice records are hidden from members.
 - Row-level security is enabled and `anon`/`authenticated` privileges are revoked for terms, reports, blocks, moderation audit, and moderation-event evidence.
-- The pending-voice partial unique index was verified against the configured production database: a duplicate insert returned `P2002` and the test transaction rolled back without persisted probe data.
-- Automated safety tests cover allowed English/Arabic conversation, direct threats, abusive English/Arabic phrases, common evasion, privacy-safe hash results, codec-bearing MP4/M4A/WebM audio signatures, malformed audio, and current terms version.
-- TypeScript type-check, ESLint, and the optimized production build passed on 2026-09-01.
+- Automated safety tests cover allowed English/Arabic conversation, direct threats, abusive English/Arabic phrases, common evasion, privacy-safe hash results, and the current terms version.
+- TypeScript type-check, ESLint, and the optimized production build passed on 2026-09-02.
 - The production dependency audit reported zero known vulnerabilities on 2026-09-01.
 - Responsive browser validation completed for login consent and policy pages at iPhone- and iPad-sized viewports.
 - A privacy-safe test moderation alert was accepted by the configured email provider; inbox receipt still requires a human confirmation.
-- Production deploy `6a96864f7a368e13914d0306` is live at `https://fhmapp.netlify.app`; the deployed `moderation-escalation` function is active.
+- Production is live at `https://fhmapp.netlify.app`; the deployed `moderation-escalation` function is active.
 - Live smoke checks returned HTTP 200 for health/database connectivity, Terms, Community Guidelines, login consent, and Support contact.
 
 ## Physical iOS validation matrix
@@ -84,9 +80,6 @@ These checks cannot be truthfully completed on this Windows workstation. Record 
 | Objectionable text/poll rejected and never appears | Pending | Pending | Screen recording |
 | Report acknowledgement and admin queue entry | Pending | Pending | Screen recording |
 | Block immediately removes sender’s messages; unblock restores future visibility | Pending | Pending | Screen recording |
-| Voice permission prompt is in context with visible recording state | Pending | Pending | Screen recording |
-| Denied/interrupted/over-30-second voice recording fails safely | Pending | Pending | Notes/video |
-| Pending voice hidden from other member until admin approval | Pending | Pending | Two-account video |
 | Admin remove/warn/suspend/ban/restore | Pending | Pending | Admin/member video |
 | VoiceOver focus order and labels | Pending | Pending | Checklist |
 | Dynamic Type, portrait/landscape, safe areas, dark contrast | Pending | Pending | Screenshots |
@@ -116,8 +109,7 @@ Thank you for identifying the Guideline 1.2 issue. We implemented a complete use
 - immediate user blocking enforced by the server, with a safety report automatically created when a user is blocked;
 - public Community Guidelines, Terms, Privacy, Policies, and Support pages with a monitored developer contact;
 - explicit zero-tolerance Terms/Community Guidelines agreement before sign-in or registration;
-- administrator controls to remove content, warn, suspend, ban, and restore, with an audit trail;
-- voice messages held from other members until administrator review.
+- administrator controls to remove content, warn, suspend, ban, and restore, with an audit trail.
 
 To test: agree to the policies, sign in with the review account in App Store Connect, open **Teams → App Review Test Team → Team Chat**, then use the three-dot menu on an incoming message. Blocks can be managed under **Profile → Blocked Users**. Account deletion remains available in Profile settings.
 

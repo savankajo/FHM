@@ -27,9 +27,8 @@ The queue shows the report reason, optional reporter context, reporter, reported
 
 1. Confirm the reported item and its team/user relationship match the report record.
 2. For text or poll content, review the preserved evidence in the queue.
-3. For a pending voice message, play it only in the private administrator queue. Never download it to an unmanaged device or forward it.
-4. Select an outcome and enter a specific internal note. Notes are part of the audit trail; do not include irrelevant personal data.
-5. Apply one action:
+3. Select an outcome and enter a specific internal note. Notes are part of the audit trail; do not include irrelevant personal data.
+4. Apply one action:
 
    - **Dismiss** — the content does not violate the Community Guidelines.
    - **Remove content** — soft-removes the item from member chat while preserving evidence and audit records.
@@ -38,8 +37,7 @@ The queue shows the report reason, optional reporter context, reporter, reported
    - **Ban user** — disables the account indefinitely and removes the reported content.
    - **Restore content** — reverses a content removal after a documented correction or appeal.
 
-6. For a pending voice message, explicitly choose **Approve voice** or **Reject voice**. A voice message is visible only to its sender while pending; other members see it only after approval.
-7. Verify the report moved into resolved history and that the audit entry was created.
+5. Verify the report moved into resolved history and that the audit entry was created.
 
 ## Action guidance
 
@@ -73,7 +71,6 @@ If a report shows a failed alert:
 
 - Rejected text is not stored; the moderation event stores a one-way content hash, categories, surface, and outcome.
 - Published or reported chat evidence remains in the application database for moderation and audit needs, even when a reporter blocks its sender.
-- Voice messages are limited to 30 seconds and validated for declared type, encoded size, and file signature. They receive human review before publication.
 - Moderator actions are recorded in `ModerationAudit`; filter decisions are recorded in `ContentModerationEvent`.
 - Access to the queue is administrator-only. New moderation tables have row-level security enabled and grant no browser-client access.
 - Data retention and deletion decisions must follow the published Privacy Policy and any preservation obligation for safety/legal matters.
@@ -81,7 +78,6 @@ If a report shows a failed alert:
 ## Daily operational check
 
 - Open Safety Reports and confirm there are no overdue reports.
-- Resolve pending voice reviews.
 - Retry failed alerts.
 - Confirm the health endpoint and member sign-in work.
 - Confirm at least two trained people monitor `Media@fathersheartministry.ca` or the configured moderation inbox.
@@ -91,9 +87,9 @@ If a report shows a failed alert:
 Before each production release:
 
 1. Run `npm test`, `npx tsc --noEmit`, `npm run build`, and `npm audit --omit=dev`.
-2. Run `npx prisma migrate status`; confirm both Guideline 1.2 migrations are applied before deploying code that depends on them. Verify that `ChatReport` and `UserBlock` expose no `anon`/`authenticated` grants and that `ChatMessage_one_pending_voice_per_user_idx` exists.
-3. Verify the report, block, unblock, text rejection, pending voice, notification retry, remove, suspend, ban, and restore flows using fictional data.
-4. Test on a physical iPhone and iPad with VoiceOver, Dynamic Type, rotation, safe areas, microphone permission, denied microphone permission, interrupted recording, and offline/error states.
+2. Run `npx prisma migrate status`; confirm both Guideline 1.2 migrations are applied before deploying code that depends on them. Verify that `ChatReport` and `UserBlock` expose no `anon`/`authenticated` grants.
+3. Verify the report, block, unblock, text rejection, notification retry, remove, suspend, ban, and restore flows using fictional data.
+4. Test on a physical iPhone and iPad with VoiceOver, Dynamic Type, rotation, safe areas, and offline/error states.
 5. Keep the App Review demo account active, assigned to a sample team, and free of real member data throughout review.
 
 ## Incident contacts
