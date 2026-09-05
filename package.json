@@ -13,6 +13,8 @@
     "test:bible-annotations": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/bible-annotations.test.ts",
     "test": "npm run test:verse-selection && npm run test:bible-annotations && npm run test:chat && npm run test:safety",
     "postinstall": "prisma generate",
+    "seed:articles": "node scripts/seed-website-articles.js",
+    "seed:youtube": "node scripts/seed-youtube-media.js",
     "review:preflight": "node scripts/review-preflight.js"
   },
   "dependencies": {
