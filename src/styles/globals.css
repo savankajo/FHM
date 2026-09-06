@@ -5579,6 +5579,18 @@ textarea {
   font-size: max(16px, 1rem);
 }
 
+/* iOS automatically zooms the WebView when a focused form control computes
+   below 16px. Several legacy admin utility classes are more specific than the
+   base rule above, so enforce the safe size for editable controls on WebKit.
+   Do not restrict the viewport: users can still pinch-zoom normally. */
+@supports (-webkit-touch-callout: none) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 3px solid color-mix(in srgb, var(--primary) 72%, white);
   outline-offset: 3px;
