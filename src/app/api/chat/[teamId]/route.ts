@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getUgcAccess, moderateAndRecordText } from '@/lib/safety-service';
 import { CHAT_PREFIX, ChatPoll, resolveChatInput, serializeChatPayload } from '@/lib/chat-message';
+import { notifyTeamMessage } from '@/lib/notifications';
 
 async function canAccessTeam(teamId: string, userId: string, role: string) {
   if (role === 'ADMIN') return true;
@@ -85,10 +86,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ tea
           moderationReason: null,
           expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
         },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true } }, team: { select: { name: true } } },
       });
       return created;
     });
+    try {
+      await notifyTeamMessage({
+        messageId: message.id,
+        teamId,
+        teamName: message.team.name,
+        senderId: session.userId,
+        senderName: message.user.name,
+        text: message.text,
+      });
+    } catch (notificationError) {
+      console.error('Message notification failed:', notificationError);
+    }
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
     console.error('Chat moderation failed closed:', error instanceof Error ? error.message : 'unknown error');

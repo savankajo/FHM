@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canManage } from '@/lib/permissions';
+import { notifyNewMedia } from '@/lib/notifications';
 
 export async function POST(request: Request) {
     const session = await getSession();
@@ -24,6 +25,12 @@ export async function POST(request: Request) {
                 audienceTeamIds: body.audienceTeamIds || [],
             },
         });
+
+        try {
+            await notifyNewMedia({ id: article.id, kind: 'article', title: article.title, audienceTeamIds: article.audienceTeamIds });
+        } catch (notificationError) {
+            console.error('Article notification failed:', notificationError);
+        }
 
         return NextResponse.json({ article });
     } catch {

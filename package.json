@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@capacitor/browser": "^8.0.4",
+    "@capacitor/push-notifications": "^8.1.2",
     "@netlify/database": "^1.1.0",
     "@prisma/client": "^5.10.2",
     "@types/bcryptjs": "^2.4.6",

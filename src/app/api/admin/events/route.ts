@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { canManage } from '@/lib/permissions';
+import { notifyEventInvitation } from '@/lib/notifications';
 
 export async function POST(request: Request) {
     const session = await getSession();
@@ -31,10 +32,13 @@ export async function POST(request: Request) {
         });
 
         if (body.audienceTeamIds?.length) {
-            const members = await prisma.user.findMany({ where: { teams: { some: { id: { in: body.audienceTeamIds } } } }, select: { id: true, notificationPreferences: true, teams: { where: { id: { in: body.audienceTeamIds } }, select: { id: true } } } });
+            const members = await prisma.user.findMany({ where: { teams: { some: { id: { in: body.audienceTeamIds } } } }, select: { id: true, teams: { where: { id: { in: body.audienceTeamIds } }, select: { id: true } } } });
             await prisma.invitation.createMany({ data: members.flatMap(member => member.teams.map(team => ({ eventId: event.id, teamId: team.id, userId: member.id }))), skipDuplicates: true });
-            const recipients = members.filter(member => (member.notificationPreferences as { invitations?: boolean } | null)?.invitations !== false);
-            if (recipients.length) await prisma.notification.createMany({ data: recipients.map(member => ({ userId: member.id, eventId: event.id, type: 'INVITATION', title: `Invitation: ${event.title}`, body: 'Your team has a new event. Open it to review the details and register.', href: `/events/${event.id}` })) });
+            try {
+                await notifyEventInvitation(event, body.audienceTeamIds);
+            } catch (notificationError) {
+                console.error('Event invitation notification failed:', notificationError);
+            }
         }
 
         return NextResponse.json({ event });

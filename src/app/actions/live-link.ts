@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { canManage } from '@/lib/permissions';
+import { notifyLiveStarted } from '@/lib/notifications';
 
 export async function createLiveLink(formData: FormData) {
     const session = await getSession();
@@ -22,12 +23,17 @@ export async function createLiveLink(formData: FormData) {
         // Optional: clear old active links
         await prisma.liveLink.deleteMany({});
 
-        await prisma.liveLink.create({
+        const liveLink = await prisma.liveLink.create({
             data: {
                 url,
                 expiresAt,
             },
         });
+        try {
+            await notifyLiveStarted(liveLink);
+        } catch (notificationError) {
+            console.error('Live notification failed:', notificationError);
+        }
         revalidatePath('/');
         return { success: true };
     } catch (e) {

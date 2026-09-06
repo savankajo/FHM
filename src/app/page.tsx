@@ -21,50 +21,52 @@ function formatEventDate(date: Date) {
 export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
-  const { canOpenAdmin } = await getUserPermissions(session?.userId, session?.role);
-  const teams = session ? await prisma.team.findMany({
-    where: { members: { some: { id: session.userId } } },
-    select: { id: true }
-  }) : [];
+  const [permissionResult, teams, liveLink, nextEvent, sermonCandidates, podcastCandidates] = await Promise.all([
+    getUserPermissions(session?.userId, session?.role),
+    session ? prisma.team.findMany({
+      where: { members: { some: { id: session.userId } } },
+      select: { id: true }
+    }) : Promise.resolve([]),
+    prisma.liveLink.findFirst({
+      where: { expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' }
+    }),
+    prisma.event.findFirst({
+      where: {
+        startTime: { gte: new Date() },
+        ...(isAdmin ? {} : {
+          OR: [
+            { visibility: 'PUBLIC' as const },
+            { teamScope: null },
+            ...(session ? [
+              { teams: { some: { members: { some: { id: session.userId } } } } },
+              { invitations: { some: { userId: session.userId } } }
+            ] : [])
+          ]
+        })
+      },
+      orderBy: { startTime: 'asc' },
+      select: { id: true, title: true, startTime: true, location: true }
+    }),
+    prisma.sermon.findMany({
+      orderBy: { date: 'desc' },
+      take: 20,
+      select: { id: true, title: true, speaker: true, date: true, videoUrl: true, thumbnailUrl: true, audienceTeamIds: true }
+    }),
+    prisma.podcastEpisode.findMany({
+      orderBy: { publishedAt: 'desc' },
+      take: 20,
+      select: { id: true, title: true, publishedAt: true, thumbnailUrl: true, audienceTeamIds: true }
+    }),
+  ]);
+  const { canOpenAdmin } = permissionResult;
   const teamIds = teams.map(team => team.id);
   // User has no avatarUrl in schema — prompt if logged in
 
-  // Fetch Live Link
-  const liveLink = await prisma.liveLink.findFirst({
-    where: { expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  const nextEvent = await prisma.event.findFirst({
-    where: {
-      startTime: { gte: new Date() },
-      ...(isAdmin ? {} : {
-        OR: [
-          { visibility: 'PUBLIC' },
-          { teamScope: null },
-          ...(session ? [
-            { teams: { some: { id: { in: teamIds } } } },
-            { invitations: { some: { userId: session.userId } } }
-          ] : [])
-        ]
-      })
-    },
-    orderBy: { startTime: 'asc' },
-    select: { id: true, title: true, startTime: true, location: true }
-  });
-
   // Fetch Recent Sermons & Podcasts for "Recently Uploaded"
-  const recentSermons = (await prisma.sermon.findMany({
-    orderBy: { date: 'desc' },
-    take: 20,
-    select: { id: true, title: true, speaker: true, date: true, videoUrl: true, thumbnailUrl: true, audienceTeamIds: true }
-  })).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 2);
+  const recentSermons = sermonCandidates.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 2);
 
-  const recentPodcasts = (await prisma.podcastEpisode.findMany({
-    orderBy: { publishedAt: 'desc' },
-    take: 20,
-    select: { id: true, title: true, publishedAt: true, thumbnailUrl: true, audienceTeamIds: true }
-  })).filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 1);
+  const recentPodcasts = podcastCandidates.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 1);
 
   const uploads = [
     ...recentSermons.map(s => ({

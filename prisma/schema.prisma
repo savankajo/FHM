@@ -39,6 +39,8 @@ enum NotificationType {
   REMINDER
   INVITATION
   MESSAGE
+  LIVE
+  MEDIA
 }
 
 enum AccountStatus {
@@ -102,6 +104,7 @@ model User {
   rsvps                   Rsvp[]
   eventInvitations        Invitation[]         @relation("InvitationUser")
   notifications           Notification[]
+  pushDevices             PushDevice[]
   notificationPreferences Json?
   accountStatus           AccountStatus        @default(ACTIVE)
   suspendedUntil          DateTime?
@@ -328,19 +331,36 @@ model Invitation {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  type      NotificationType
-  title     String
-  body      String
-  href      String?
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String?
+  id         String           @id @default(uuid())
+  type       NotificationType
+  title      String
+  body       String
+  href       String?
+  dedupeKey  String?          @unique
+  readAt     DateTime?
+  pushSentAt DateTime?
+  pushError  String?
+  createdAt  DateTime         @default(now())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId    String?
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+}
+
+model PushDevice {
+  id         String    @id @default(uuid())
+  token      String    @unique
+  platform   String    @default("ios")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastSeenAt DateTime  @default(now())
+  disabledAt DateTime?
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, disabledAt])
 }
 
 model EventVote {

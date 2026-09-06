@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { unregisterPushForCurrentDevice } from '@/lib/push-client';
 
 interface User {
     id: string;
@@ -64,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         try {
+            await unregisterPushForCurrentDevice();
             // Call logout API if we had one, for now just clear client state
             // In a real app you'd hit an endpoint to clear the httpOnly cookie
             // Let's assume we maintain the session purely via cookie

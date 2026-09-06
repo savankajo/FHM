@@ -11,6 +11,7 @@
 - Production is live at `https://fhmapp.netlify.app`; its scheduled moderation-escalation function is deployed.
 - Chat membership authorization, 48-hour message expiry, safe-area layout, app icon and launch assets.
 - iOS bundle ID: `com.savankajo.fhm`; display name: `FHMChurch`.
+- Native APNs notifications for team messages, event invitations and two-hour reminders, live services, and newly published media, with category preferences and deep links.
 
 ## Required owner actions before submission
 
@@ -24,6 +25,7 @@
 8. Archive and test on physical iPhone and iPad: policy consent/decline, registration, sign-in/out, account deletion, every external link/media URL, calendar export, text/poll rejection, chat report/block/unblock, admin sanctions, offline/error states, rotation, safe areas, Dynamic Type, VoiceOver, and dark-mode contrast. Record results in `docs/APP_STORE_GUIDELINE_1_2.md`.
 9. Confirm ownership/licenses for the logo, Unsplash imagery, sermon/podcast media, Bible translation text, and all screenshots.
 10. Configure signing, version/build numbers, App Store category, description, keywords, copyright, Support URL, Privacy Policy URL, and review contact in App Store Connect.
+11. Enable Push Notifications for the `com.savankajo.fhm` App ID, create an APNs signing key, and configure the five `APNS_*` environment variables in Netlify before uploading build 19.
 
 ## Suggested Review Notes
 
@@ -35,6 +37,6 @@ To review member features: accept the current Terms and Community Guidelines, si
 
 ## 2026 rejection-cycle verified review notes
 
-FHM Church is intentionally bilingual in English and Arabic; Arabic content uses RTL layout. Guests can access Home, Media, Bible, the public Teams directory, the public Calendar (including the weekly Saturday Meeting), privacy policy, and support without signing in. Members can access assigned team chat, schedules, private team events, RSVP, and notification history. Notifications are limited to event reminders, team invitations, and church messages; each category can be disabled in Profile settings and permission is requested there in context. Sermons play inside the app without autoplay; the small provider link is an optional fallback. Account deletion is available under Profile → Account & Security. There are no purchases, subscriptions, advertising, or cross-app tracking.
+FHM Church is intentionally bilingual in English and Arabic; Arabic content uses RTL layout. Guests can access Home, Media, Bible, the public Teams directory, the public Calendar (including the weekly Saturday Meeting), privacy policy, and support without signing in. Members can access assigned team chat, schedules, private team events, RSVP, and notification history. Notifications cover team messages, event invitations and reminders, live services, and newly published media; each category can be disabled in Profile settings and permission is requested there in context. Sermons play inside the app without autoplay; the small provider link is an optional fallback. Account deletion is available under Profile → Account & Security. There are no purchases, subscriptions, advertising, or cross-app tracking.
 
 Enter the verified demo credentials only in App Store Connect, never in this repository. To test member features: sign in, open Teams, select the assigned App Review Test Team, open Team Chat, then open Calendar and Notifications. The backend health check is `https://fhmapp.netlify.app/api/health`.
