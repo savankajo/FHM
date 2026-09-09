@@ -131,6 +131,11 @@ export default async function HomePage() {
         </div>
       </header>
 
+      {/* ── Verse of the Day ─────────────────────────────── */}
+      <VerseOfTheDayCard />
+
+      <PastorSection pastors={pastors} />
+
       {/* ── Hero Card (Live Service) ─────────────────────── */}
       <div className="hero-card-wrap">
         <div className="hero-card">
@@ -166,11 +171,6 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
-
-      {/* ── Verse of the Day ─────────────────────────────── */}
-      <VerseOfTheDayCard />
-
-      <PastorSection pastors={pastors} />
 
       {/* ── Quick Actions ────────────────────────────────── */}
       <div className="quick-actions-grid">

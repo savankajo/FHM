@@ -119,31 +119,31 @@ function EpisodeCard({ item, type }: { item: Sermon | PodcastEpisode; type: 'ser
 
 function ArticleCard({ article, featured = false, language = 'en' }: { article: Article | PublishedArabicArticle; featured?: boolean; language?: ArticleLanguage }) {
     const isPublishedArabic = 'sourceUrl' in article;
-    const accessLabel = isPublishedArabic ? 'مقال PDF' : isRestricted(article) ? 'Team article' : 'Article';
+    const accessLabel = isPublishedArabic ? 'PDF article' : isRestricted(article) ? 'Team article' : 'Article';
     const date = new Date(article.publishedAt);
     const content = <>
             <div
                 className={`article-card-media${article.imageUrl ? '' : ' fallback'}`}
                 style={article.imageUrl ? { backgroundImage: `url(${article.imageUrl})` } : undefined}
                 role="img"
-                aria-label={article.imageUrl ? `${article.title} featured image` : language === 'ar' ? 'مجلة قلب الآب' : 'Father’s Heart Journal'}
+                aria-label={article.imageUrl ? `${article.title} featured image` : 'Father’s Heart Journal'}
             >
                 {!article.imageUrl && <><span aria-hidden="true">FHM</span><small>Journal</small></>}
                 <span className="article-type-badge">{accessLabel}</span>
             </div>
             <div className="article-card-content">
                 <div className="article-card-meta">
-                    <time dateTime={date.toISOString()}>{date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>
+                    <time dateTime={date.toISOString()}>{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time>
                     {article.author && <><span aria-hidden="true">·</span><span>{article.author}</span></>}
                 </div>
                 <h3>{article.title}</h3>
                 {article.summary && <p>{article.summary}</p>}
-                <span className="article-read-link">{isPublishedArabic ? 'عرض المقال' : 'Read article'} <ChevronRight /></span>
+                <span className="article-read-link">Read article <ChevronRight /></span>
             </div>
         </>;
     const className = `article-card${featured ? ' featured' : ''}${language === 'ar' ? ' article-card-rtl' : ''}`;
     return isPublishedArabic
-        ? <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" className={className} lang="ar" dir="rtl" aria-label={`عرض ${article.title} (PDF)`}>{content}</a>
+        ? <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" className={className} lang="ar" dir="rtl" aria-label={`Open ${article.title} (PDF)`}>{content}</a>
         : <Link href={`/articles/${article.id}`} className={className}>{content}</Link>;
 }
 
@@ -305,13 +305,13 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                         </div>
                     )}
 
-                    <div className={`articles-intro${articleLanguage === 'ar' ? ' articles-intro-rtl' : ''}`} lang={articleLanguage} dir={articleLanguage === 'ar' ? 'rtl' : 'ltr'}>
+                    <div className="articles-intro">
                         <p className="page-kicker">Father’s Heart Journal</p>
-                        <h2>{articleLanguage === 'ar' ? 'مقالات للرحلة' : 'Stories for a growing faith'}</h2>
-                        <p>{articleLanguage === 'ar' ? 'اقرأ تأملات وموارد منشورة من خدمة قلب الآب.' : 'Thoughtful teaching and encouragement from our church community.'}</p>
-                        <div className="article-language-selector" role="group" aria-label="Article language" dir="ltr">
+                        <h2>Stories for a growing faith</h2>
+                        <p>Thoughtful teaching and encouragement from our church community.</p>
+                        <div className="article-language-selector" role="group" aria-label="Article language">
                             <button type="button" className={articleLanguage === 'en' ? 'active' : ''} aria-pressed={articleLanguage === 'en'} onClick={() => { setArticleLanguage('en'); setArticleSearch(''); }}>English</button>
-                            <button type="button" className={articleLanguage === 'ar' ? 'active' : ''} aria-pressed={articleLanguage === 'ar'} lang="ar" onClick={() => { setArticleLanguage('ar'); setArticleSearch(''); }}>العربية</button>
+                            <button type="button" className={articleLanguage === 'ar' ? 'active' : ''} aria-pressed={articleLanguage === 'ar'} onClick={() => { setArticleLanguage('ar'); setArticleSearch(''); }}>Arabic</button>
                         </div>
                     </div>
                     <div className="media-search-wrap">
@@ -320,10 +320,10 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                             type="search"
                             value={articleSearch}
                             onChange={(event) => setArticleSearch(event.target.value)}
-                            placeholder={articleLanguage === 'ar' ? 'ابحث في المقالات العربية' : 'Search latest articles'}
-                            aria-label={articleLanguage === 'ar' ? 'ابحث في المقالات العربية' : 'Search latest articles'}
+                            placeholder="Search latest articles"
+                            aria-label="Search latest articles"
                             lang={articleLanguage === 'ar' ? 'ar' : 'en'}
-                            dir={articleLanguage === 'ar' ? 'rtl' : 'ltr'}
+                            dir="auto"
                         />
                     </div>
                     {featuredArticle ? (
@@ -337,9 +337,8 @@ export default function MediaPageClient({ sermons, podcasts, articles, isAdmin }
                         </div>
                     ) : (
                         <EmptyState
-                            title={articleQuery ? (articleLanguage === 'ar' ? 'لم يتم العثور على مقالات' : 'No Articles Found') : (articleLanguage === 'ar' ? 'ستتوفر مقالات قريبًا' : 'Stories Are Coming Soon')}
-                            text={articleQuery ? (articleLanguage === 'ar' ? 'جرّب عنوانًا أو كلمة مفتاحية أخرى.' : 'Try a different title, author, or keyword.') : (articleLanguage === 'ar' ? 'ستظهر المقالات هنا عند نشرها.' : 'Articles will appear here after they are published.')}
-                            language={articleLanguage}
+                            title={articleQuery ? 'No Articles Found' : 'Stories Are Coming Soon'}
+                            text={articleQuery ? 'Try a different title, author, or keyword.' : 'Articles will appear here after they are published.'}
                         />
                     )}
                 </section>
