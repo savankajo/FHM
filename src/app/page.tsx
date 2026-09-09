@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import VerseOfTheDayCard from '@/components/home/verse-of-day';
+import PastorSection from '@/components/home/pastor-section';
+import { DEFAULT_PASTORS, PASTOR_PROFILE_IDS } from '@/data/pastors';
 import { getUserPermissions } from '@/lib/permissions';
 import { canSeeAudience } from '@/lib/audience';
 
@@ -21,7 +23,7 @@ function formatEventDate(date: Date) {
 export default async function HomePage() {
   const session = await getSession();
   const isAdmin = session?.role === 'ADMIN';
-  const [permissionResult, teams, liveLink, nextEvent, sermonCandidates, podcastCandidates] = await Promise.all([
+  const [permissionResult, teams, liveLink, nextEvent, sermonCandidates, podcastCandidates, pastorProfiles] = await Promise.all([
     getUserPermissions(session?.userId, session?.role),
     session ? prisma.team.findMany({
       where: { members: { some: { id: session.userId } } },
@@ -58,6 +60,12 @@ export default async function HomePage() {
       take: 20,
       select: { id: true, title: true, publishedAt: true, thumbnailUrl: true, audienceTeamIds: true }
     }),
+    prisma.pastorProfile.findMany({
+      where: { id: { in: [...PASTOR_PROFILE_IDS] } },
+      orderBy: { sortOrder: 'asc' },
+      take: 2,
+      select: { id: true, name: true, role: true, initials: true, imageUrl: true, sortOrder: true }
+    }),
   ]);
   const { canOpenAdmin } = permissionResult;
   const teamIds = teams.map(team => team.id);
@@ -67,6 +75,7 @@ export default async function HomePage() {
   const recentSermons = sermonCandidates.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 2);
 
   const recentPodcasts = podcastCandidates.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).slice(0, 1);
+  const pastors = pastorProfiles.length === 2 ? pastorProfiles : DEFAULT_PASTORS;
 
   const uploads = [
     ...recentSermons.map(s => ({
@@ -160,6 +169,8 @@ export default async function HomePage() {
 
       {/* ── Verse of the Day ─────────────────────────────── */}
       <VerseOfTheDayCard />
+
+      <PastorSection pastors={pastors} />
 
       {/* ── Quick Actions ────────────────────────────────── */}
       <div className="quick-actions-grid">

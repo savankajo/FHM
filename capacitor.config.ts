@@ -5,9 +5,11 @@ const config: CapacitorConfig = {
   appId: 'com.savankajo.fhm',
   appName: 'FHM',
   webDir: 'capacitor-web',
+  backgroundColor: '#0A0A0AFF',
   server: {
     url: 'https://fhmapp.netlify.app',
-    cleartext: false
+    cleartext: false,
+    errorPath: 'index.html',
   },
   plugins: {
     PushNotifications: {

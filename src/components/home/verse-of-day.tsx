@@ -9,24 +9,20 @@ function bibleUrl(version: number, book: string, chapter: number, verse: number)
     return `https://www.bible.com/bible/${version}/${book}.${chapter}.${verse}`;
 }
 
-// Unsplash CDN helper — stable, no API key needed
-function unsplash(id: string) {
-    return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=800&q=80`;
-}
-
-// Nature photo themes (reliably-existing Unsplash photo IDs)
-const SUNRISE = unsplash('1470252649378-9c29740c9fa8'); // sunrise over lake & mountains
-const MEADOW = unsplash('1500534314209-a25ddb2bd429'); // green open meadow
-const OCEAN = unsplash('1505118380757-91f5f5632de0'); // deep ocean aerial
-const MOUNTAIN = unsplash('1464822759023-fed622ff2c3b'); // rocky mountain peak
-const SKY = unsplash('1534274988757-a28bf1a57c17'); // clouds from above
-const FOREST = unsplash('1448375240586-882707db888b'); // sunlit forest path
-const LAKE = unsplash('1506905925346-21bda4d32df4'); // mountain lake reflection
-const BLOSSOM = unsplash('1490750967868-88df5691cc1c'); // cherry blossoms
-const STARS = unsplash('1451188502541-13943edb6acf'); // milky way starry night
-const WATER = unsplash('1482938289607-e9573fc25ebb'); // waterfall in forest
-const BEACH = unsplash('1507525428034-b723cf961d3e'); // tropical beach sunset
-const CANYON = unsplash('1469474968028-56623f02e42e'); // grand canyon golden hour
+// Local visual backgrounds keep the verse card resilient when the device is offline.
+// They deliberately use only CSS, so a failed remote image can never expose a black fallback.
+const SUNRISE = 'radial-gradient(circle at 72% 17%, #f7ca6d 0 5%, transparent 26%), linear-gradient(155deg, #5c2141 0%, #c7511f 48%, #efae5b 100%)';
+const MEADOW = 'radial-gradient(circle at 24% 10%, rgba(255,255,222,.7) 0 5%, transparent 25%), linear-gradient(155deg, #1d4e45 0%, #547b4c 48%, #9eb964 100%)';
+const OCEAN = 'radial-gradient(circle at 70% 12%, rgba(185,228,255,.6) 0 7%, transparent 25%), linear-gradient(155deg, #112c4b 0%, #176b8d 52%, #55adc2 100%)';
+const MOUNTAIN = 'linear-gradient(145deg, rgba(255,203,127,.33), transparent 35%), linear-gradient(155deg, #261f3d 0%, #60527b 48%, #b89470 100%)';
+const SKY = 'radial-gradient(ellipse at 62% 12%, rgba(255,255,255,.65) 0 11%, transparent 28%), linear-gradient(155deg, #315783 0%, #7ba7c5 49%, #e2b985 100%)';
+const FOREST = 'radial-gradient(circle at 70% 18%, rgba(231,203,104,.48) 0 7%, transparent 24%), linear-gradient(155deg, #102e2b 0%, #315e43 52%, #81974a 100%)';
+const LAKE = 'radial-gradient(ellipse at 27% 20%, rgba(240,204,130,.48) 0 7%, transparent 25%), linear-gradient(155deg, #203246 0%, #3f6b82 48%, #94aa9d 100%)';
+const BLOSSOM = 'radial-gradient(circle at 68% 20%, rgba(255,211,226,.55) 0 12%, transparent 31%), linear-gradient(155deg, #4b284a 0%, #94566f 47%, #d08b8b 100%)';
+const STARS = 'radial-gradient(circle at 22% 18%, #fff 0 1%, transparent 2%), radial-gradient(circle at 72% 23%, #fff 0 1%, transparent 2%), linear-gradient(155deg, #10152c 0%, #26385d 54%, #674d71 100%)';
+const WATER = 'radial-gradient(ellipse at 75% 15%, rgba(208,244,255,.55) 0 7%, transparent 27%), linear-gradient(155deg, #123f4c 0%, #277c7e 47%, #7db9a8 100%)';
+const BEACH = 'radial-gradient(circle at 74% 15%, #ffd37a 0 6%, transparent 23%), linear-gradient(155deg, #584250 0%, #c77862 47%, #efbd75 100%)';
+const CANYON = 'radial-gradient(ellipse at 26% 15%, rgba(255,222,153,.48) 0 7%, transparent 27%), linear-gradient(155deg, #49281d 0%, #a95532 47%, #d6965f 100%)';
 
 // ── 30 curated verses ──
 const VERSES = [
@@ -300,7 +296,7 @@ export default function VerseOfTheDayCard() {
         <div className="votd-wrap">
             <div
                 className={`votd-card ${mounted ? 'votd-visible' : 'votd-hidden'}`}
-                style={{ backgroundImage: `url(${verse.bg})` }}
+                style={{ backgroundImage: verse.bg }}
             >
                 <div className="votd-overlay" />
 

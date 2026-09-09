@@ -22,6 +22,7 @@ const ADMIN_SECTIONS: Array<{ title: string; items: AdminItem[] }> = [
             { label: 'Adding Podcast', href: '/admin/podcasts/new', topic: 'media', action: 'add' },
             { label: 'Adding Articles', href: '/admin/articles/new', topic: 'media', action: 'add' },
             { label: 'Editing Sermon, Podcast or Articles', href: '/admin/media-edit', topic: 'media', action: 'edit' },
+            { label: 'Editing Pastor Photos', href: '/admin/pastors', topic: 'media', action: 'edit' },
         ],
     },
     {
