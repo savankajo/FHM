@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/ui/global-search';
+import { getSession } from '@/lib/auth';
+import { canSeeAudience } from '@/lib/audience';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,18 +13,22 @@ export default async function SearchPage({
     searchParams?: Promise<{ q?: string }>;
 }) {
     const resolvedSearchParams = await searchParams;
-    const query = resolvedSearchParams?.q || '';
+    const query = (resolvedSearchParams?.q || '').trim().slice(0, 100);
 
     if (!query) {
         return (
-            <div className="container p-8 text-center">
-                <h1 className="text-2xl font-bold mb-4">Search</h1>
-                <GlobalSearch />
-            </div>
+            <main className="search-page">
+                <header className="search-page-hero"><p className="page-kicker">Find what you need</p><h1>Search the library</h1><p>Explore sermons, podcasts, and articles from Father’s Heart Church.</p></header>
+                <section className="search-page-content"><GlobalSearch /></section>
+            </main>
         );
     }
 
-    const [sermons, podcasts] = await Promise.all([
+    const session = await getSession();
+    const isAdmin = session?.role === 'ADMIN';
+    const teams = session ? await prisma.team.findMany({ where: { members: { some: { id: session.userId } } }, select: { id: true } }) : [];
+    const teamIds = teams.map(team => team.id);
+    const [sermons, podcasts, articles] = await Promise.all([
         prisma.sermon.findMany({
             where: {
                 OR: [
@@ -41,65 +46,57 @@ export default async function SearchPage({
                 ]
             },
             take: 10
-        })
+        }),
+        prisma.article.findMany({
+            where: {
+                OR: [
+                    { title: { contains: query, mode: 'insensitive' } },
+                    { author: { contains: query, mode: 'insensitive' } },
+                    { summary: { contains: query, mode: 'insensitive' } },
+                ]
+            },
+            take: 10
+        }),
     ]);
 
     type SearchResult = {
         id: string;
         title: string;
-        speaker: string;
-        type: 'sermon' | 'podcast';
+        detail: string;
+        type: 'sermon' | 'podcast' | 'article';
         url: string;
         displayDate: Date;
     };
 
     const results: SearchResult[] = [
-        ...sermons.map(s => ({ id: s.id, title: s.title, speaker: s.speaker, type: 'sermon' as const, url: `/sermons/${s.id}`, displayDate: s.date })),
-        ...podcasts.map(p => ({ id: p.id, title: p.title, speaker: 'Podcast', type: 'podcast' as const, url: `/podcasts/${p.id}`, displayDate: p.publishedAt }))
+        ...sermons.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).map(s => ({ id: s.id, title: s.title, detail: s.speaker || 'Sermon', type: 'sermon' as const, url: `/sermons/${s.id}`, displayDate: s.date })),
+        ...podcasts.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).map(p => ({ id: p.id, title: p.title, detail: 'Podcast', type: 'podcast' as const, url: `/podcasts/${p.id}`, displayDate: p.publishedAt })),
+        ...articles.filter(item => canSeeAudience(item.audienceTeamIds, teamIds, isAdmin)).map(article => ({ id: article.id, title: article.title, detail: article.author, type: 'article' as const, url: `/articles/${article.id}`, displayDate: article.publishedAt })),
     ].sort((a, b) => {
         return b.displayDate.getTime() - a.displayDate.getTime();
     });
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-4">Search Results for "{query}"</h1>
-                <GlobalSearch />
-            </div>
+        <main className="search-page">
+            <header className="search-page-hero"><p className="page-kicker">Search results</p><h1>Results for “{query}”</h1><p>Showing sermons, podcasts, and articles available to you.</p></header>
+            <section className="search-page-content">
+                <GlobalSearch initialQuery={query} />
+                <p className="search-result-count" aria-live="polite">{results.length} {results.length === 1 ? 'result' : 'results'} found</p>
 
             {results.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No results found.</p>
+                <div className="search-empty"><strong>No matches yet</strong><p>Try a speaker, topic, sermon title, podcast, or article author.</p></div>
             ) : (
-                <div className="space-y-4">
+                <div className="search-results-list">
                     {results.map((item) => (
-                        <Link key={item.id} href={item.url} className="block group">
-                            <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
-                                                {item.type}
-                                            </span>
-                                            <span className="text-sm text-gray-500">
-                                                {formatDate(item.displayDate)}
-                                            </span>
-                                        </div>
-                                        <h3 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">
-                                            {item.title}
-                                        </h3>
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            {item.speaker && item.speaker !== 'Podcast' ? item.speaker : ''}
-                                        </p>
-                                    </div>
-                                    <div className="text-gray-400 group-hover:text-orange-500 text-2xl">
-                                        &rarr;
-                                    </div>
-                                </div>
-                            </div>
+                        <Link key={`${item.type}-${item.id}`} href={item.url} className="search-result-card">
+                            <span className={`search-result-icon ${item.type}`} aria-hidden="true">{item.type === 'sermon' ? '▶' : item.type === 'podcast' ? '◉' : '✦'}</span>
+                            <span className="search-result-copy"><span className="search-result-meta"><span className="search-result-type">{item.type}</span><span>{formatDate(item.displayDate)}</span></span><strong>{item.title}</strong><small>{item.detail}</small></span>
+                            <span className="search-result-arrow" aria-hidden="true">›</span>
                         </Link>
                     ))}
                 </div>
             )}
-        </div>
+            </section>
+        </main>
     );
 }
