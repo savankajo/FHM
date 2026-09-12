@@ -56,6 +56,34 @@ function parseArticles(html) {
   return articles;
 }
 
+function parseScriptArticles(script) {
+  const articlePattern = /title:"([^"]+)",description:"([^"]+)",date:"(\d{4}-\d{2}-\d{2})",language:"([^"]+)",pdfPath:"([^"]+\.pdf)"/g;
+  const articles = [];
+  const seen = new Set();
+  let match;
+
+  while ((match = articlePattern.exec(script)) !== null) {
+    const [, title, summary, publishedAt, language, rawLink] = match;
+    const linkUrl = absoluteUrl(rawLink);
+    if (seen.has(linkUrl)) continue;
+    seen.add(linkUrl);
+    articles.push({
+      title: decodeEntities(title),
+      summary: decodeEntities(summary),
+      publishedAt,
+      linkUrl,
+      language,
+    });
+  }
+
+  return articles;
+}
+
+function findAssetUrl(html) {
+  const match = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
+  return match ? absoluteUrl(match[1]) : null;
+}
+
 async function upsertArticle(article) {
   const existing = await prisma.article.findFirst({
     where: {
@@ -68,7 +96,7 @@ async function upsertArticle(article) {
 
   const data = {
     title: article.title,
-    author: 'FHM Church',
+    author: article.language === 'Arabic' ? 'FHM Church - Arabic' : 'FHM Church',
     summary: article.summary,
     body: null,
     publishedAt: new Date(`${article.publishedAt}T00:00:00.000Z`),
@@ -88,7 +116,9 @@ async function upsertArticle(article) {
 
 async function main() {
   const html = await fetchText(ARTICLES_URL);
-  const articles = parseArticles(html);
+  const assetUrl = findAssetUrl(html);
+  const scriptArticles = assetUrl ? parseScriptArticles(await fetchText(assetUrl)) : [];
+  const articles = scriptArticles.length > 0 ? scriptArticles : parseArticles(html);
   if (articles.length === 0) throw new Error('No articles found on website.');
 
   let created = 0;
