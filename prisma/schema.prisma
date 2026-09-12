@@ -85,6 +85,12 @@ enum ModerationOutcome {
   MANUAL_REVIEW
 }
 
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -119,6 +125,11 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   bibleHighlights         BibleHighlight[]
   bibleNotes              BibleNote[]
+  sentFriendRequests      FriendRequest[]       @relation("FriendRequestSender")
+  receivedFriendRequests  FriendRequest[]       @relation("FriendRequestRecipient")
+  directConversationsLow  DirectConversation[]  @relation("DirectConversationLow")
+  directConversationsHigh DirectConversation[]  @relation("DirectConversationHigh")
+  directMessages          DirectMessage[]
 }
 
 model BibleHighlight {
@@ -455,6 +466,48 @@ model UserBlock {
 
   @@unique([blockerId, blockedId])
   @@index([blockerId, createdAt])
+}
+
+model FriendRequest {
+  id          String              @id @default(uuid())
+  status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  respondedAt DateTime?
+  requesterId String
+  requester   User                @relation("FriendRequestSender", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User                @relation("FriendRequestRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId, status, createdAt])
+  @@index([requesterId, status, createdAt])
+}
+
+model DirectConversation {
+  id                String          @id @default(uuid())
+  participantLowId  String
+  participantLow    User            @relation("DirectConversationLow", fields: [participantLowId], references: [id], onDelete: Cascade)
+  participantHighId String
+  participantHigh   User            @relation("DirectConversationHigh", fields: [participantHighId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  messages          DirectMessage[]
+
+  @@unique([participantLowId, participantHighId])
+  @@index([participantLowId, updatedAt])
+  @@index([participantHighId, updatedAt])
+}
+
+model DirectMessage {
+  id             String             @id @default(uuid())
+  text           String
+  createdAt      DateTime           @default(now())
+  conversationId String
+  conversation   DirectConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
 
 model ModerationAudit {

@@ -152,8 +152,36 @@ export async function notifyTeamMessage(input: {
     type: 'MESSAGE',
     title: `${input.senderName} in ${input.teamName}`,
     body: preview,
-    href: `/chat/${input.teamId}`,
+    href: `/messages/team/${input.teamId}`,
     dedupePrefix: `message:${input.messageId}`,
+  });
+}
+
+export async function notifyDirectMessage(input: {
+  messageId: string;
+  recipientId: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+}) {
+  const recipients = await prisma.user.findMany({
+    where: {
+      id: input.recipientId,
+      accountStatus: 'ACTIVE',
+      blocksMade: { none: { blockedId: input.senderId } },
+    },
+    select: {
+      id: true,
+      notificationPreferences: true,
+      pushDevices: { where: { disabledAt: null }, select: { token: true } },
+    },
+  });
+  return notifyRecipients(recipients, 'messages', {
+    type: 'MESSAGE',
+    title: input.senderName,
+    body: input.text.slice(0, 140),
+    href: `/messages/direct/${input.senderId}`,
+    dedupePrefix: `direct-message:${input.messageId}`,
   });
 }
 

@@ -5474,6 +5474,46 @@ button {
 .notification-type { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border-radius: 50%; background: rgba(46,94,158,.18); color: #a8c8f1; }
 .notification-type.reminder { background: rgba(139,105,20,.2); color: #d8bc62; }
 .notification-type.message { background: rgba(22,163,74,.14); color: #80c99a; }
+
+/* ── Messages ─────────────────────────────────────────────── */
+.messages-page { min-height: 100%; padding-bottom: 28px; }
+.messages-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 30px 20px 24px; color: #f8fafc; background: linear-gradient(135deg, #162b48, #315d88); }
+.messages-hero .page-kicker { margin: 0 0 5px; color: #bed5ed; }
+.messages-hero h1 { margin: 0; font-size: clamp(28px, 7vw, 38px); line-height: 1.1; }
+.messages-hero p:last-child { max-width: 520px; margin: 8px 0 0; color: #d8e7f5; font-size: 14px; line-height: 1.5; }
+.messages-new-button { flex: 0 0 auto; min-height: 42px; padding: 9px 13px; border: 0; border-radius: 11px; color: #173451; background: #f8fafc; font-weight: 800; }
+.messages-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 20px 4px; }
+.messages-tabs button { min-height: 43px; border: 1px solid var(--border); border-radius: 11px; color: var(--muted-foreground); background: var(--background); font-weight: 800; }
+.messages-tabs button.active { border-color: var(--primary); color: var(--primary-foreground); background: var(--primary); }
+.messages-section { padding: 18px 20px 0; }
+.messages-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.messages-section-heading h2, .friend-manager h2 { margin: 0; font-size: 20px; }
+.messages-section-heading p { margin: 4px 0 0; color: var(--muted-foreground); font-size: 13px; line-height: 1.4; }
+.messages-text-button { border: 0; color: var(--primary); background: transparent; font-weight: 800; white-space: nowrap; }
+.messages-list { overflow: hidden; border: 1px solid var(--border); border-radius: 16px; background: var(--background); }
+.message-list-row { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 14px; color: inherit; text-decoration: none; }
+.message-list-row + .message-list-row { border-top: 1px solid var(--border); }
+.message-avatar { width: 42px; height: 42px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: var(--primary-foreground); background: var(--primary); font-weight: 800; }
+.message-team-avatar { border-radius: 13px; color: #dbeafe; background: #315d88; }
+.message-list-copy { display: grid; min-width: 0; gap: 3px; flex: 1; }
+.message-list-copy strong { overflow: hidden; font-size: 15px; white-space: nowrap; text-overflow: ellipsis; }
+.message-list-copy small { overflow: hidden; color: var(--muted-foreground); font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
+.message-row-meta { max-width: 78px; color: var(--muted-foreground); font-size: 11px; text-align: right; }
+.messages-empty { padding: 28px 20px; border: 1px dashed var(--border); border-radius: 16px; color: var(--muted-foreground); text-align: center; }
+.messages-empty strong { display: block; color: var(--foreground); }
+.messages-empty p { margin: 7px auto 16px; max-width: 390px; font-size: 14px; line-height: 1.5; }
+.friend-manager { display: grid; gap: 18px; margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--background); }
+.friend-manager h3 { margin: 0 0 8px; font-size: 14px; }
+.friend-group { display: grid; gap: 8px; }
+.friend-group > p { margin: 0; color: var(--muted-foreground); font-size: 13px; }
+.friend-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 14px; }
+.friend-row > div { display: flex; gap: 7px; }
+.friend-row .btn { min-height: 35px; padding: 6px 10px; font-size: 12px; }
+.friend-link { color: inherit; text-decoration: none; }
+.friend-link span:last-child { color: var(--primary); font-size: 12px; font-weight: 800; }
+.friend-error { margin: 0; color: #ef4444; font-size: 13px; }
+.direct-room .chat-send { display: grid; place-items: center; }
+@media (max-width: 440px) { .messages-hero { align-items: flex-start; flex-direction: column; } .messages-new-button { width: 100%; } }
 .designed-empty { margin: 32px 20px; padding: 34px 22px; text-align: center; border: 1px dashed var(--border-color); border-radius: 20px; background: var(--surface, #141414); }
 .designed-empty-icon { width: 58px; height: 58px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 18px; font-size: 28px; color: #d8bc62; background: rgba(139,105,20,.16); }
 .designed-empty h2 { margin: 0 0 7px; font-size: 19px; }
